@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Test CSS to verify CSS processing works */
+.force-red-background {
+  background-color: red !important;
+  color: white !important;
+  padding: 20px !important;
+  margin: 20px !important;
+  font-weight: bold !important;
+} 
