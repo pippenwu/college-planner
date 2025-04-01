@@ -1,86 +1,38 @@
-import html2pdf from 'html2pdf.js';
+import { jsPDF } from "jspdf";
 
-export function generatePDF(reportContent: string, studentName: string = 'Student') {
-  // Create a container for the PDF content
-  const element = document.createElement('div');
-  element.className = 'pdf-container';
-  
-  // Add a styled header
-  const header = document.createElement('div');
-  header.style.textAlign = 'center';
-  header.style.marginBottom = '20px';
-  
-  const title = document.createElement('h1');
-  title.textContent = 'College Counseling Report';
-  title.style.color = '#2563eb';
-  title.style.marginBottom = '10px';
-  
-  const subtitle = document.createElement('h2');
-  subtitle.textContent = `Prepared for: ${studentName}`;
-  subtitle.style.color = '#4b5563';
-  
-  header.appendChild(title);
-  header.appendChild(subtitle);
-  
-  // Convert markdown to HTML (simple version)
-  const content = document.createElement('div');
-  content.innerHTML = markdownToHtml(reportContent);
-  content.style.lineHeight = '1.6';
-  content.style.fontSize = '14px';
-  
-  // Add footer
-  const footer = document.createElement('div');
-  footer.style.marginTop = '30px';
-  footer.style.borderTop = '1px solid #e5e7eb';
-  footer.style.paddingTop = '15px';
-  footer.style.textAlign = 'center';
-  footer.style.fontSize = '12px';
-  footer.style.color = '#6b7280';
-  
-  const date = new Date();
-  footer.textContent = `Generated on ${date.toLocaleDateString()} by CollegeGPT`;
-  
-  // Assemble the document
-  element.appendChild(header);
-  element.appendChild(content);
-  element.appendChild(footer);
-  
-  // Set PDF options
-  const options = {
-    margin: [15, 15],
-    filename: `college_report_${studentName.replace(/\s+/g, '_').toLowerCase()}_${date.toISOString().split('T')[0]}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-  
-  // Generate and download PDF
-  return html2pdf().set(options).from(element).save();
-}
-
-// Simple markdown to HTML converter
-function markdownToHtml(markdown: string): string {
-  let html = markdown
-    // Convert headings
-    .replace(/^# (.*$)/gm, '<h1>$1</h1>')
-    .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-    .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+/**
+ * Generate a PDF from the report content and download it
+ * @param content The HTML content to convert to PDF
+ * @param studentName Student name for file naming
+ */
+export function generatePDF(content: string, studentName: string) {
+  try {
+    // Create a new PDF document
+    const doc = new jsPDF();
     
-    // Convert lists
-    .replace(/^\- (.*$)/gm, '<li>$1</li>')
-    .replace(/<\/li>\n<li>/g, '</li><li>')
-    .replace(/<\/li>\n\n<li>/g, '</li></ul><ul><li>')
-    .replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>')
+    // Convert HTML to text
+    const reportText = content.replace(/<[^>]*>/g, "");
     
-    // Convert paragraphs
-    .replace(/\n\n((?!<h|<ul|<p)[^\n]*)/g, '<p>$1</p>')
+    // Add title
+    doc.setFontSize(16);
+    doc.text("College Application Plan", 20, 20);
     
-    // Convert bold and italic
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Add content
+    doc.setFontSize(12);
+    const splitText = doc.splitTextToSize(reportText, 170);
+    doc.text(splitText, 20, 30);
     
-    // Convert line breaks
-    .replace(/\n(?!<)/g, '<br />');
-  
-  return html;
+    // Generate filename
+    const safeStudentName = studentName.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+    const timestamp = new Date().toISOString().split("T")[0];
+    const filename = `college_plan_${safeStudentName}_${timestamp}.pdf`;
+    
+    // Save the PDF
+    doc.save(filename);
+    
+    console.log("PDF generated successfully!");
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    alert("Failed to generate PDF. Please try again later.");
+  }
 } 

@@ -6,8 +6,16 @@ import { z } from "zod";
 import { generateCollegeReport, type StudentProfile } from "../services/openaiService";
 import { generatePDF } from "../utils/pdfUtils";
 import { Button } from "./ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from "./ui/form";
 import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 import {
   Select,
   SelectContent,
@@ -15,43 +23,78 @@ import {
   SelectTrigger,
   SelectValue
 } from "./ui/select";
+import { Textarea } from "./ui/textarea";
 
+// Define form schema using Zod
 const formSchema = z.object({
-  // Academic information
-  gpaUnweighted: z.string().optional(),
-  gpaWeighted: z.string().optional(),
+  // Student Information
+  studentName: z.string().optional(),
+  highSchool: z.string().optional(),
+  currentGrade: z.enum(["<9th", "9th", "10th", "11th", "12th"]).optional(),
+
+  // Intended Major and College List
+  intendedMajors: z.string().optional(),
+  collegeList: z.string().optional(),
+  preferredLocation: z.enum(["Northeast", "Southeast", "Midwest", "West", "Any"]).optional(),
+  preferredSize: z.enum(["Small (<5000)", "Medium (5000-15000)", "Large (>15000)", "Any"]).optional(),
+  preferredPrestige: z.enum(["T20", "T50", "T100", "Any"]).optional(),
+
+  // Academics & Standardized Testing
   satScore: z.string().optional(),
   actScore: z.string().optional(),
   toeflScore: z.string().optional(),
-  
-  // Academic interests
-  intendedMajor: z.string().optional(),
-  academicInterests: z.string().optional(),
-  
-  // Extracurricular activities
-  extracurriculars: z.string().optional(),
-  awards: z.string().optional(),
-  
-  // College preferences
-  budget: z.string().optional(),
-  location: z.string().optional(),
-  collegeSize: z.string().optional(),
-  collegePrestige: z.string().optional(),
-  
-  // Optional additional information
-  collegeList: z.string().optional(),
+  ieltsScore: z.string().optional(),
+  apScores: z.array(z.object({
+    subject: z.string().optional(),
+    score: z.number().min(1).max(5).optional().default(5)
+  })).optional(),
+  courses: z.array(z.object({
+    name: z.string().optional(),
+    grade: z.string().optional()
+  })).optional(),
+
+  // Extracurricular Activities
+  activities: z.array(z.object({
+    name: z.string().optional(),
+    position: z.string().optional(),
+    timeInvolved: z.string().optional(),
+    notes: z.string().optional()
+  })).optional().default([{ name: "", position: "", timeInvolved: "", notes: "" }]),
+
+  // Additional Information
   additionalInfo: z.string().optional(),
 });
 
+// Define the form values type based on the schema
 type FormValues = z.infer<typeof formSchema>;
 
-// Define sections of the form
+// Define form sections
 const FORM_SECTIONS = [
-  { id: 0, title: "Academic Information" },
-  { id: 1, title: "Academic Interests" },
-  { id: 2, title: "Extracurricular Activities" },
-  { id: 3, title: "College Preferences" },
-  { id: 4, title: "Additional Information" }
+  {
+    id: "student-info",
+    title: "Student Information",
+    description: "Basic information about you",
+  },
+  {
+    id: "college-preferences",
+    title: "Intended Major and College List",
+    description: "Your academic interests and college preferences",
+  },
+  {
+    id: "academics",
+    title: "Academics & Standardized Testing",
+    description: "Your academic performance and test scores",
+  },
+  {
+    id: "extracurriculars",
+    title: "Extracurricular Activities",
+    description: "Your activities, awards, and honors",
+  },
+  {
+    id: "additional",
+    title: "Additional Information",
+    description: "Any other relevant information",
+  },
 ];
 
 export function StudentProfileForm() {
@@ -68,20 +111,20 @@ export function StudentProfileForm() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      gpaUnweighted: "",
-      gpaWeighted: "",
+      studentName: "",
+      highSchool: "",
+      intendedMajors: "",
+      collegeList: "",
+      preferredLocation: undefined,
+      preferredSize: undefined,
+      preferredPrestige: undefined,
       satScore: "",
       actScore: "",
       toeflScore: "",
-      intendedMajor: "",
-      academicInterests: "",
-      extracurriculars: "",
-      awards: "",
-      budget: "",
-      location: "",
-      collegeSize: "",
-      collegePrestige: "",
-      collegeList: "",
+      ieltsScore: "",
+      activities: [{ name: "", position: "", timeInvolved: "", notes: "" }],
+      courses: [{ name: "", grade: "" }],
+      apScores: [{ subject: "", score: 5 }],
       additionalInfo: "",
     },
   });
@@ -111,6 +154,7 @@ export function StudentProfileForm() {
   };
 
   const onSubmit = async (data: FormValues) => {
+    console.log("Form submitted with data:", data);
     setIsLoading(true);
     setSubmittedData(data);
     try {
@@ -123,6 +167,12 @@ export function StudentProfileForm() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Add this function to show form errors
+  const handleFormError = (errors: any) => {
+    console.error("Form validation errors:", errors);
+    alert("Please fill out all required fields before submitting.");
   };
 
   // Progress indicator component
@@ -163,233 +213,527 @@ export function StudentProfileForm() {
   );
 
   // Render the appropriate section based on currentSection
-  const renderSection = () => {
-    switch (currentSection) {
-      case 0:
+  const renderSection = (sectionId: string) => {
+    switch (sectionId) {
+      case "student-info":
         return (
-          <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 className="text-xl font-bold mb-4">Academic Information</h2>
+          <div className="space-y-6" key="student-info-section">
+            <FormField
+              key="studentName-field"
+              control={form.control}
+              name="studentName"
+              render={({ field }) => {
+                const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                  field.onChange(e);
+                };
+                
+                return (
+                  <FormItem>
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Enter your full name" 
+                        value={field.value} 
+                        onChange={handleChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
+            />
+
+            <FormField
+              key="highSchool-field"
+              control={form.control}
+              name="highSchool"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Current High School</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your high school name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              key="currentGrade-field"
+              control={form.control}
+              name="currentGrade"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Current Grade</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select your current grade" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="<9th">Before 9th Grade</SelectItem>
+                      <SelectItem value="9th">9th Grade</SelectItem>
+                      <SelectItem value="10th">10th Grade</SelectItem>
+                      <SelectItem value="11th">11th Grade</SelectItem>
+                      <SelectItem value="12th">12th Grade</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        );
+
+      case "college-preferences":
+        return (
+          <div className="space-y-6" key="college-preferences-section">
+            <FormField
+              key="intendedMajors-field"
+              control={form.control}
+              name="intendedMajors"
+              render={({ field }) => {
+                const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                  field.onChange(e);
+                };
+                
+                return (
+                  <FormItem>
+                    <FormLabel>Intended Major(s)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="e.g., Computer Science, Business, Engineering" 
+                        value={field.value} 
+                        onChange={handleChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      You can list multiple majors separated by commas
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
+            />
+
+            <FormField
+              key="collegeList-field"
+              control={form.control}
+              name="collegeList"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>College List (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="List the colleges you're considering applying to..."
+                      className="min-h-[100px]"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              key="preferredLocation-field"
+              control={form.control}
+              name="preferredLocation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Preferred College Location</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select preferred location" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="Northeast">Northeast</SelectItem>
+                      <SelectItem value="Southeast">Southeast</SelectItem>
+                      <SelectItem value="Midwest">Midwest</SelectItem>
+                      <SelectItem value="West">West</SelectItem>
+                      <SelectItem value="Any">Any Location</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              key="preferredSize-field"
+              control={form.control}
+              name="preferredSize"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Preferred College Size</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select preferred size" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="Small (<5000)">Small (&lt;5000 students)</SelectItem>
+                      <SelectItem value="Medium (5000-15000)">Medium (5000-15000 students)</SelectItem>
+                      <SelectItem value="Large (>15000)">Large (&gt;15000 students)</SelectItem>
+                      <SelectItem value="Any">Any Size</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              key="preferredPrestige-field"
+              control={form.control}
+              name="preferredPrestige"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Preferred College Prestige</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select preferred prestige" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="T20">Top 20</SelectItem>
+                      <SelectItem value="T50">Top 50</SelectItem>
+                      <SelectItem value="T100">Top 100</SelectItem>
+                      <SelectItem value="Any">Any Ranking</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        );
+
+      case "academics":
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="satScore"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>SAT Score (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter your SAT score" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="actScore"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ACT Score (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter your ACT score" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="toeflScore"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>TOEFL Score (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter your TOEFL score" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="ieltsScore"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>IELTS Score (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter your IELTS score" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="gpaUnweighted">Unweighted GPA</Label>
-                  <Input
-                    id="gpaUnweighted"
-                    placeholder="e.g., 3.8"
-                    {...form.register("gpaUnweighted")}
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">AP Scores</h3>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const currentScores = form.getValues("apScores") || [];
+                    form.setValue("apScores", [
+                      ...currentScores,
+                      { subject: "", score: 5 }
+                    ]);
+                  }}
+                >
+                  Add AP Score
+                </Button>
+              </div>
+              {form.watch("apScores")?.map((_, index) => (
+                <div key={index} className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name={`apScores.${index}.subject`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Subject</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Calculus BC" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  {form.formState.errors.gpaUnweighted && (
-                    <p className="text-red-500 text-sm">{form.formState.errors.gpaUnweighted.message}</p>
+                  <FormField
+                    control={form.control}
+                    name={`apScores.${index}.score`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Score (1-5)</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(Number(value))} defaultValue={field.value?.toString()}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select score" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-white">
+                            {[1, 2, 3, 4, 5].map((score) => (
+                              <SelectItem key={score} value={score.toString()}>
+                                {score}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">Course History</h3>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const currentCourses = form.getValues("courses") || [];
+                    form.setValue("courses", [
+                      ...currentCourses,
+                      { name: "", grade: "" }
+                    ]);
+                  }}
+                >
+                  Add Course
+                </Button>
+              </div>
+              {form.watch("courses")?.map((_, index) => (
+                <div key={index} className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name={`courses.${index}.name`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Course Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., AP Calculus BC" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`courses.${index}.grade`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Grade</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., A+" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case "extracurriculars":
+        return (
+          <div className="space-y-6">
+            {form.watch("activities")?.map((_, index) => (
+              <div key={index} className="space-y-4 p-4 border rounded-lg">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-medium">Activity {index + 1}</h3>
+                  {index > 0 && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        const currentActivities = form.getValues("activities");
+                        form.setValue(
+                          "activities",
+                          currentActivities.filter((_, i) => i !== index)
+                        );
+                      }}
+                    >
+                      Remove
+                    </Button>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="gpaWeighted">Weighted GPA</Label>
-                  <Input
-                    id="gpaWeighted"
-                    placeholder="e.g., 4.2"
-                    {...form.register("gpaWeighted")}
-                  />
-                  {form.formState.errors.gpaWeighted && (
-                    <p className="text-red-500 text-sm">{form.formState.errors.gpaWeighted.message}</p>
+
+                <FormField
+                  control={form.control}
+                  name={`activities.${index}.name`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Activity Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Debate Team Captain" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="satScore">SAT Score (if available)</Label>
-                  <Input
-                    id="satScore"
-                    placeholder="e.g., 1480"
-                    {...form.register("satScore")}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="actScore">ACT Score (if available)</Label>
-                  <Input
-                    id="actScore"
-                    placeholder="e.g., 32"
-                    {...form.register("actScore")}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="toeflScore">TOEFL/IELTS Score (if applicable)</Label>
-                  <Input
-                    id="toeflScore"
-                    placeholder="e.g., 105"
-                    {...form.register("toeflScore")}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      case 1:
-        return (
-          <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 className="text-xl font-bold mb-4">Academic Interests</h2>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="intendedMajor">Intended Major(s)</Label>
-                <Input
-                  id="intendedMajor"
-                  placeholder="e.g., Computer Science, Business"
-                  {...form.register("intendedMajor")}
                 />
-                {form.formState.errors.intendedMajor && (
-                  <p className="text-red-500 text-sm">{form.formState.errors.intendedMajor.message}</p>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="academicInterests">Academic Interests</Label>
-                <textarea
-                  id="academicInterests"
-                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="Describe your academic interests, favorite subjects, etc."
-                  {...form.register("academicInterests")}
-                ></textarea>
-                {form.formState.errors.academicInterests && (
-                  <p className="text-red-500 text-sm">{form.formState.errors.academicInterests.message}</p>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      case 2:
-        return (
-          <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 className="text-xl font-bold mb-4">Extracurricular Activities</h2>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="extracurriculars">Extracurricular Activities</Label>
-                <textarea
-                  id="extracurriculars"
-                  className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="List your extracurricular activities, including clubs, sports, volunteering, work experience, etc."
-                  {...form.register("extracurriculars")}
-                ></textarea>
-                {form.formState.errors.extracurriculars && (
-                  <p className="text-red-500 text-sm">{form.formState.errors.extracurriculars.message}</p>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="awards">Awards and Honors</Label>
-                <textarea
-                  id="awards"
-                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="List any awards, honors, or recognition you've received"
-                  {...form.register("awards")}
-                ></textarea>
-              </div>
-            </div>
-          </div>
-        );
-      case 3:
-        return (
-          <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 className="text-xl font-bold mb-4">College Preferences</h2>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="budget">Budget Constraints</Label>
-                <Input
-                  id="budget"
-                  placeholder="e.g., $30,000/year, need financial aid, etc."
-                  {...form.register("budget")}
+
+                <FormField
+                  control={form.control}
+                  name={`activities.${index}.position`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Position (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Captain, President, Member" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                {form.formState.errors.budget && (
-                  <p className="text-red-500 text-sm">{form.formState.errors.budget.message}</p>
-                )}
+
+                <FormField
+                  control={form.control}
+                  name={`activities.${index}.timeInvolved`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Time Involved (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., 10 hours/week" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name={`activities.${index}.notes`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Additional Notes (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Any additional context about this activity..."
+                          className="min-h-[100px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="location">Preferred Location</Label>
-                  <Select 
-                    onValueChange={(value) => form.setValue("location", value)}
-                    defaultValue={form.getValues("location")}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="northeast">Northeast</SelectItem>
-                      <SelectItem value="midwest">Midwest</SelectItem>
-                      <SelectItem value="south">South</SelectItem>
-                      <SelectItem value="west">West</SelectItem>
-                      <SelectItem value="international">International</SelectItem>
-                      <SelectItem value="no-preference">No Preference</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="collegeSize">College Size</Label>
-                  <Select 
-                    onValueChange={(value) => form.setValue("collegeSize", value)}
-                    defaultValue={form.getValues("collegeSize")}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select size" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="small">Small (&lt; 5,000)</SelectItem>
-                      <SelectItem value="medium">Medium (5,000 - 15,000)</SelectItem>
-                      <SelectItem value="large">Large (&gt; 15,000)</SelectItem>
-                      <SelectItem value="no-preference">No Preference</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="collegePrestige">College Prestige</Label>
-                  <Select 
-                    onValueChange={(value) => form.setValue("collegePrestige", value)}
-                    defaultValue={form.getValues("collegePrestige")}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select importance" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="very-important">Very Important</SelectItem>
-                      <SelectItem value="important">Important</SelectItem>
-                      <SelectItem value="somewhat-important">Somewhat Important</SelectItem>
-                      <SelectItem value="not-important">Not Important</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
+            ))}
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                const currentActivities = form.getValues("activities");
+                form.setValue("activities", [
+                  ...currentActivities,
+                  { name: "", position: "", timeInvolved: "", notes: "" }
+                ]);
+              }}
+            >
+              Add Another Activity
+            </Button>
           </div>
         );
-      case 4:
+
+      case "additional":
         return (
-          <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-            <h2 className="text-xl font-bold mb-4">Additional Information</h2>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="collegeList">College List (if you have one)</Label>
-                <textarea
-                  id="collegeList"
-                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="List any colleges you're already considering"
-                  {...form.register("collegeList")}
-                ></textarea>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="additionalInfo">Additional Information</Label>
-                <textarea
-                  id="additionalInfo"
-                  className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="Any other information you'd like to share"
-                  {...form.register("additionalInfo")}
-                ></textarea>
-              </div>
-            </div>
+          <div className="space-y-6">
+            <FormField
+              control={form.control}
+              name="additionalInfo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Additional Information</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Any other context or information you'd like to provide..."
+                      className="min-h-[200px]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
         );
+
       default:
         return null;
     }
@@ -427,58 +771,50 @@ export function StudentProfileForm() {
     </div>
   );
 
+  // If a report has been generated, show the report instead of the form
+  if (result) {
+    return (
+      <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+        <h2 className="text-2xl font-bold mb-4">Your College Application Plan</h2>
+        <div className="prose max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: result }}></div>
+        <div className="mt-8 flex justify-between">
+          <Button onClick={() => {
+            setResult(null);
+            setSubmittedData(null);
+            setCurrentSection(0);
+            setCompletedSections([]);
+          }}>
+            Start Over
+          </Button>
+          
+          <Button 
+            onClick={() => {
+              if (result) {
+                generatePDF(result, submittedData?.studentName || "Student");
+              }
+            }}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Download Report as PDF
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-3xl mx-auto">
-      {!result ? (
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <ProgressIndicator />
-          {renderSection()}
-          {renderNavigationButtons()}
-        </form>
-      ) : (
-        <div className="bg-white shadow-md rounded-lg p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Your College Counseling Report</h2>
-            <Button 
-              onClick={() => {
-                setResult(null);
-                setSubmittedData(null);
-                setCurrentSection(0);
-                setCompletedSections([]);
-              }}
-              variant="outline"
-            >
-              Start Over
-            </Button>
-          </div>
-          
-          {/* Debug display of submitted data */}
-          <div className="mb-4 border border-gray-200 rounded">
-            <details>
-              <summary className="p-3 cursor-pointer text-blue-600">Show input data used for report</summary>
-              <div className="p-3 bg-gray-50 text-sm">
-                <pre className="whitespace-pre-wrap overflow-auto max-h-60">{JSON.stringify(submittedData, null, 2)}</pre>
-              </div>
-            </details>
-          </div>
-          
-          <div className="prose max-w-none">
-            <pre className="whitespace-pre-wrap text-sm">{result}</pre>
-          </div>
-          <div className="mt-6 flex justify-center">
-            <Button 
-              onClick={() => {
-                if (result) {
-                  generatePDF(result, "Student");
-                }
-              }}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              Download Report as PDF
-            </Button>
-          </div>
-        </div>
-      )}
+      <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit, handleFormError)} className="space-y-8">
+            <ProgressIndicator />
+            <div key={`section-${FORM_SECTIONS[currentSection].id}`}>
+              {renderSection(FORM_SECTIONS[currentSection].id)}
+            </div>
+            {renderNavigationButtons()}
+          </form>
+        </Form>
+      </div>
     </div>
   );
 } 
