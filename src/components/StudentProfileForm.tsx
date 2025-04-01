@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Check } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -44,10 +45,25 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+// Define sections of the form
+const FORM_SECTIONS = [
+  { id: 0, title: "Academic Information" },
+  { id: 1, title: "Academic Interests" },
+  { id: 2, title: "Extracurricular Activities" },
+  { id: 3, title: "College Preferences" },
+  { id: 4, title: "Additional Information" }
+];
+
 export function StudentProfileForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [submittedData, setSubmittedData] = useState<FormValues | null>(null);
+  
+  // Track the current section/step
+  const [currentSection, setCurrentSection] = useState(0);
+  
+  // Track completed sections
+  const [completedSections, setCompletedSections] = useState<number[]>([]);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -70,6 +86,30 @@ export function StudentProfileForm() {
     },
   });
 
+  // Function to move to the next section
+  const goToNextSection = () => {
+    // Mark current section as completed
+    if (!completedSections.includes(currentSection)) {
+      setCompletedSections([...completedSections, currentSection]);
+    }
+    
+    if (currentSection < FORM_SECTIONS.length - 1) {
+      setCurrentSection(currentSection + 1);
+    }
+  };
+
+  // Function to move to the previous section
+  const goToPreviousSection = () => {
+    if (currentSection > 0) {
+      setCurrentSection(currentSection - 1);
+    }
+  };
+
+  // Function to jump to a specific section
+  const jumpToSection = (sectionId: number) => {
+    setCurrentSection(sectionId);
+  };
+
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
     setSubmittedData(data);
@@ -85,10 +125,48 @@ export function StudentProfileForm() {
     }
   };
 
-  return (
-    <div className="w-full max-w-3xl mx-auto">
-      {!result ? (
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+  // Progress indicator component
+  const ProgressIndicator = () => (
+    <div className="mb-8">
+      <div className="flex items-center justify-between">
+        {FORM_SECTIONS.map((section, index) => (
+          <div key={section.id} className="flex flex-col items-center">
+            <div 
+              className={`relative flex items-center justify-center w-10 h-10 rounded-full border-2 cursor-pointer
+                ${currentSection === index 
+                  ? 'bg-blue-600 text-white border-blue-600' 
+                  : completedSections.includes(index)
+                    ? 'bg-green-500 text-white border-green-500'
+                    : 'bg-white text-gray-500 border-gray-300'}`}
+              onClick={() => jumpToSection(index)}
+            >
+              {completedSections.includes(index) 
+                ? <Check className="w-5 h-5" /> 
+                : index + 1}
+            </div>
+            <span className="text-xs mt-1 text-center">{section.title}</span>
+            {index < FORM_SECTIONS.length - 1 && (
+              <div className="absolute left-[calc(50%+1.25rem)] w-[calc(100%-2.5rem)] h-0.5 bg-gray-200 -z-10" />
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="mt-2 h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+        <div 
+          className="h-full bg-blue-600 transition-all duration-300"
+          style={{ 
+            width: `${((currentSection + 1) / FORM_SECTIONS.length) * 100}%` 
+          }} 
+        />
+      </div>
+    </div>
+  );
+
+  // Render the appropriate section based on currentSection
+  const renderSection = () => {
+    switch (currentSection) {
+      case 0:
+        return (
           <div className="bg-white shadow-md rounded-lg p-6 mb-6">
             <h2 className="text-xl font-bold mb-4">Academic Information</h2>
             <div className="space-y-4">
@@ -145,7 +223,9 @@ export function StudentProfileForm() {
               </div>
             </div>
           </div>
-          
+        );
+      case 1:
+        return (
           <div className="bg-white shadow-md rounded-lg p-6 mb-6">
             <h2 className="text-xl font-bold mb-4">Academic Interests</h2>
             <div className="space-y-4">
@@ -175,7 +255,9 @@ export function StudentProfileForm() {
               </div>
             </div>
           </div>
-          
+        );
+      case 2:
+        return (
           <div className="bg-white shadow-md rounded-lg p-6 mb-6">
             <h2 className="text-xl font-bold mb-4">Extracurricular Activities</h2>
             <div className="space-y-4">
@@ -203,7 +285,9 @@ export function StudentProfileForm() {
               </div>
             </div>
           </div>
-          
+        );
+      case 3:
+        return (
           <div className="bg-white shadow-md rounded-lg p-6 mb-6">
             <h2 className="text-xl font-bold mb-4">College Preferences</h2>
             <div className="space-y-4">
@@ -278,7 +362,9 @@ export function StudentProfileForm() {
               </div>
             </div>
           </div>
-          
+        );
+      case 4:
+        return (
           <div className="bg-white shadow-md rounded-lg p-6 mb-6">
             <h2 className="text-xl font-bold mb-4">Additional Information</h2>
             <div className="space-y-4">
@@ -303,14 +389,51 @@ export function StudentProfileForm() {
               </div>
             </div>
           </div>
-          
-          <Button 
-            type="submit" 
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg"
-            disabled={isLoading}
-          >
-            {isLoading ? "Generating Report..." : "Generate College Report"}
-          </Button>
+        );
+      default:
+        return null;
+    }
+  };
+
+  // Navigation buttons
+  const renderNavigationButtons = () => (
+    <div className="flex justify-between mt-6">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={goToPreviousSection}
+        disabled={currentSection === 0}
+      >
+        Previous
+      </Button>
+      
+      {currentSection < FORM_SECTIONS.length - 1 ? (
+        <Button
+          type="button"
+          onClick={goToNextSection}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          Next
+        </Button>
+      ) : (
+        <Button 
+          type="submit" 
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+          disabled={isLoading}
+        >
+          {isLoading ? "Generating Report..." : "Generate College Report"}
+        </Button>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="w-full max-w-3xl mx-auto">
+      {!result ? (
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <ProgressIndicator />
+          {renderSection()}
+          {renderNavigationButtons()}
         </form>
       ) : (
         <div className="bg-white shadow-md rounded-lg p-6">
@@ -320,6 +443,8 @@ export function StudentProfileForm() {
               onClick={() => {
                 setResult(null);
                 setSubmittedData(null);
+                setCurrentSection(0);
+                setCompletedSections([]);
               }}
               variant="outline"
             >
