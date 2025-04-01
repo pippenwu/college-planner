@@ -293,6 +293,9 @@ export function StudentProfileForm() {
                 return (
                   <FormItem>
                     <FieldLabel required>Intended Major(s)</FieldLabel>
+                    <FormDescription className="text-gray-500 text-sm">
+                      You can list multiple majors. If not yet decided, you may put "Undecided."
+                    </FormDescription>
                     <FormControl>
                       <Input 
                         placeholder="Computer Science, Business Analytics" 
@@ -303,9 +306,6 @@ export function StudentProfileForm() {
                         ref={field.ref}
                       />
                     </FormControl>
-                    <FormDescription className="text-gray-500 text-sm mt-1">
-                      You can list multiple majors. If not yet decided, you may put "Undecided."
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 );
@@ -319,6 +319,9 @@ export function StudentProfileForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>College List</FormLabel>
+                  <FormDescription className="text-gray-500 text-sm">
+                    Colleges you intend to apply to. If you do not have an idea yet, you may leave this list blank.
+                  </FormDescription>
                   <FormControl>
                     <Textarea 
                       placeholder="Stanford, MIT, UC Berkeley, NYU, University of Michigan"
@@ -326,9 +329,6 @@ export function StudentProfileForm() {
                       {...field} 
                     />
                   </FormControl>
-                  <FormDescription className="text-gray-500 text-sm mt-1">
-                    Colleges you intend to apply to. If you do not have an idea yet, you may leave this list blank.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -341,7 +341,7 @@ export function StudentProfileForm() {
           <div className="space-y-6">
             <div className="space-y-3">
               <div className="flex justify-between items-center mb-2">
-                <h3 className="text-lg font-medium">Test Scores</h3>
+                <FormLabel className="text-base">Test Scores</FormLabel>
                 <Button
                   type="button"
                   variant="outline"
@@ -358,7 +358,7 @@ export function StudentProfileForm() {
                 </Button>
               </div>
               
-              <FormDescription className="text-gray-500 text-sm">
+              <FormDescription className="text-gray-500 text-sm mb-2">
                 Enter scores for tests you've taken. For AP or IB exams, include the subject (e.g., "Calculus BC: 5").
               </FormDescription>
               
@@ -462,7 +462,10 @@ export function StudentProfileForm() {
               name="courseHistory"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Course History</FormLabel>
+                  <FormLabel className="text-base">Course History</FormLabel>
+                  <FormDescription className="text-gray-500 text-sm mb-2">
+                    List courses you've taken with grades if available (include AP scores if applicable)
+                  </FormDescription>
                   <FormControl>
                     <Textarea
                       placeholder="AP Calculus BC (A+), AP Biology (A), AP Computer Science (A), Honors Chemistry (A-), Spanish III (B+)"
@@ -470,9 +473,6 @@ export function StudentProfileForm() {
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>
-                    List courses you've taken with grades if available (include AP scores if applicable)
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -483,15 +483,69 @@ export function StudentProfileForm() {
       case "activities":
         return (
           <div className="space-y-6">
-            {form.watch("activities")?.map((_, index) => (
-              <div key={index} className="space-y-4 p-4 border rounded-lg">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-medium">Activity {index + 1}</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center mb-2">
+                <FormLabel className="text-base">Activities</FormLabel>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const currentActivities = form.getValues("activities");
+                    form.setValue("activities", [
+                      ...currentActivities,
+                      { name: "", notes: "" }
+                    ]);
+                  }}
+                >
+                  Add Activity
+                </Button>
+              </div>
+              
+              <FormDescription className="text-gray-500 text-sm mb-2">
+                Enter your extracurricular activities, leadership roles, work experience, and other involvements.
+              </FormDescription>
+              
+              {form.watch("activities")?.map((_, index) => (
+                <div key={index} className="flex items-center gap-3 p-2 border rounded-lg">
+                  <div className="flex-1">
+                    <FormField
+                      control={form.control}
+                      name={`activities.${index}.name`}
+                      render={({ field }) => (
+                        <FormItem className="mb-0">
+                          <FormControl>
+                            <Input placeholder="Activity name (e.g., Debate Team, Volunteer Work)" {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <div className="flex-3">
+                    <FormField
+                      control={form.control}
+                      name={`activities.${index}.notes`}
+                      render={({ field }) => (
+                        <FormItem className="mb-0">
+                          <FormControl>
+                            <Input 
+                              placeholder="Details (e.g., President, 3 years, 5 hrs/week, achievements)" 
+                              {...field} 
+                              className="w-full"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
                   {index > 0 && (
                     <Button
                       type="button"
-                      variant="destructive"
+                      variant="ghost"
                       size="sm"
+                      className="px-2"
                       onClick={() => {
                         const currentActivities = form.getValues("activities");
                         form.setValue(
@@ -500,58 +554,12 @@ export function StudentProfileForm() {
                         );
                       }}
                     >
-                      Remove
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 hover:text-red-500"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                     </Button>
                   )}
                 </div>
-
-                <FormField
-                  control={form.control}
-                  name={`activities.${index}.name`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Activity Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Debate Team" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name={`activities.${index}.notes`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Activity Details</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="President, 5 hours/week, 4 years. Won regional championship, organized fundraiser for local shelter."
-                          className="min-h-[100px]"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            ))}
-
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                const currentActivities = form.getValues("activities");
-                form.setValue("activities", [
-                  ...currentActivities,
-                  { name: "", notes: "" }
-                ]);
-              }}
-            >
-              Add Another Activity
-            </Button>
+              ))}
+            </div>
           </div>
         );
 
