@@ -1,11 +1,8 @@
-import { BarChart4, CalendarDays, CheckSquare } from 'lucide-react';
+import { ChevronDown, ChevronUp, Download, RotateCcw } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { generatePDF } from '../utils/pdfUtils';
-import NextStepsSection from './NextStepsSection';
-import OverviewSection from './OverviewSection';
-import { TimelineView } from './TimelineView';
+import { EnhancedTimelineView } from './EnhancedTimelineView';
 import { Button } from './ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 interface ReportDisplayProps {
   report: string;
@@ -21,9 +18,9 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   onStartOver 
 }) => {
   const [overview, setOverview] = useState<string>('');
-  const [nextSteps, setNextSteps] = useState<string>('');
+  const [nextSteps, setNextSteps] = useState<string[]>([]);
   const [timelineData, setTimelineData] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<string>('overview');
+  const [showNextSteps, setShowNextSteps] = useState(false);
 
   useEffect(() => {
     if (report) {
@@ -40,13 +37,22 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
       // Extract overview
       const overviewSection = doc.getElementById('overview');
       if (overviewSection) {
-        setOverview(overviewSection.innerHTML);
+        // Get the content excluding the heading
+        const content = overviewSection.innerHTML.replace(/<h2>.*?<\/h2>/i, '').trim();
+        setOverview(content);
       }
       
       // Extract next steps
       const nextStepsSection = doc.getElementById('next-steps');
       if (nextStepsSection) {
-        setNextSteps(nextStepsSection.innerHTML);
+        // Extract list items
+        const listItems = nextStepsSection.querySelectorAll('li');
+        const steps = Array.from(listItems).map(item => {
+          return item.innerHTML
+            .replace(/<strong>(.*?)<\/strong>:/, '<strong>$1:</strong> ') // Add space after the colon
+            .trim();
+        });
+        setNextSteps(steps);
       }
       
       // Extract timeline data
@@ -76,79 +82,69 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   };
 
   return (
-    <div className="report-display">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-center mb-2">
-          Your College Application Plan
-        </h2>
-        <p className="text-center text-gray-600 mb-6">
-          Review your personalized plan and start taking action on the recommended steps.
-        </p>
+    <div className="report-display space-y-8">
+      {/* Overview Section - Concise */}
+      <section className="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-semibold text-gray-800">Overview</h2>
+        </div>
         
-        <Tabs 
-          defaultValue="overview" 
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="w-full"
-        >
-          <TabsList className="grid grid-cols-3 mb-8">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
-              <BarChart4 className="h-4 w-4" />
-              <span>Overview</span>
-            </TabsTrigger>
-            <TabsTrigger value="plan" className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4" />
-              <span>Timeline</span>
-            </TabsTrigger>
-            <TabsTrigger value="next-steps" className="flex items-center gap-2">
-              <CheckSquare className="h-4 w-4" />
-              <span>Next Steps</span>
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="overview" className="mt-0">
-            <OverviewSection 
-              content={overview} 
-              studentName={studentName}
-              studentGrade={studentGrade}
-            />
-          </TabsContent>
-          
-          <TabsContent value="plan" className="mt-0">
-            {timelineData ? (
-              <TimelineView timelineData={timelineData} />
-            ) : (
-              <div className="bg-white rounded-lg p-6 shadow-md text-center">
-                <p className="text-gray-500 mb-4">
-                  Timeline data could not be loaded properly.
-                </p>
-                <div 
-                  className="prose max-w-none" 
-                  dangerouslySetInnerHTML={{ 
-                    __html: document.getElementById('timeline')?.innerHTML || '' 
-                  }} 
-                />
-              </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="next-steps" className="mt-0">
-            <NextStepsSection content={nextSteps} />
-          </TabsContent>
-        </Tabs>
-      </div>
+        <div className="mt-3 prose prose-sm max-w-none text-gray-600" dangerouslySetInnerHTML={{ __html: overview }} />
+      </section>
       
-      <div className="flex justify-between mt-8">
+      {/* Timeline Section - Main Focus */}
+      <section className="relative">
+        <h2 className="text-lg font-semibold text-gray-800 mb-3">Your College Application Timeline</h2>
+        {timelineData ? (
+          <EnhancedTimelineView timelineData={timelineData} />
+        ) : (
+          <div className="bg-white rounded-lg p-6 shadow-md text-center">
+            <p className="text-gray-500">
+              Timeline data could not be loaded properly.
+            </p>
+          </div>
+        )}
+      </section>
+      
+      {/* Next Steps Section - Simple List */}
+      <section className="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+        <button 
+          className="w-full flex justify-between items-center text-left" 
+          onClick={() => setShowNextSteps(!showNextSteps)}
+        >
+          <h2 className="text-lg font-semibold text-gray-800">Immediate Next Steps</h2>
+          {showNextSteps ? (
+            <ChevronUp className="h-5 w-5 text-gray-500" />
+          ) : (
+            <ChevronDown className="h-5 w-5 text-gray-500" />
+          )}
+        </button>
+        
+        {showNextSteps && (
+          <ul className="mt-4 space-y-3 list-disc pl-5">
+            {nextSteps.map((step, index) => (
+              <li key={index} className="text-gray-700" dangerouslySetInnerHTML={{ __html: step }} />
+            ))}
+          </ul>
+        )}
+      </section>
+      
+      {/* Action Buttons */}
+      <div className="flex justify-between mt-6">
         <Button 
           variant="outline" 
           onClick={onStartOver}
+          className="flex items-center gap-2"
         >
+          <RotateCcw className="h-4 w-4" />
           Start Over
         </Button>
         <Button 
           onClick={handlePDFDownload}
+          className="flex items-center gap-2"
         >
-          Download Report (PDF)
+          <Download className="h-4 w-4" />
+          Download Plan (PDF)
         </Button>
       </div>
     </div>

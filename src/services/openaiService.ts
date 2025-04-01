@@ -3,11 +3,11 @@
 // but the free tier is generous (up to 60 requests per minute)
 
 // Define the StudentProfile type to match our form schema exactly
-export interface StudentProfile {
+interface StudentProfile {
   // Student Information
   studentName?: string;
   highSchool?: string;
-  currentGrade?: "<9th" | "9th" | "10th" | "11th" | "12th";
+  currentGrade?: string;
 
   // Intended Major and College List
   intendedMajors?: string;
@@ -17,10 +17,10 @@ export interface StudentProfile {
   preferredPrestige?: "T20" | "T50" | "T100" | "Any";
 
   // Academics & Standardized Testing
-  satScore?: string;
-  actScore?: string;
-  toeflScore?: string;
-  ieltsScore?: string;
+  testScores?: Array<{
+    testName?: string;
+    score?: string;
+  }>;
   apScores?: Array<{
     subject?: string;
     score?: number;
@@ -33,13 +33,14 @@ export interface StudentProfile {
   // Extracurricular Activities
   activities?: Array<{
     name?: string;
-    position?: string;
-    timeInvolved?: string;
     notes?: string;
   }>;
 
   // Additional Information
   additionalInfo?: string;
+
+  // New course history field
+  courseHistory?: string;
 }
 
 // Get Gemini API key from environment variables
@@ -110,160 +111,101 @@ export async function generateCollegeReport(profile: StudentProfile): Promise<st
 
 // Construct a prompt for the AI based on the student's profile
 function constructPrompt(profile: StudentProfile): string {
-  const {
-    studentName,
-    highSchool,
-    currentGrade,
-    intendedMajors,
-    collegeList,
-    preferredLocation,
-    preferredSize,
-    preferredPrestige,
-    satScore,
-    actScore,
-    toeflScore,
-    ieltsScore,
-    apScores,
-    courses,
-    activities,
-    additionalInfo
-  } = profile;
-
-  // Format standardized test scores
-  const testScores = [
-    satScore ? `SAT: ${satScore}` : null,
-    actScore ? `ACT: ${actScore}` : null,
-    toeflScore ? `TOEFL: ${toeflScore}` : null,
-    ieltsScore ? `IELTS: ${ieltsScore}` : null
-  ].filter(Boolean).join(", ");
-
-  // Format AP scores
-  const formattedAPScores = apScores && apScores.length > 0
-    ? apScores
-      .filter(ap => ap.subject)
-      .map(ap => `${ap.subject}: ${ap.score || "N/A"}`)
-      .join(", ")
-    : "None provided";
-
-  // Format course history
-  const formattedCourses = courses && courses.length > 0
-    ? courses
-      .filter(course => course.name)
-      .map(course => `${course.name}: ${course.grade || "N/A"}`)
-      .join("; ")
-    : "None provided";
-
-  // Format activities
-  const formattedActivities = activities && activities.length > 0
-    ? activities
-      .filter(activity => activity.name)
-      .map(activity => {
-        let result = activity.name || "";
-        if (activity.position) result += `, Position: ${activity.position}`;
-        if (activity.timeInvolved) result += `, Time: ${activity.timeInvolved}`;
-        if (activity.notes) result += `, Notes: ${activity.notes}`;
-        return result;
-      })
-      .join("\n- ")
-    : "None provided";
-
-  // Get the country from the high school name if possible
-  const possibleCountry = highSchool && (
-    highSchool.toLowerCase().includes("taiwan") ? "Taiwan" :
-    highSchool.toLowerCase().includes("china") ? "China" :
-    highSchool.toLowerCase().includes("korea") ? "South Korea" :
-    highSchool.toLowerCase().includes("japan") ? "Japan" :
-    highSchool.toLowerCase().includes("india") ? "India" :
-    "the United States"
-  );
-
+  const studentName = profile.studentName || "the student";
+  const currentGrade = profile.currentGrade || "current grade";
+  const highSchool = profile.highSchool || "their high school";
+  
+  // Format test scores
+  const testScoreText = profile.testScores && profile.testScores.length > 0
+    ? profile.testScores
+        .filter(test => test.testName)
+        .map(test => {
+          const { testName, score } = test;
+          if (score) {
+            return `${testName}: ${score}`;
+          } else if (score === "Not taken yet") {
+            return `${testName}: Not taken yet`;
+          } else if (score === "Test optional") {
+            return `${testName}: Test optional`;
+          }
+          return null;
+        })
+        .filter(Boolean)
+        .join('\n')
+    : '';
+  
   return `
-Generate a comprehensive college application plan for a high school student with the following profile:
+You are acting as a highly experienced, data-driven college counselor with 20+ years of experience helping students get into top universities. You are known for being specific, straightforward, and evidence-based in your recommendations. You use real admission statistics, reference specific programs and competitions, and set concrete targets for your students.
 
-STUDENT PROFILE:
-- Name: ${studentName || "Not provided"}
-- High School: ${highSchool || "Not provided"}
-- Current Grade: ${currentGrade || "Not provided"}
-- Intended Major(s): ${intendedMajors || "Not provided"}
-- Preferred College Location: ${preferredLocation || "Not provided"}
-- Preferred College Size: ${preferredSize || "Not provided"}
-- Preferred College Prestige: ${preferredPrestige || "Not provided"}
-- Test Scores: ${testScores || "None provided"}
-- AP Scores: ${formattedAPScores}
-- Course History: ${formattedCourses}
-- College List (if provided): ${collegeList || "None provided"}
-- Extracurricular Activities: ${formattedActivities.replace(/\n/g, " ")}
-- Additional Information: ${additionalInfo || "None provided"}
-
-Based on this profile, create a structured college application plan with the following three clearly defined sections:
+Please create a comprehensive college application plan for ${studentName}, who is in ${currentGrade} at ${highSchool}. Format your response in HTML with the following structure:
 
 <section id="overview">
 <h2>OVERVIEW</h2>
-<p>Provide a thorough assessment of the student's current academic and extracurricular standing. Analyze their strengths and areas for improvement. Consider their current grade level and how much time they have before college applications. Assess how their current profile aligns with their potential college and career goals. If they've specified target schools or majors, evaluate their current competitiveness for those options.</p>
+Write a concise assessment (under 80 words) of the student's current academic profile based on the information provided. Be direct about their competitiveness for their target schools, using specific data points for context. Don't sugarcoat if their profile doesn't align with their ambitions.
 </section>
 
 <section id="timeline">
 <h2>PLAN</h2>
-<p>Create a detailed timeline from the student's current grade through senior year (12th grade). For each period, provide specific, actionable recommendations with real deadlines and details.</p>
+Create a detailed semester-by-semester timeline with specific, measurable targets. Include:
+- Exact GPA targets (e.g., "Maintain 3.9+ unweighted GPA" not just "maintain good grades")
+- Specific standardized test score ranges based on target school averages
+- Named competitions, programs, or activities relevant to their interests with application deadlines
+- Cite actual admission statistics from Common Data Sets when making recommendations
 
 <div class="timeline-data">
 [
   {
-    "period": "Current Semester (${currentGrade || 'Current Grade'})",
+    "period": "Current Semester (${currentGrade})",
     "events": [
       {
-        "title": "Event 1 Title",
-        "category": "academics",
-        "description": "Detailed description of what to do",
-        "deadline": "Specific deadline or date range",
-        "url": "Website URL if applicable"
+        "title": "Task title with specific metrics",
+        "category": "academics|testing|extracurricular|college-prep|internship",
+        "description": "Detailed explanation with concrete targets and referenced data",
+        "deadline": "When this should be completed",
+        "url": "Link to relevant resource or program"
       },
-      {
-        "title": "Event 2 Title",
-        "category": "testing",
-        "description": "Detailed description of what to do",
-        "deadline": "Specific deadline or date range",
-        "url": "Website URL if applicable"
-      }
-      // Add 3-5 more events
+      {...more events...}
     ]
   },
   {
-    "period": "Summer ${new Date().getFullYear()}",
-    "events": [
-      // Include 4-6 specific summer events with full details
-    ]
+    "period": "Summer 2024",
+    "events": [...]
   },
-  {
-    "period": "Fall Semester",
-    "events": [
-      // Include 4-6 specific events for next fall
-    ]
-  },
-  // Continue with more periods: Spring, Summer, etc. until graduation
+  {...more periods...}
 ]
 </div>
-
-<p>Include guidance on course selection, standardized test dates, specific summer programs with application deadlines, extracurricular development, college visits, and application milestones.</p>
-
-<p>Note that the student appears to be from ${possibleCountry} based on their high school, and tailor recommendations accordingly, including country-specific information.</p>
 </section>
 
 <section id="next-steps">
 <h2>NEXT STEPS</h2>
-<ul>
-<!-- List 5-7 specific, actionable steps with details -->
-<li><strong>Step 1:</strong> Specific action with deadline and details</li>
-<li><strong>Step 2:</strong> Specific action with deadline and details</li>
-<li><strong>Step 3:</strong> Specific action with deadline and details</li>
-<li><strong>Step 4:</strong> Specific action with deadline and details</li>
-<li><strong>Step 5:</strong> Specific action with deadline and details</li>
-</ul>
+List 3-5 immediate, specific action items with concrete metrics where applicable (e.g., "Register for SAT and aim for 1500+" not just "study for standardized tests").
 </section>
 
-For the PLAN section, ensure that the JSON data in the timeline-data div is valid and complete, as it will be parsed and used to create an interactive timeline visualization. Each event must include all the fields shown in the example (title, category, description, deadline, url). Use the following categories consistently: academics, testing, extracurricular, application, college-prep, campus-visit.
+Use the following information to create your plan:
 
-Present the overall report in proper HTML format with clear sections and proper HTML tags.`;
+${profile.intendedMajors ? `Intended Majors: ${profile.intendedMajors}` : ''}
+${profile.collegeList ? `Colleges of Interest: ${profile.collegeList}` : ''}
+${testScoreText ? `Test Scores:\n${testScoreText}` : ''}
+${profile.courseHistory ? `Course History: ${profile.courseHistory}` : ''}
+
+${profile.activities && profile.activities.length > 0 ? 
+  `Extracurricular Activities:
+${profile.activities.map(activity => 
+  `- ${activity.name}${activity.notes ? `: ${activity.notes}` : ''}`
+).join('\n')}` : ''}
+
+${profile.additionalInfo ? `Additional Information: ${profile.additionalInfo}` : ''}
+
+Be brutally honest in your assessment. If the student's profile is not competitive for their target schools, say so directly and recommend more realistic options. Reference specific statistics such as:
+- Actual middle 50% GPA/SAT/ACT ranges for target schools
+- Specific EC achievements of successful applicants
+- Admission rates for different majors at target schools
+- Case studies of similar students, both successful and unsuccessful
+
+When recommending extracurriculars, suggest specific named competitions (e.g., "Intel ISEF," "USACO Gold Division," "DECA Internationals") rather than generic activities.
+
+Ensure the JSON in the timeline-data section is valid and complete. Each event must include concrete, measurable goals tied to admission data.
+`;
 }
 
 // Generate a fallback report if the API call fails

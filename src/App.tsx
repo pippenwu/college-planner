@@ -78,7 +78,6 @@ function App() {
       
       <footer className="max-w-3xl mx-auto mt-16 text-center text-gray-500 text-sm">
         <p>© {new Date().getFullYear()} College Application Planner. All rights reserved.</p>
-        <p className="mt-1">AI-powered college counseling for affordable, personalized advice.</p>
       </footer>
     </div>
   );
