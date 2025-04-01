@@ -3,8 +3,8 @@ import { Check } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { generateCollegeReport, type StudentProfile } from "../services/openaiService";
-import { generatePDF } from "../utils/pdfUtils";
+import { generateCollegeReport } from "../services/openaiService";
+import ReportDisplay from "./ReportDisplay";
 import { Button } from "./ui/button";
 import {
   Form,
@@ -35,31 +35,19 @@ const formSchema = z.object({
   // Intended Major and College List
   intendedMajors: z.string().optional(),
   collegeList: z.string().optional(),
-  preferredLocation: z.enum(["Northeast", "Southeast", "Midwest", "West", "Any"]).optional(),
-  preferredSize: z.enum(["Small (<5000)", "Medium (5000-15000)", "Large (>15000)", "Any"]).optional(),
-  preferredPrestige: z.enum(["T20", "T50", "T100", "Any"]).optional(),
 
-  // Academics & Standardized Testing
+  // Academics & Testing
   satScore: z.string().optional(),
   actScore: z.string().optional(),
   toeflScore: z.string().optional(),
   ieltsScore: z.string().optional(),
-  apScores: z.array(z.object({
-    subject: z.string().optional(),
-    score: z.number().min(1).max(5).optional().default(5)
-  })).optional(),
-  courses: z.array(z.object({
-    name: z.string().optional(),
-    grade: z.string().optional()
-  })).optional(),
+  courseHistory: z.string().optional(),
 
   // Extracurricular Activities
   activities: z.array(z.object({
     name: z.string().optional(),
-    position: z.string().optional(),
-    timeInvolved: z.string().optional(),
     notes: z.string().optional()
-  })).optional().default([{ name: "", position: "", timeInvolved: "", notes: "" }]),
+  })).optional().default([{ name: "", notes: "" }]),
 
   // Additional Information
   additionalInfo: z.string().optional(),
@@ -72,27 +60,27 @@ type FormValues = z.infer<typeof formSchema>;
 const FORM_SECTIONS = [
   {
     id: "student-info",
-    title: "Student Information",
-    description: "Basic information about you",
+    title: "Basic Info",
+    description: "Tell us about yourself",
   },
   {
-    id: "college-preferences",
-    title: "Intended Major and College List",
-    description: "Your academic interests and college preferences",
+    id: "majors-colleges",
+    title: "Majors & Colleges",
+    description: "Your academic interests and colleges",
   },
   {
     id: "academics",
-    title: "Academics & Standardized Testing",
-    description: "Your academic performance and test scores",
+    title: "Academics",
+    description: "Your scores and coursework",
   },
   {
-    id: "extracurriculars",
-    title: "Extracurricular Activities",
-    description: "Your activities, awards, and honors",
+    id: "activities",
+    title: "Activities",
+    description: "Your extracurricular activities",
   },
   {
     id: "additional",
-    title: "Additional Information",
+    title: "More Info",
     description: "Any other relevant information",
   },
 ];
@@ -115,16 +103,12 @@ export function StudentProfileForm() {
       highSchool: "",
       intendedMajors: "",
       collegeList: "",
-      preferredLocation: undefined,
-      preferredSize: undefined,
-      preferredPrestige: undefined,
       satScore: "",
       actScore: "",
       toeflScore: "",
       ieltsScore: "",
-      activities: [{ name: "", position: "", timeInvolved: "", notes: "" }],
-      courses: [{ name: "", grade: "" }],
-      apScores: [{ subject: "", score: 5 }],
+      courseHistory: "",
+      activities: [{ name: "", notes: "" }],
       additionalInfo: "",
     },
   });
@@ -232,7 +216,7 @@ export function StudentProfileForm() {
                     <FormLabel>Full Name</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="Enter your full name" 
+                        placeholder="John Smith" 
                         value={field.value} 
                         onChange={handleChange}
                         onBlur={field.onBlur}
@@ -254,7 +238,7 @@ export function StudentProfileForm() {
                 <FormItem>
                   <FormLabel>Current High School</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your high school name" {...field} />
+                    <Input placeholder="Westlake High School" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -292,9 +276,9 @@ export function StudentProfileForm() {
           </div>
         );
 
-      case "college-preferences":
+      case "majors-colleges":
         return (
-          <div className="space-y-6" key="college-preferences-section">
+          <div className="space-y-6" key="majors-colleges-section">
             <FormField
               key="intendedMajors-field"
               control={form.control}
@@ -309,7 +293,7 @@ export function StudentProfileForm() {
                     <FormLabel>Intended Major(s)</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="e.g., Computer Science, Business, Engineering" 
+                        placeholder="Computer Science, Business Analytics" 
                         value={field.value} 
                         onChange={handleChange}
                         onBlur={field.onBlur}
@@ -332,99 +316,14 @@ export function StudentProfileForm() {
               name="collegeList"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>College List (Optional)</FormLabel>
+                  <FormLabel>College List</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="List the colleges you're considering applying to..."
+                      placeholder="Stanford, MIT, UC Berkeley, NYU, University of Michigan"
                       className="min-h-[100px]"
                       {...field} 
                     />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              key="preferredLocation-field"
-              control={form.control}
-              name="preferredLocation"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Preferred College Location</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select preferred location" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-white">
-                      <SelectItem value="Northeast">Northeast</SelectItem>
-                      <SelectItem value="Southeast">Southeast</SelectItem>
-                      <SelectItem value="Midwest">Midwest</SelectItem>
-                      <SelectItem value="West">West</SelectItem>
-                      <SelectItem value="Any">Any Location</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              key="preferredSize-field"
-              control={form.control}
-              name="preferredSize"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Preferred College Size</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select preferred size" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-white">
-                      <SelectItem value="Small (<5000)">Small (&lt;5000 students)</SelectItem>
-                      <SelectItem value="Medium (5000-15000)">Medium (5000-15000 students)</SelectItem>
-                      <SelectItem value="Large (>15000)">Large (&gt;15000 students)</SelectItem>
-                      <SelectItem value="Any">Any Size</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              key="preferredPrestige-field"
-              control={form.control}
-              name="preferredPrestige"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Preferred College Prestige</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select preferred prestige" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-white">
-                      <SelectItem value="T20">Top 20</SelectItem>
-                      <SelectItem value="T50">Top 50</SelectItem>
-                      <SelectItem value="T100">Top 100</SelectItem>
-                      <SelectItem value="Any">Any Ranking</SelectItem>
-                    </SelectContent>
-                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -441,9 +340,9 @@ export function StudentProfileForm() {
                 name="satScore"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>SAT Score (Optional)</FormLabel>
+                    <FormLabel>SAT Score</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your SAT score" {...field} />
+                      <Input placeholder="1480" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -455,9 +354,9 @@ export function StudentProfileForm() {
                 name="actScore"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>ACT Score (Optional)</FormLabel>
+                    <FormLabel>ACT Score</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your ACT score" {...field} />
+                      <Input placeholder="32" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -471,9 +370,9 @@ export function StudentProfileForm() {
                 name="toeflScore"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>TOEFL Score (Optional)</FormLabel>
+                    <FormLabel>TOEFL Score</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your TOEFL score" {...field} />
+                      <Input placeholder="105" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -485,9 +384,9 @@ export function StudentProfileForm() {
                 name="ieltsScore"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>IELTS Score (Optional)</FormLabel>
+                    <FormLabel>IELTS Score</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your IELTS score" {...field} />
+                      <Input placeholder="7.5" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -495,120 +394,30 @@ export function StudentProfileForm() {
               />
             </div>
 
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium">AP Scores</h3>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const currentScores = form.getValues("apScores") || [];
-                    form.setValue("apScores", [
-                      ...currentScores,
-                      { subject: "", score: 5 }
-                    ]);
-                  }}
-                >
-                  Add AP Score
-                </Button>
-              </div>
-              {form.watch("apScores")?.map((_, index) => (
-                <div key={index} className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name={`apScores.${index}.subject`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Subject</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Calculus BC" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`apScores.${index}.score`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Score (1-5)</FormLabel>
-                        <Select onValueChange={(value) => field.onChange(Number(value))} defaultValue={field.value?.toString()}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select score" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-white">
-                            {[1, 2, 3, 4, 5].map((score) => (
-                              <SelectItem key={score} value={score.toString()}>
-                                {score}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              ))}
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium">Course History</h3>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const currentCourses = form.getValues("courses") || [];
-                    form.setValue("courses", [
-                      ...currentCourses,
-                      { name: "", grade: "" }
-                    ]);
-                  }}
-                >
-                  Add Course
-                </Button>
-              </div>
-              {form.watch("courses")?.map((_, index) => (
-                <div key={index} className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name={`courses.${index}.name`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Course Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., AP Calculus BC" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`courses.${index}.grade`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Grade</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., A+" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              ))}
-            </div>
+            <FormField
+              control={form.control}
+              name="courseHistory"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Course History</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="AP Calculus BC (A+), AP Biology (A), AP Computer Science (A), Honors Chemistry (A-), Spanish III (B+)"
+                      className="min-h-[150px]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    List courses you've taken with grades if available (include AP scores if applicable)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
         );
 
-      case "extracurriculars":
+      case "activities":
         return (
           <div className="space-y-6">
             {form.watch("activities")?.map((_, index) => (
@@ -640,35 +449,7 @@ export function StudentProfileForm() {
                     <FormItem>
                       <FormLabel>Activity Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Debate Team Captain" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name={`activities.${index}.position`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Position (Optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Captain, President, Member" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name={`activities.${index}.timeInvolved`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Time Involved (Optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., 10 hours/week" {...field} />
+                        <Input placeholder="Debate Team" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -680,10 +461,10 @@ export function StudentProfileForm() {
                   name={`activities.${index}.notes`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Additional Notes (Optional)</FormLabel>
+                      <FormLabel>Activity Details</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Any additional context about this activity..."
+                          placeholder="President, 5 hours/week, 4 years. Won regional championship, organized fundraiser for local shelter."
                           className="min-h-[100px]"
                           {...field}
                         />
@@ -702,7 +483,7 @@ export function StudentProfileForm() {
                 const currentActivities = form.getValues("activities");
                 form.setValue("activities", [
                   ...currentActivities,
-                  { name: "", position: "", timeInvolved: "", notes: "" }
+                  { name: "", notes: "" }
                 ]);
               }}
             >
@@ -722,7 +503,7 @@ export function StudentProfileForm() {
                   <FormLabel>Additional Information</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Any other context or information you'd like to provide..."
+                      placeholder="I've been coding since age 12 and developed an app that has 5,000 users. I'm also a first-generation college student."
                       className="min-h-[200px]"
                       {...field}
                     />
@@ -771,50 +552,64 @@ export function StudentProfileForm() {
     </div>
   );
 
-  // If a report has been generated, show the report instead of the form
+  // If a report has been generated, show the report display component instead of the form
   if (result) {
     return (
-      <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-        <h2 className="text-2xl font-bold mb-4">Your College Application Plan</h2>
-        <div className="prose max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: result }}></div>
-        <div className="mt-8 flex justify-between">
-          <Button onClick={() => {
-            setResult(null);
-            setSubmittedData(null);
-            setCurrentSection(0);
-            setCompletedSections([]);
-          }}>
-            Start Over
-          </Button>
-          
-          <Button 
-            onClick={() => {
-              if (result) {
-                generatePDF(result, submittedData?.studentName || "Student");
-              }
-            }}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            Download Report as PDF
-          </Button>
-        </div>
-      </div>
+      <ReportDisplay 
+        report={result}
+        studentName={submittedData?.studentName}
+        studentGrade={submittedData?.currentGrade}
+        onStartOver={() => {
+          setResult(null);
+          setSubmittedData(null);
+          setCurrentSection(0);
+          setCompletedSections([]);
+        }}
+      />
     );
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
-      <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit, handleFormError)} className="space-y-8">
-            <ProgressIndicator />
-            <div key={`section-${FORM_SECTIONS[currentSection].id}`}>
-              {renderSection(FORM_SECTIONS[currentSection].id)}
-            </div>
-            {renderNavigationButtons()}
-          </form>
-        </Form>
-      </div>
+    <div className="w-full max-w-5xl mx-auto px-4">
+      {isLoading && (
+        <div className="mb-8 p-6 bg-blue-50 rounded-lg text-center">
+          <p className="text-lg font-semibold mb-4">Generating your college application plan...</p>
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: "100%" }}></div>
+          </div>
+        </div>
+      )}
+      
+      {result && !isLoading ? (
+        <ReportDisplay 
+          report={result} 
+          studentName={submittedData?.studentName}
+          studentGrade={submittedData?.currentGrade}
+          onStartOver={() => {
+            setResult(null);
+            setSubmittedData(null);
+            setCurrentSection(0);
+            setCompletedSections([]);
+          }}
+        />
+      ) : (
+        <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+          <p className="text-center text-gray-600 mb-6">
+            Fill in the form as detailed as possible, but you are free to leave anything blank if you wish. 
+            A more detailed form will result in a more tailored report.
+          </p>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit, handleFormError)} className="space-y-8">
+              <ProgressIndicator />
+              <div key={`section-${FORM_SECTIONS[currentSection].id}`}>
+                {renderSection(FORM_SECTIONS[currentSection].id)}
+              </div>
+              {renderNavigationButtons()}
+            </form>
+          </Form>
+        </div>
+      )}
     </div>
   );
 } 

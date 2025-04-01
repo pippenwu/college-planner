@@ -76,7 +76,7 @@ export async function generateCollegeReport(profile: StudentProfile): Promise<st
         ],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 2048,
+          maxOutputTokens: 4096, // Increased token limit for more detailed reports
           topP: 0.8,
           topK: 40
         }
@@ -94,7 +94,9 @@ export async function generateCollegeReport(profile: StudentProfile): Promise<st
     
     if (data.candidates && data.candidates.length > 0 && data.candidates[0].content?.parts?.length > 0) {
       const content = data.candidates[0].content.parts[0].text;
-      return content.replace(/\n/g, '<br />');
+      
+      // Don't replace newlines with <br> since we're now using proper HTML
+      return content;
     } else {
       console.error("Unexpected API response format:", data);
       return generateFallbackReport(profile);
@@ -165,6 +167,16 @@ function constructPrompt(profile: StudentProfile): string {
       .join("\n- ")
     : "None provided";
 
+  // Get the country from the high school name if possible
+  const possibleCountry = highSchool && (
+    highSchool.toLowerCase().includes("taiwan") ? "Taiwan" :
+    highSchool.toLowerCase().includes("china") ? "China" :
+    highSchool.toLowerCase().includes("korea") ? "South Korea" :
+    highSchool.toLowerCase().includes("japan") ? "Japan" :
+    highSchool.toLowerCase().includes("india") ? "India" :
+    "the United States"
+  );
+
   return `
 Generate a comprehensive college application plan for a high school student with the following profile:
 
@@ -180,59 +192,185 @@ STUDENT PROFILE:
 - AP Scores: ${formattedAPScores}
 - Course History: ${formattedCourses}
 - College List (if provided): ${collegeList || "None provided"}
+- Extracurricular Activities: ${formattedActivities.replace(/\n/g, " ")}
+- Additional Information: ${additionalInfo || "None provided"}
 
-EXTRACURRICULAR ACTIVITIES:
-- ${formattedActivities}
+Based on this profile, create a structured college application plan with the following three clearly defined sections:
 
-ADDITIONAL INFORMATION:
-${additionalInfo || "None provided"}
+<section id="overview">
+<h2>OVERVIEW</h2>
+<p>Provide a thorough assessment of the student's current academic and extracurricular standing. Analyze their strengths and areas for improvement. Consider their current grade level and how much time they have before college applications. Assess how their current profile aligns with their potential college and career goals. If they've specified target schools or majors, evaluate their current competitiveness for those options.</p>
+</section>
 
-Based on this profile, provide a detailed college application plan, including:
+<section id="timeline">
+<h2>PLAN</h2>
+<p>Create a detailed timeline from the student's current grade through senior year (12th grade). For each period, provide specific, actionable recommendations with real deadlines and details.</p>
 
-1. RECOMMENDED SCHOOLS (8-10 schools with a good mix of reach, target, and safety schools)
-   - For each school, explain why it would be a good fit for this student
+<div class="timeline-data">
+[
+  {
+    "period": "Current Semester (${currentGrade || 'Current Grade'})",
+    "events": [
+      {
+        "title": "Event 1 Title",
+        "category": "academics",
+        "description": "Detailed description of what to do",
+        "deadline": "Specific deadline or date range",
+        "url": "Website URL if applicable"
+      },
+      {
+        "title": "Event 2 Title",
+        "category": "testing",
+        "description": "Detailed description of what to do",
+        "deadline": "Specific deadline or date range",
+        "url": "Website URL if applicable"
+      }
+      // Add 3-5 more events
+    ]
+  },
+  {
+    "period": "Summer ${new Date().getFullYear()}",
+    "events": [
+      // Include 4-6 specific summer events with full details
+    ]
+  },
+  {
+    "period": "Fall Semester",
+    "events": [
+      // Include 4-6 specific events for next fall
+    ]
+  },
+  // Continue with more periods: Spring, Summer, etc. until graduation
+]
+</div>
 
-2. RECOMMENDED MAJORS
-   - List 3-5 potential majors aligned with the student's interests
-   - Explain why each would be a good fit
+<p>Include guidance on course selection, standardized test dates, specific summer programs with application deadlines, extracurricular development, college visits, and application milestones.</p>
 
-3. ESSAY THEME IDEAS
-   - Suggest 3-5 potential essay themes based on the student's experiences
-   - Provide specific angles on how to approach each theme
+<p>Note that the student appears to be from ${possibleCountry} based on their high school, and tailor recommendations accordingly, including country-specific information.</p>
+</section>
 
-4. SUMMER ACTIVITY SUGGESTIONS
-   - Recommend 3-5 activities to strengthen their application
-   - Explain how each connects to their intended major/career path
+<section id="next-steps">
+<h2>NEXT STEPS</h2>
+<ul>
+<!-- List 5-7 specific, actionable steps with details -->
+<li><strong>Step 1:</strong> Specific action with deadline and details</li>
+<li><strong>Step 2:</strong> Specific action with deadline and details</li>
+<li><strong>Step 3:</strong> Specific action with deadline and details</li>
+<li><strong>Step 4:</strong> Specific action with deadline and details</li>
+<li><strong>Step 5:</strong> Specific action with deadline and details</li>
+</ul>
+</section>
 
-5. APPLICATION STRATEGY
-   - Timeline for completing applications
-   - Tips for securing strong recommendation letters
-   - Strategies for highlighting strengths and addressing weaknesses
+For the PLAN section, ensure that the JSON data in the timeline-data div is valid and complete, as it will be parsed and used to create an interactive timeline visualization. Each event must include all the fields shown in the example (title, category, description, deadline, url). Use the following categories consistently: academics, testing, extracurricular, application, college-prep, campus-visit.
 
-Present the information in a well-organized format with headings and bullet points. Make all suggestions specific to the student's unique profile.`;
+Present the overall report in proper HTML format with clear sections and proper HTML tags.`;
 }
 
 // Generate a fallback report if the API call fails
 function generateFallbackReport(profile: StudentProfile): string {
+  const studentGrade = profile.currentGrade || "current";
+  const schoolName = profile.highSchool || "your school";
+  const interests = profile.intendedMajors || "your areas of interest";
+  
+  // Create a simple timeline data structure for the fallback report
+  const currentYear = new Date().getFullYear();
+  const fallbackTimelineData = [
+    {
+      "period": `Current Semester (${studentGrade})`,
+      "events": [
+        {
+          "title": "Focus on Academics",
+          "category": "academics",
+          "description": "Maintain or improve your GPA in core academic subjects.",
+          "deadline": "Ongoing",
+          "url": "https://www.khanacademy.org/"
+        },
+        {
+          "title": "Take Practice Tests",
+          "category": "testing",
+          "description": "Complete at least one practice SAT or ACT to establish your baseline score.",
+          "deadline": "Within 1 month",
+          "url": "https://www.collegeboard.org/"
+        },
+        {
+          "title": "Join a Club",
+          "category": "extracurricular",
+          "description": "Find and join at least one school club related to your interests.",
+          "deadline": "By end of semester",
+          "url": ""
+        }
+      ]
+    },
+    {
+      "period": `Summer ${currentYear}`,
+      "events": [
+        {
+          "title": "Summer Course",
+          "category": "academics",
+          "description": "Consider enrolling in a summer course at a local community college.",
+          "deadline": "Application usually due in spring",
+          "url": ""
+        },
+        {
+          "title": "Volunteer Work",
+          "category": "extracurricular",
+          "description": "Look for volunteer opportunities in your area of interest.",
+          "deadline": "Start searching 2 months before summer",
+          "url": "https://www.volunteermatch.org/"
+        }
+      ]
+    },
+    {
+      "period": `Fall ${currentYear}`,
+      "events": [
+        {
+          "title": "PSAT/NMSQT",
+          "category": "testing",
+          "description": "Take the PSAT/NMSQT which is typically offered in October.",
+          "deadline": "Registration usually in September",
+          "url": "https://www.collegeboard.org/psat-nmsqt"
+        },
+        {
+          "title": "College Research",
+          "category": "college-prep",
+          "description": "Begin researching colleges that offer strong programs in your areas of interest.",
+          "deadline": "Ongoing",
+          "url": "https://www.collegeboard.org/bigfuture"
+        }
+      ]
+    }
+  ];
+  
   return `
-<h2>College Application Plan</h2>
+<section id="overview">
+<h2>OVERVIEW</h2>
+<p>You are currently a ${studentGrade} student at ${schoolName}. Based on the information provided, you're interested in exploring ${interests}. At this stage, it's important to build a strong academic foundation while developing extracurricular activities that align with your interests.</p>
 
-<p><em>Note: This is a fallback report generated without AI assistance. For a complete personalized report, please try again later.</em></p>
+<p>Since this is a fallback report created without AI assistance, we're providing general guidance that would be valuable for most students. For more personalized advice, please try generating a full report again when the service is available.</p>
+</section>
 
-<h3>Initial Analysis</h3>
-<p>Based on your profile ${profile.currentGrade ? `as a ${profile.currentGrade} student` : ""} ${profile.highSchool ? `at ${profile.highSchool}` : ""} ${profile.intendedMajors ? `interested in ${profile.intendedMajors}` : ""}, here are some general recommendations:</p>
+<section id="timeline">
+<h2>PLAN</h2>
+<p>Here's a general timeline to help guide your college preparation journey:</p>
 
-<h3>Recommended Schools</h3>
-<p>Consider researching schools that match your preferences for ${profile.preferredLocation || "any"} location, ${profile.preferredSize || "any"} size, and ${profile.preferredPrestige || "any"} prestige level.</p>
+<div class="timeline-data">
+${JSON.stringify(fallbackTimelineData, null, 2)}
+</div>
 
-<h3>Next Steps</h3>
+<p>This timeline provides a starting point, but you should customize it based on your specific goals and circumstances.</p>
+</section>
+
+<section id="next-steps">
+<h2>NEXT STEPS</h2>
 <ul>
-  <li>Research colleges that offer strong programs in ${profile.intendedMajors || "your areas of interest"}</li>
-  <li>Prepare for standardized tests if you haven't already</li>
-  <li>Continue developing your extracurricular profile</li>
-  <li>Begin thinking about potential essay topics</li>
+  <li><strong>Meet with your school counselor:</strong> Schedule an appointment within the next two weeks to discuss your college plans and course selection.</li>
+  <li><strong>Create a study schedule:</strong> Develop a weekly study plan to maintain or improve your grades in all subjects.</li>
+  <li><strong>Research summer programs:</strong> Spend 1-2 hours looking into summer opportunities related to ${interests}.</li>
+  <li><strong>Take practice standardized tests:</strong> Complete at least one practice SAT or ACT to establish your baseline score.</li>
+  <li><strong>Join a relevant club or activity:</strong> Find and join at least one school club related to your interests.</li>
 </ul>
 
-<p>For more detailed guidance, please try generating a report again later, or consult with a college counselor.</p>
-`;
+<p>For more detailed guidance tailored to your specific situation, please try generating a report again later, or consult with a college counselor.</p>
+</section>
+  `;
 } 
