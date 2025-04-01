@@ -6,21 +6,6 @@ function App() {
       <header className="max-w-3xl mx-auto mb-8 text-center">
         <h1 className="text-3xl font-bold text-blue-600 mb-2">CollegeGPT - Updated</h1>
         <p className="text-gray-600">AI-Powered College Counseling Advice</p>
-        
-        {/* Test Element with Direct Style */}
-        <div style={{ backgroundColor: 'red', padding: '20px', marginTop: '20px', color: 'white', fontWeight: 'bold' }}>
-          This has direct styling
-        </div>
-        
-        {/* Test Element with Tailwind */}
-        <div className="bg-red-500 p-5 mt-5 text-white font-bold">
-          This has Tailwind styling
-        </div>
-        
-        {/* Test Element with Explicit CSS Class */}
-        <div className="force-red-background">
-          This has explicit CSS styling
-        </div>
       </header>
 
       <main>
