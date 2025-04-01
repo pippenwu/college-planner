@@ -54,11 +54,8 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4">
       <header className="max-w-3xl mx-auto mb-12 text-center">
-        <h1 className="text-4xl font-bold text-blue-600 mb-3">College Application Planner</h1>
-        <p className="text-gray-600 text-lg mb-8">Your comprehensive plan to get into your dream school</p>
-        
         {/* Animated success banner */}
-        <div className="relative h-12 overflow-hidden bg-blue-50 rounded-lg shadow-sm mb-6">
+        <div className="relative h-12 overflow-hidden bg-blue-50 rounded-lg shadow-sm">
           <div 
             className={`absolute w-full transition-all duration-700 ease-in-out ${
               isAnimating ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"

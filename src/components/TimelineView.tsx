@@ -1,4 +1,4 @@
-import { Book, Briefcase, Calendar, ChevronLeft, ChevronRight, FileText, Globe, GraduationCap, Trophy } from 'lucide-react';
+import { Book, Calendar, ChevronLeft, ChevronRight, FileText, Trophy } from 'lucide-react';
 import React, { useState } from 'react';
 
 export interface TimelineEvent {
@@ -53,16 +53,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ timelineData }) => {
     switch (category.toLowerCase()) {
       case 'academics':
         return <Book {...iconProps} />;
-      case 'testing':
-        return <FileText {...iconProps} />;
-      case 'extracurricular':
+      case 'extracurriculars':
         return <Trophy {...iconProps} />;
-      case 'internship':
-        return <Briefcase {...iconProps} />;
-      case 'college-prep':
-        return <GraduationCap {...iconProps} />;
-      case 'travel':
-        return <Globe {...iconProps} />;
+      case 'application':
+        return <FileText {...iconProps} />;
       default:
         return <Calendar {...iconProps} />;
     }
@@ -71,19 +65,13 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ timelineData }) => {
   const getCategoryColor = (category: string) => {
     switch (category.toLowerCase()) {
       case 'academics':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'testing':
-        return 'bg-purple-100 text-purple-800 border-purple-300';
-      case 'extracurricular':
-        return 'bg-green-100 text-green-800 border-green-300';
-      case 'internship':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'college-prep':
-        return 'bg-indigo-100 text-indigo-800 border-indigo-300';
-      case 'travel':
-        return 'bg-orange-100 text-orange-800 border-orange-300';
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'extracurriculars':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'application':
+        return 'bg-indigo-50 text-indigo-700 border-indigo-200';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
 
@@ -137,7 +125,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ timelineData }) => {
       {/* Events */}
       <div className="timeline-events mb-6">
         {activeEvents.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-3">
             {activeEvents.map((event, index) => (
               <div 
                 key={index}
@@ -153,13 +141,15 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ timelineData }) => {
                     {getCategoryIcon(event.category)}
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-semibold text-gray-800">{event.title}</h4>
-                    <div className="flex items-center text-sm text-gray-500 mt-1">
-                      <span className="mr-2">Deadline: {event.deadline}</span>
+                    <div className="flex justify-between">
+                      <h4 className="font-semibold text-gray-800">{event.title}</h4>
+                      <div className="text-sm text-gray-500">
+                        <span>Deadline: {event.deadline}</span>
+                      </div>
                     </div>
                     
                     {selectedEventIndex === index && (
-                      <div className="mt-3">
+                      <div className="mt-3 pt-2 border-t border-gray-100">
                         <p className="text-gray-600 text-sm mb-3">{event.description}</p>
                         {event.url && (
                           <a 
@@ -190,10 +180,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ timelineData }) => {
       <div className="category-legend mt-8 pt-4 border-t border-gray-200">
         <h4 className="text-sm font-medium text-gray-700 mb-2">Categories:</h4>
         <div className="flex flex-wrap gap-2">
-          {['academics', 'testing', 'extracurricular', 'college-prep', 'internship'].map((category) => (
+          {['academics', 'extracurriculars', 'application'].map((category) => (
             <div key={category} className="flex items-center">
               <div className={`w-3 h-3 rounded-full mr-1 ${getCategoryColor(category).split(' ')[0]}`}></div>
-              <span className="text-xs text-gray-600 capitalize">{category.replace('-', ' ')}</span>
+              <span className="text-xs text-gray-600 capitalize">{category}</span>
             </div>
           ))}
         </div>

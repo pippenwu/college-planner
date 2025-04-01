@@ -2,6 +2,7 @@ import { ChevronDown, ChevronUp, Download, RotateCcw } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { generatePDF } from '../utils/pdfUtils';
 import { EnhancedTimelineView } from './EnhancedTimelineView';
+import { TimelinePeriod } from './TimelineView';
 import { Button } from './ui/button';
 
 interface ReportDisplayProps {
@@ -18,8 +19,9 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   onStartOver 
 }) => {
   const [overview, setOverview] = useState<string>('');
-  const [nextSteps, setNextSteps] = useState<string[]>([]);
-  const [timelineData, setTimelineData] = useState<any>(null);
+  const [nextSteps, setNextSteps] = useState<string>('');
+  const [timelineData, setTimelineData] = useState<TimelinePeriod[] | null>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'plan' | 'next-steps'>('overview');
   const [showNextSteps, setShowNextSteps] = useState(false);
 
   useEffect(() => {
@@ -30,49 +32,122 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
 
   const parseReport = (htmlContent: string) => {
     try {
-      // Parse the report HTML to extract sections
       const parser = new DOMParser();
       const doc = parser.parseFromString(htmlContent, 'text/html');
       
-      // Extract overview
+      // Extract overview section
       const overviewSection = doc.getElementById('overview');
       if (overviewSection) {
-        // Get the content excluding the heading
-        const content = overviewSection.innerHTML.replace(/<h2>.*?<\/h2>/i, '').trim();
-        setOverview(content);
+        // Remove the heading
+        const heading = overviewSection.querySelector('h2');
+        if (heading) heading.remove();
+        
+        setOverview(overviewSection.innerHTML);
       }
       
-      // Extract next steps
+      // Extract next steps section
       const nextStepsSection = doc.getElementById('next-steps');
       if (nextStepsSection) {
-        // Extract list items
-        const listItems = nextStepsSection.querySelectorAll('li');
-        const steps = Array.from(listItems).map(item => {
-          return item.innerHTML
-            .replace(/<strong>(.*?)<\/strong>:/, '<strong>$1:</strong> ') // Add space after the colon
-            .trim();
-        });
-        setNextSteps(steps);
+        // Remove the heading
+        const heading = nextStepsSection.querySelector('h2');
+        if (heading) heading.remove();
+        
+        setNextSteps(nextStepsSection.innerHTML);
       }
       
       // Extract timeline data
       const timelineSection = doc.getElementById('timeline');
+      
       if (timelineSection) {
-        const timelineDataElement = timelineSection.querySelector('.timeline-data');
+        // Look for timeline data between the tags
+        const timelineMatch = timelineSection.innerHTML.match(/<timeline-data>([\s\S]*?)<\/timeline-data>/i);
         
-        if (timelineDataElement) {
+        if (timelineMatch && timelineMatch[1]) {
           try {
-            const timelineJSON = JSON.parse(timelineDataElement.textContent || '[]');
+            // Clean the JSON string before parsing
+            const jsonString = timelineMatch[1]
+              .trim()
+              .replace(/\\"/g, '"') // Fix escaped quotes
+              .replace(/(\r\n|\n|\r)/gm, "") // Remove newlines
+              .replace(/\s+/g, " "); // Normalize whitespace
+            
+            // Try to parse the cleaned JSON
+            const timelineJSON = JSON.parse(jsonString);
             setTimelineData(timelineJSON);
           } catch (err) {
             console.error('Failed to parse timeline data:', err);
-            setTimelineData(null);
+            // Fallback to default timeline
+            setTimelineData(getFallbackTimelineData());
           }
+        } else {
+          console.error('No timeline data found in the report');
+          setTimelineData(getFallbackTimelineData());
         }
       }
     } catch (error) {
       console.error('Error parsing report:', error);
+      setTimelineData(getFallbackTimelineData());
     }
+  };
+  
+  // Provide a simple fallback when parsing fails
+  const getFallbackTimelineData = () => {
+    const currentYear = new Date().getFullYear();
+    const nextYear = currentYear + 1;
+    
+    return [
+      {
+        "period": "Current Semester",
+        "events": [
+          {
+            "title": "Focus on Academics",
+            "category": "academics",
+            "description": "Maintain or improve your GPA in core academic subjects.",
+            "deadline": "Ongoing"
+          },
+          {
+            "title": "Standardized Test Prep",
+            "category": "academics",
+            "description": "Begin preparation for SAT or ACT by taking practice tests and identifying areas for improvement.",
+            "deadline": `${currentYear}-12-31`
+          }
+        ]
+      },
+      {
+        "period": `Spring ${currentYear}`,
+        "events": [
+          {
+            "title": "Join Extracurricular Activities",
+            "category": "extracurriculars",
+            "description": "Participate in clubs or activities aligned with your interests or intended major.",
+            "deadline": `${currentYear}-03-15`
+          },
+          {
+            "title": "Research Summer Programs",
+            "category": "extracurriculars",
+            "description": "Look for summer enrichment programs, internships, or volunteer opportunities.",
+            "deadline": `${currentYear}-04-30`
+          }
+        ]
+      },
+      {
+        "period": `Fall ${nextYear}`,
+        "events": [
+          {
+            "title": "Begin College Research",
+            "category": "application",
+            "description": "Start researching colleges that match your academic interests, location preferences, and other criteria.",
+            "deadline": `${nextYear}-09-30`
+          },
+          {
+            "title": "Plan College Visits",
+            "category": "application",
+            "description": "Schedule visits to college campuses you're interested in attending.",
+            "deadline": `${nextYear}-10-31`
+          }
+        ]
+      }
+    ];
   };
 
   const handlePDFDownload = () => {
@@ -121,11 +196,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         </button>
         
         {showNextSteps && (
-          <ul className="mt-4 space-y-3 list-disc pl-5">
-            {nextSteps.map((step, index) => (
-              <li key={index} className="text-gray-700" dangerouslySetInnerHTML={{ __html: step }} />
-            ))}
-          </ul>
+          <div className="mt-4 prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: nextSteps }} />
         )}
       </section>
       

@@ -146,34 +146,40 @@ Write a concise assessment (under 80 words) of the student's current academic pr
 
 <section id="timeline">
 <h2>PLAN</h2>
-Create a detailed semester-by-semester timeline with specific, measurable targets. Include:
-- Exact GPA targets (e.g., "Maintain 3.9+ unweighted GPA" not just "maintain good grades")
-- Specific standardized test score ranges based on target school averages
-- Named competitions, programs, or activities relevant to their interests with application deadlines
-- Cite actual admission statistics from Common Data Sets when making recommendations
+<TIMELINE>
+This section should provide a structured timeline for the student's college preparation journey, divided into logical periods (e.g., "Summer Before Junior Year", "Fall of Junior Year").
 
-<div class="timeline-data">
+For each period, include specific tasks, deadlines, and activities categorized as follows:
+- "academics": For GPA improvement, coursework, standardized tests (SAT/ACT/AP/IB/PSAT), and academic preparation
+- "extracurriculars": For competitions, awards, club activities, sports, internships, jobs, volunteering, projects, leadership roles, etc.
+- "application": For essays, recommendation letters, financial aid, scholarship applications, college visits, interviews, etc.
+
+IMPORTANT: The timeline must be formatted as valid JSON inside the timeline-data tags. Do not include any text explanations within these tags, only valid JSON array data. Ensure all quotes are properly escaped and all JSON syntax is correct.
+
+&lt;timeline-data&gt;
 [
   {
-    "period": "Current Semester (${currentGrade})",
+    "period": "Summer Before Junior Year",
     "events": [
       {
-        "title": "Task title with specific metrics",
-        "category": "academics|testing|extracurricular|college-prep|internship",
-        "description": "Detailed explanation with concrete targets and referenced data",
-        "deadline": "When this should be completed",
-        "url": "Link to relevant resource or program"
+        "title": "Begin SAT/ACT Preparation",
+        "category": "academics",
+        "description": "Start preparing for standardized tests by taking practice tests and identifying areas for improvement.",
+        "deadline": "August 31"
       },
-      {...more events...}
+      {
+        "title": "Research Potential Schools",
+        "category": "application",
+        "description": "Create an initial list of schools based on preferences, location, and academic programs.",
+        "deadline": "August 15"
+      }
     ]
-  },
-  {
-    "period": "Summer 2024",
-    "events": [...]
-  },
-  {...more periods...}
+  }
 ]
-</div>
+&lt;/timeline-data&gt;
+
+Each event must have: title, category (from the list above), description, and deadline fields. The category must be one of: "academics", "extracurriculars", or "application".
+</TIMELINE>
 </section>
 
 <section id="next-steps">

@@ -508,31 +508,17 @@ export function StudentProfileForm() {
               
               {form.watch("activities")?.map((_, index) => (
                 <div key={index} className="flex items-center gap-3 p-2 border rounded-lg">
-                  <div className="flex-1">
+                  <div className="w-1/4">
                     <FormField
                       control={form.control}
                       name={`activities.${index}.name`}
                       render={({ field }) => (
                         <FormItem className="mb-0">
                           <FormControl>
-                            <Input placeholder="Activity name (e.g., Debate Team, Volunteer Work)" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <div className="flex-3">
-                    <FormField
-                      control={form.control}
-                      name={`activities.${index}.notes`}
-                      render={({ field }) => (
-                        <FormItem className="mb-0">
-                          <FormControl>
-                            <Input 
-                              placeholder="Details (e.g., President, 3 years, 5 hrs/week, achievements)" 
+                            <Textarea 
+                              placeholder="Activity name (e.g., Debate Team, Volunteer Work)" 
                               {...field} 
-                              className="w-full"
+                              className="w-full min-h-[90px] resize-none"
                             />
                           </FormControl>
                         </FormItem>
@@ -540,7 +526,25 @@ export function StudentProfileForm() {
                     />
                   </div>
                   
-                  {index > 0 && (
+                  <div className="w-2/3">
+                    <FormField
+                      control={form.control}
+                      name={`activities.${index}.notes`}
+                      render={({ field }) => (
+                        <FormItem className="mb-0">
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Details (e.g., President, 3 years, 5 hrs/week, achievements)" 
+                              {...field} 
+                              className="w-full min-h-[90px] resize-none"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  {form.watch("activities").length > 1 && (
                     <Button
                       type="button"
                       variant="ghost"
@@ -610,6 +614,61 @@ export function StudentProfileForm() {
     );
   };
 
+  // Scroll function for "Try Now" button
+  const scrollToForm = () => {
+    document.getElementById('application-form')?.scrollIntoView({ 
+      behavior: 'smooth' 
+    });
+  };
+
+  // Fill form with sample data and go to last section
+  const loadTemplateData = () => {
+    // Sample form data
+    const templateData = {
+      studentName: "Alex Johnson",
+      highSchool: "Lincoln High School",
+      currentGrade: "11th",
+      intendedMajors: "Computer Science, Data Science",
+      collegeList: "Stanford University, MIT, UC Berkeley, Carnegie Mellon, Georgia Tech",
+      testScores: [
+        { testName: "SAT", score: "1480" },
+        { testName: "AP", score: "Calculus BC: 5" },
+        { testName: "AP", score: "Computer Science A: 5" }
+      ],
+      courseHistory: "AP Calculus BC (A+), AP Computer Science A (A), AP Physics C (A-), Honors Chemistry (A), English Literature (A-), Spanish III (B+)",
+      activities: [
+        { 
+          name: "Robotics Team", 
+          notes: "Team Captain, 4 years, 8 hrs/week, Led team to state finals"
+        },
+        { 
+          name: "Math Club", 
+          notes: "Vice President, 3 years, 3 hrs/week, Organized math competitions"
+        },
+        { 
+          name: "Coding Volunteer", 
+          notes: "Instructor, 2 years, 4 hrs/week, Taught coding to middle school students"
+        }
+      ],
+      additionalInfo: "I developed an app that helps students track their homework and study time. It has over 500 users at my school. I'm also passionate about using technology to solve environmental problems."
+    };
+    
+    // Reset the form with template data
+    form.reset(templateData);
+    
+    // Mark all sections as complete
+    setCompletedSections([0, 1, 2]);
+    
+    // Go to the last section
+    setCurrentSection(FORM_SECTIONS.length - 1);
+    
+    // Scroll to the form
+    scrollToForm();
+    
+    // Show a toast or alert to instruct the user
+    alert("Template data loaded! Review the information and click 'Generate Plan' when ready.");
+  };
+
   // If a report has been generated, show the report display component instead of the form
   if (result) {
     return (
@@ -629,6 +688,32 @@ export function StudentProfileForm() {
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4">
+      {/* Hero Section */}
+      <div className="mb-12 pt-8 text-center">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-blue-800 mb-4">
+          Your dream school is within reach.
+        </h1>
+        <p className="text-xl text-gray-700 mb-8 max-w-3xl mx-auto">
+          The most comprehensive data-driven college planning tool available, trusted and 
+          recommended by professional college counselors nationwide.
+        </p>
+        <div className="flex justify-center gap-4">
+          <Button 
+            onClick={scrollToForm}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl"
+          >
+            Try Now
+          </Button>
+          
+          <Button 
+            onClick={loadTemplateData}
+            className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl border border-gray-300"
+          >
+            See Template
+          </Button>
+        </div>
+      </div>
+
       {isLoading && (
         <div className="mb-8 p-6 bg-blue-50 rounded-lg text-center animate-pulse">
           <p className="text-lg font-semibold mb-4">
@@ -655,7 +740,7 @@ export function StudentProfileForm() {
           }}
         />
       ) : (
-        <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+        <div id="application-form" className="bg-white shadow-md rounded-lg p-6 mb-6">
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit, handleFormError)} className="space-y-8">

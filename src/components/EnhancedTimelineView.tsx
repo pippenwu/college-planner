@@ -1,4 +1,4 @@
-import { Book, Briefcase, Calendar, ChevronRight, FileText, Globe, GraduationCap, Trophy, X } from 'lucide-react';
+import { Book, Calendar, ChevronRight, FileText, Trophy, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { TimelinePeriod } from './TimelineView';
 
@@ -23,16 +23,10 @@ export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ time
     switch (category.toLowerCase()) {
       case 'academics':
         return <Book {...iconProps} />;
-      case 'testing':
-        return <FileText {...iconProps} />;
-      case 'extracurricular':
+      case 'extracurriculars':
         return <Trophy {...iconProps} />;
-      case 'internship':
-        return <Briefcase {...iconProps} />;
-      case 'college-prep':
-        return <GraduationCap {...iconProps} />;
-      case 'travel':
-        return <Globe {...iconProps} />;
+      case 'application':
+        return <FileText {...iconProps} />;
       default:
         return <Calendar {...iconProps} />;
     }
@@ -41,19 +35,13 @@ export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ time
   const getCategoryColor = (category: string) => {
     switch (category.toLowerCase()) {
       case 'academics':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'testing':
-        return 'bg-purple-100 text-purple-800 border-purple-300';
-      case 'extracurricular':
-        return 'bg-green-100 text-green-800 border-green-300';
-      case 'internship':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'college-prep':
-        return 'bg-indigo-100 text-indigo-800 border-indigo-300';
-      case 'travel':
-        return 'bg-orange-100 text-orange-800 border-orange-300';
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'extracurriculars':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'application':
+        return 'bg-indigo-50 text-indigo-700 border-indigo-200';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
 
@@ -119,7 +107,7 @@ export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ time
           <div key={periodIndex} className="period-section mb-8 last:mb-0">
             <h3 className="text-lg font-semibold mb-3">{period.period}</h3>
             
-            <div className="events-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="events-list space-y-2">
               {period.events.map((event, eventIndex) => (
                 <div 
                   key={eventIndex}
@@ -135,9 +123,11 @@ export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ time
                       {getCategoryIcon(event.category)}
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-800 pr-5">{event.title}</h4>
-                      <div className="text-sm text-gray-500 mt-1">
-                        <span>Deadline: {event.deadline}</span>
+                      <div className="flex justify-between">
+                        <h4 className="font-semibold text-gray-800">{event.title}</h4>
+                        <div className="text-sm text-gray-500">
+                          <span>Deadline: {event.deadline}</span>
+                        </div>
                       </div>
                       
                       {isEventSelected(periodIndex, eventIndex) && (
@@ -175,7 +165,7 @@ export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ time
               ))}
               
               {period.events.length === 0 && (
-                <div className="col-span-full text-center py-6 text-gray-500 bg-gray-50 rounded-lg">
+                <div className="text-center py-6 text-gray-500 bg-gray-50 rounded-lg">
                   <p>No events scheduled for this period.</p>
                 </div>
               )}
@@ -187,10 +177,10 @@ export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ time
       {/* Category Legend */}
       <div className="category-legend p-4 border-t border-gray-200 bg-gray-50">
         <div className="flex flex-wrap gap-3">
-          {['academics', 'testing', 'extracurricular', 'college-prep', 'internship'].map((category) => (
+          {['academics', 'extracurriculars', 'application'].map((category) => (
             <div key={category} className="flex items-center">
               <div className={`w-3 h-3 rounded-full mr-1 ${getCategoryColor(category).split(' ')[0]}`}></div>
-              <span className="text-xs text-gray-600 capitalize">{category.replace('-', ' ')}</span>
+              <span className="text-xs text-gray-600 capitalize">{category}</span>
             </div>
           ))}
         </div>
