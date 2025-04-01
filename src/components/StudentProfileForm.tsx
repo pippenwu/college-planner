@@ -8,31 +8,31 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "./ui/select";
 
 const formSchema = z.object({
   // Academic information
-  gpaUnweighted: z.string().min(1, "GPA is required"),
-  gpaWeighted: z.string().min(1, "Weighted GPA is required"),
+  gpaUnweighted: z.string().optional(),
+  gpaWeighted: z.string().optional(),
   satScore: z.string().optional(),
   actScore: z.string().optional(),
   toeflScore: z.string().optional(),
   
   // Academic interests
-  intendedMajor: z.string().min(1, "Please select at least one intended major"),
-  academicInterests: z.string().min(1, "Please describe your academic interests"),
+  intendedMajor: z.string().optional(),
+  academicInterests: z.string().optional(),
   
   // Extracurricular activities
-  extracurriculars: z.string().min(1, "Please list your extracurricular activities"),
+  extracurriculars: z.string().optional(),
   awards: z.string().optional(),
   
   // College preferences
-  budget: z.string().min(1, "Budget information is required"),
+  budget: z.string().optional(),
   location: z.string().optional(),
   collegeSize: z.string().optional(),
   collegePrestige: z.string().optional(),
@@ -47,6 +47,7 @@ type FormValues = z.infer<typeof formSchema>;
 export function StudentProfileForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [submittedData, setSubmittedData] = useState<FormValues | null>(null);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -71,6 +72,7 @@ export function StudentProfileForm() {
 
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
+    setSubmittedData(data);
     try {
       // Call OpenAI API through our service
       const report = await generateCollegeReport(data as StudentProfile);
@@ -315,12 +317,26 @@ export function StudentProfileForm() {
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold">Your College Counseling Report</h2>
             <Button 
-              onClick={() => setResult(null)}
+              onClick={() => {
+                setResult(null);
+                setSubmittedData(null);
+              }}
               variant="outline"
             >
               Start Over
             </Button>
           </div>
+          
+          {/* Debug display of submitted data */}
+          <div className="mb-4 border border-gray-200 rounded">
+            <details>
+              <summary className="p-3 cursor-pointer text-blue-600">Show input data used for report</summary>
+              <div className="p-3 bg-gray-50 text-sm">
+                <pre className="whitespace-pre-wrap overflow-auto max-h-60">{JSON.stringify(submittedData, null, 2)}</pre>
+              </div>
+            </details>
+          </div>
+          
           <div className="prose max-w-none">
             <pre className="whitespace-pre-wrap text-sm">{result}</pre>
           </div>
