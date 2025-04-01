@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { generateCollegeReport } from "../services/openaiService";
 import ReportDisplay from "./ReportDisplay";
+import SchoolLogos from "./SchoolLogos";
 import { Button } from "./ui/button";
 import {
   Form,
@@ -170,10 +171,10 @@ export function StudentProfileForm() {
             <div 
               className={`relative flex items-center justify-center w-10 h-10 rounded-full border-2 cursor-pointer
                 ${currentSection === index 
-                  ? 'bg-blue-600 text-white border-blue-600' 
+                  ? 'bg-academic-navy text-white border-academic-navy' 
                   : completedSections.includes(index)
-                    ? 'bg-green-500 text-white border-green-500'
-                    : 'bg-white text-gray-500 border-gray-300'}`}
+                    ? 'bg-academic-gold text-white border-academic-gold'
+                    : 'bg-white text-academic-slate border-academic-light'}`}
               onClick={() => jumpToSection(index)}
             >
               {completedSections.includes(index) 
@@ -182,14 +183,14 @@ export function StudentProfileForm() {
             </div>
             <span className="text-xs mt-1 text-center">{section.title}</span>
             {index < FORM_SECTIONS.length - 1 && (
-              <div className="absolute left-[calc(50%+1.25rem)] w-[calc(100%-2.5rem)] h-0.5 bg-gray-200 -z-10" />
+              <div className="absolute left-[calc(50%+1.25rem)] w-[calc(100%-2.5rem)] h-0.5 bg-academic-light -z-10" />
             )}
           </div>
         ))}
       </div>
-      <div className="mt-2 h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+      <div className="mt-2 h-2 w-full bg-academic-light rounded-full overflow-hidden">
         <div 
-          className="h-full bg-blue-600 transition-all duration-300"
+          className="h-full bg-academic-gold transition-all duration-300"
           style={{ 
             width: `${((currentSection + 1) / FORM_SECTIONS.length) * 100}%` 
           }} 
@@ -584,6 +585,7 @@ export function StudentProfileForm() {
           variant="outline"
           onClick={goToPreviousSection}
           disabled={currentSection === 0}
+          className="border-academic-navy text-academic-navy hover:bg-academic-cream disabled:opacity-50"
         >
           Previous
         </Button>
@@ -592,14 +594,14 @@ export function StudentProfileForm() {
           <Button
             type="button"
             onClick={goToNextSection}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-academic-navy hover:bg-academic-slate text-white"
           >
             Next
           </Button>
         ) : (
           <Button 
             type="submit" 
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-academic-burgundy hover:bg-academic-navy text-white"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -689,25 +691,29 @@ export function StudentProfileForm() {
   return (
     <div className="w-full max-w-5xl mx-auto px-4">
       {/* Hero Section */}
-      <div className="mb-12 pt-8 text-center">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-blue-800 mb-4">
+      <div className="mb-12 pt-8 text-center bg-academic-cream rounded-lg p-8 shadow-lg border border-academic-light">
+        <h1 className="text-academic-navy mb-4">
           Your dream school is within reach.
         </h1>
-        <p className="text-xl text-gray-700 mb-8 max-w-3xl mx-auto">
+        <p className="text-xl text-academic-slate mb-8 max-w-3xl mx-auto">
           The most comprehensive data-driven college planning tool available, trusted and 
           recommended by professional college counselors nationwide.
         </p>
-        <div className="flex justify-center gap-4">
+        
+        {/* School Logos Section */}
+        <SchoolLogos />
+        
+        <div className="flex justify-center gap-4 mt-8">
           <Button 
             onClick={scrollToForm}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl"
+            className="bg-academic-burgundy hover:bg-academic-navy text-white px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl border-2 border-academic-burgundy hover:border-academic-navy"
           >
             Try Now
           </Button>
           
           <Button 
             onClick={loadTemplateData}
-            className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl border border-gray-300"
+            className="bg-white hover:bg-academic-cream text-academic-navy px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl border-2 border-academic-gold hover:border-academic-navy"
           >
             See Template
           </Button>
@@ -715,14 +721,14 @@ export function StudentProfileForm() {
       </div>
 
       {isLoading && (
-        <div className="mb-8 p-6 bg-blue-50 rounded-lg text-center animate-pulse">
-          <p className="text-lg font-semibold mb-4">
+        <div className="mb-8 p-6 bg-academic-navy/10 rounded-lg text-center animate-pulse">
+          <p className="text-lg font-semibold mb-4 text-academic-navy">
             <Loader2 className="inline-block mr-2 h-5 w-5 animate-spin" />
             Creating your personalized college application plan...
           </p>
-          <p className="text-sm text-gray-600 mb-4">This may take a minute or two</p>
-          <div className="w-full bg-gray-200 rounded-full h-2.5">
-            <div className="bg-blue-600 h-2.5 rounded-full animate-[pulse_1.5s_ease-in-out_infinite]" style={{ width: "100%" }}></div>
+          <p className="text-sm text-academic-slate mb-4">This may take a minute or two</p>
+          <div className="w-full bg-academic-light rounded-full h-2.5">
+            <div className="bg-academic-gold h-2.5 rounded-full animate-[pulse_1.5s_ease-in-out_infinite]" style={{ width: "100%" }}></div>
           </div>
         </div>
       )}
@@ -740,7 +746,7 @@ export function StudentProfileForm() {
           }}
         />
       ) : (
-        <div id="application-form" className="bg-white shadow-md rounded-lg p-6 mb-6">
+        <div id="application-form" className="bg-white shadow-md border border-academic-light rounded-lg p-6 mb-6">
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit, handleFormError)} className="space-y-8">

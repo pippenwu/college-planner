@@ -161,15 +161,15 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
       {/* Overview Section - Concise */}
       <section className="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-800">Overview</h2>
+          <h2 className="text-gray-800">Overview</h2>
         </div>
         
-        <div className="mt-3 prose prose-sm max-w-none text-gray-600" dangerouslySetInnerHTML={{ __html: overview }} />
+        <div className="mt-3 prose prose-sm max-w-none text-gray-600 font-body" dangerouslySetInnerHTML={{ __html: overview }} />
       </section>
       
       {/* Timeline Section - Main Focus */}
       <section className="relative">
-        <h2 className="text-lg font-semibold text-gray-800 mb-3">Your College Application Timeline</h2>
+        <h2 className="text-gray-800 mb-3">Your College Application Timeline</h2>
         {timelineData ? (
           <EnhancedTimelineView timelineData={timelineData} />
         ) : (
@@ -187,7 +187,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
           className="w-full flex justify-between items-center text-left" 
           onClick={() => setShowNextSteps(!showNextSteps)}
         >
-          <h2 className="text-lg font-semibold text-gray-800">Immediate Next Steps</h2>
+          <h2 className="text-gray-800">Immediate Next Steps</h2>
           {showNextSteps ? (
             <ChevronUp className="h-5 w-5 text-gray-500" />
           ) : (

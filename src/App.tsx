@@ -52,16 +52,16 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4">
+    <div className="min-h-screen bg-academic-cream/50 py-12 px-4">
       <header className="max-w-3xl mx-auto mb-12 text-center">
         {/* Animated success banner */}
-        <div className="relative h-12 overflow-hidden bg-blue-50 rounded-lg shadow-sm">
+        <div className="relative h-12 overflow-hidden bg-academic-navy/10 rounded-lg shadow-sm">
           <div 
             className={`absolute w-full transition-all duration-700 ease-in-out ${
               isAnimating ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"
             }`}
           >
-            <p className="py-3 text-blue-700 font-medium">
+            <p className="py-3 text-academic-navy font-medium">
               <span className="font-bold">{SUCCESS_STORIES[currentStory].name}</span> got into{" "}
               <span className="font-bold">{SUCCESS_STORIES[currentStory].school}</span> using this planner! 🎉
             </p>
@@ -73,7 +73,7 @@ function App() {
         <StudentProfileForm />
       </main>
       
-      <footer className="max-w-3xl mx-auto mt-16 text-center text-gray-500 text-sm">
+      <footer className="max-w-3xl mx-auto mt-16 text-center text-academic-slate text-sm font-body border-t border-academic-light pt-4">
         <p>© {new Date().getFullYear()} College Application Planner. All rights reserved.</p>
       </footer>
     </div>
