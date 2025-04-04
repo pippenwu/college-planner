@@ -52,29 +52,30 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-academic-cream/50 py-12 px-4">
-      <header className="max-w-3xl mx-auto mb-12 text-center">
-        {/* Animated success banner */}
-        <div className="relative h-12 overflow-hidden bg-academic-navy/10 rounded-lg shadow-sm">
-          <div 
-            className={`absolute w-full transition-all duration-700 ease-in-out ${
-              isAnimating ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"
-            }`}
-          >
-            <p className="py-3 text-academic-navy font-medium">
-              <span className="font-bold">{SUCCESS_STORIES[currentStory].name}</span> got into{" "}
-              <span className="font-bold">{SUCCESS_STORIES[currentStory].school}</span> using this planner! 🎉
-            </p>
-          </div>
+    <div className="min-h-screen bg-academic-cream/50 flex flex-col overflow-hidden">
+      <header className="w-full py-6 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto w-full">
+          {isAnimating && (
+            <div className="mb-4 p-3 rounded-lg bg-academic-navy/10 text-academic-navy text-center animate-fade-in overflow-hidden">
+              <span className="inline-block break-words">
+                <span className="font-semibold">{SUCCESS_STORIES[currentStory].name}</span> got into{" "}
+                <span className="font-semibold">{SUCCESS_STORIES[currentStory].school}</span> using this planner! 🎉
+              </span>
+            </div>
+          )}
         </div>
       </header>
 
-      <main>
-        <StudentProfileForm />
+      <main className="flex-grow w-full px-4 sm:px-6 overflow-x-hidden">
+        <div className="max-w-6xl mx-auto w-full">
+          <StudentProfileForm />
+        </div>
       </main>
-      
-      <footer className="max-w-3xl mx-auto mt-16 text-center text-academic-slate text-sm font-body border-t border-academic-light pt-4">
-        <p>© {new Date().getFullYear()} College Application Planner. All rights reserved.</p>
+
+      <footer className="w-full py-4 px-4 sm:px-6 text-academic-slate border-t border-academic-light">
+        <div className="max-w-6xl mx-auto w-full text-center">
+          © {new Date().getFullYear()} College Application Planner. All rights reserved.
+        </div>
       </footer>
     </div>
   );

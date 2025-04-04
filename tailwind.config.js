@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        'heading': ['"Playfair Display"', 'serif'],
+        'heading': ['"Merriweather"', 'serif'],
         'body': ['"Source Sans Pro"', 'sans-serif'],
       },
       colors: {

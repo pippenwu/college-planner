@@ -8,5 +8,10 @@
 }
 
 .logos-slide-animation {
-  animation: slide 30s linear infinite;
+  animation: slide 40s linear infinite;
+}
+
+/* Pause animation on hover */
+.logos-slide-animation:hover {
+  animation-play-state: paused;
 } 

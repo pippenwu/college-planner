@@ -1,68 +1,65 @@
 import React from 'react';
 import './schoolLogos.css';
 
-// School logos data
+// School logos data with more reliable sources
 const SCHOOL_LOGOS = [
   {
     name: 'Harvard University',
-    logo: 'https://1000logos.net/wp-content/uploads/2017/02/Harvard-Logo.png',
+    logo: '/images/school-logos/harvard.png',
   },
   {
     name: 'Stanford University',
-    logo: 'https://1000logos.net/wp-content/uploads/2018/02/Stanford-Cardinal-Logo.png',
+    logo: '/images/school-logos/stanford.png',
   },
   {
     name: 'MIT',
-    logo: 'https://1000logos.net/wp-content/uploads/2022/08/MIT-Logo.png',
+    logo: '/images/school-logos/mit.png',
   },
   {
     name: 'Yale University',
-    logo: 'https://1000logos.net/wp-content/uploads/2018/03/Yale-Logo.png',
+    logo: '/images/school-logos/yale.png',
   },
   {
     name: 'Princeton University',
-    logo: 'https://1000logos.net/wp-content/uploads/2018/03/Princeton-Logo.png',
+    logo: '/images/school-logos/princeton.png',
   },
   {
     name: 'Columbia University',
-    logo: 'https://1000logos.net/wp-content/uploads/2017/07/Columbia-University-Logo.png',
+    logo: '/images/school-logos/columbia.png',
   },
   {
     name: 'University of Pennsylvania',
-    logo: 'https://1000logos.net/wp-content/uploads/2018/03/University-of-Pennsylvania-Logo.png',
+    logo: '/images/school-logos/upenn.png',
   },
   {
     name: 'Duke University',
-    logo: 'https://1000logos.net/wp-content/uploads/2018/06/Duke-Blue-Devils-Logo.png',
+    logo: '/images/school-logos/duke.png',
   },
   {
     name: 'Brown University',
-    logo: 'https://1000logos.net/wp-content/uploads/2021/06/Brown-University-emblem.png',
+    logo: '/images/school-logos/brown.png',
   },
   {
     name: 'Dartmouth College',
-    logo: 'https://1000logos.net/wp-content/uploads/2017/10/Dartmouth-Logo.png',
+    logo: '/images/school-logos/dartmouth.png',
   },
   {
     name: 'Northwestern University',
-    logo: 'https://1000logos.net/wp-content/uploads/2018/06/Northwestern-Wildcats-Logo.png',
+    logo: '/images/school-logos/northwestern.png',
   },
   {
     name: 'UC Berkeley',
-    logo: 'https://1000logos.net/wp-content/uploads/2018/05/UC-Berkeley-Logo.png',
+    logo: '/images/school-logos/berkeley.png',
   },
 ];
 
 export const SchoolLogos: React.FC = () => {
   return (
     <div className="w-full py-6 overflow-hidden">
-      <div className="mb-4 text-center">
-        <h3 className="text-xl font-semibold text-academic-navy">Trusted by Students Accepted to Elite Universities</h3>
-      </div>
-      
+      <h4 className="text-xl text-academic-navy mb-4 font-heading text-center">Trusted by students admitted to top universities</h4>
       <div className="relative">
         {/* Gradient fade on left */}
-        <div className="absolute left-0 top-0 h-full w-16 bg-gradient-to-r from-academic-cream to-transparent z-10"></div>
+        <div className="absolute left-0 top-0 h-full w-16 bg-gradient-to-r from-white to-transparent z-10"></div>
         
         {/* Logos container with continuous animation */}
         <div className="flex logos-slide-animation">
@@ -70,13 +67,13 @@ export const SchoolLogos: React.FC = () => {
           {SCHOOL_LOGOS.map((school, index) => (
             <div 
               key={`logo-1-${index}`} 
-              className="mx-8 flex-shrink-0 flex items-center" 
-              style={{ height: '60px', width: '120px' }}
+              className="mx-8 flex-shrink-0 flex items-center justify-center" 
+              style={{ height: '70px', width: '140px' }}
             >
               <img 
                 src={school.logo} 
                 alt={`${school.name} logo`} 
-                className="max-h-full max-w-full object-contain grayscale hover:grayscale-0 transition-all opacity-80 hover:opacity-100"
+                className="max-h-[50px] max-w-[120px] object-contain grayscale hover:grayscale-0 transition-all opacity-80 hover:opacity-100"
               />
             </div>
           ))}
@@ -85,20 +82,20 @@ export const SchoolLogos: React.FC = () => {
           {SCHOOL_LOGOS.map((school, index) => (
             <div 
               key={`logo-2-${index}`} 
-              className="mx-8 flex-shrink-0 flex items-center" 
-              style={{ height: '60px', width: '120px' }}
+              className="mx-8 flex-shrink-0 flex items-center justify-center" 
+              style={{ height: '70px', width: '140px' }}
             >
               <img 
                 src={school.logo} 
                 alt={`${school.name} logo`} 
-                className="max-h-full max-w-full object-contain grayscale hover:grayscale-0 transition-all opacity-80 hover:opacity-100"
+                className="max-h-[50px] max-w-[120px] object-contain grayscale hover:grayscale-0 transition-all opacity-80 hover:opacity-100"
               />
             </div>
           ))}
         </div>
         
         {/* Gradient fade on right */}
-        <div className="absolute right-0 top-0 h-full w-16 bg-gradient-to-l from-academic-cream to-transparent z-10"></div>
+        <div className="absolute right-0 top-0 h-full w-16 bg-gradient-to-l from-white to-transparent z-10"></div>
       </div>
     </div>
   );

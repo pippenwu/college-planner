@@ -112,11 +112,20 @@ export function StudentProfileForm() {
   const goToNextSection = () => {
     // Mark current section as completed
     if (!completedSections.includes(currentSection)) {
-      setCompletedSections([...completedSections, currentSection]);
+      setCompletedSections(prev => [...prev, currentSection]);
     }
     
-    if (currentSection < FORM_SECTIONS.length - 1) {
-      setCurrentSection(currentSection + 1);
+    // Make sure we're not already on the last section
+    const lastSectionIndex = FORM_SECTIONS.length - 1;
+    if (currentSection < lastSectionIndex) {
+      // Use a callback to ensure we're using the latest state
+      setCurrentSection(prevSection => {
+        const nextSection = prevSection + 1;
+        console.log(`Setting section from ${prevSection} to ${nextSection}`);
+        return nextSection;
+      });
+    } else {
+      console.warn(`Already at last section (${currentSection}), can't go forward`);
     }
   };
 
@@ -134,6 +143,15 @@ export function StudentProfileForm() {
 
   const onSubmit = async (data: FormValues) => {
     console.log("Form submitted with data:", data);
+    console.log("Current section at submission:", currentSection);
+    
+    // Only proceed with submission if we're actually on the last section
+    const lastSectionIndex = FORM_SECTIONS.length - 1;
+    if (currentSection !== lastSectionIndex) {
+      console.warn("Form submission attempted from non-last section. Preventing submission.");
+      return;
+    }
+    
     setIsLoading(true);
     setSubmittedData(data);
     try {
@@ -201,6 +219,9 @@ export function StudentProfileForm() {
 
   // Render the appropriate section based on currentSection
   const renderSection = (sectionId: string) => {
+    // Log current section to help with debugging
+    console.log(`Rendering section: ${sectionId}, current index: ${currentSection}`);
+    
     switch (sectionId) {
       case "student-info":
         return (
@@ -575,8 +596,9 @@ export function StudentProfileForm() {
 
   // Navigation buttons
   const renderNavigationButtons = () => {
-    // Activities is now the last section (index 3)
-    const isLastSection = currentSection === FORM_SECTIONS.length - 1;
+    // Explicitly check current index against the last index (3 for activities)
+    const lastSectionIndex = FORM_SECTIONS.length - 1;
+    const isLastSection = currentSection === lastSectionIndex;
     
     return (
       <div className="flex justify-between mt-6">
@@ -593,7 +615,11 @@ export function StudentProfileForm() {
         {!isLastSection ? (
           <Button
             type="button"
-            onClick={goToNextSection}
+            onClick={(e) => {
+              e.preventDefault(); // Explicitly prevent any form submission
+              console.log(`Next button clicked, moving from section ${currentSection} to ${currentSection + 1}`);
+              goToNextSection();
+            }}
             className="bg-academic-navy hover:bg-academic-slate text-white"
           >
             Next
@@ -689,15 +715,14 @@ export function StudentProfileForm() {
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4">
+    <div className="max-w-full overflow-hidden">
       {/* Hero Section */}
-      <div className="mb-12 pt-8 text-center bg-academic-cream rounded-lg p-8 shadow-lg border border-academic-light">
+      <div className="mb-12 pt-8 text-center">
         <h1 className="text-academic-navy mb-4">
           Your dream school is within reach.
         </h1>
         <p className="text-xl text-academic-slate mb-8 max-w-3xl mx-auto">
-          The most comprehensive data-driven college planning tool available, trusted and 
-          recommended by professional college counselors nationwide.
+          A personalized, data-backed college planning tool — trusted by top counselors.
         </p>
         
         {/* School Logos Section */}
@@ -708,14 +733,14 @@ export function StudentProfileForm() {
             onClick={scrollToForm}
             className="bg-academic-burgundy hover:bg-academic-navy text-white px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl border-2 border-academic-burgundy hover:border-academic-navy"
           >
-            Try Now
+            Start Planning
           </Button>
           
           <Button 
             onClick={loadTemplateData}
             className="bg-white hover:bg-academic-cream text-academic-navy px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl border-2 border-academic-gold hover:border-academic-navy"
           >
-            See Template
+            Use Demo Profile
           </Button>
         </div>
       </div>
@@ -746,12 +771,12 @@ export function StudentProfileForm() {
           }}
         />
       ) : (
-        <div id="application-form" className="bg-white shadow-md border border-academic-light rounded-lg p-6 mb-6">
+        <div id="application-form" className="bg-white shadow-md border border-academic-light rounded-lg p-6 mb-6 overflow-hidden">
           
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit, handleFormError)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit, handleFormError)} className="space-y-8 max-w-full">
               <ProgressIndicator />
-              <div key={`section-${FORM_SECTIONS[currentSection].id}`}>
+              <div key={`section-${FORM_SECTIONS[currentSection].id}`} className="max-w-full">
                 {renderSection(FORM_SECTIONS[currentSection].id)}
               </div>
               {renderNavigationButtons()}

@@ -157,18 +157,18 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   };
 
   return (
-    <div className="report-display space-y-8">
+    <div className="report-display space-y-8 max-w-full overflow-hidden">
       {/* Overview Section - Concise */}
-      <section className="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+      <section className="bg-white rounded-lg p-5 shadow-sm border border-gray-100 overflow-hidden">
         <div className="flex justify-between items-center">
           <h2 className="text-gray-800">Overview</h2>
         </div>
         
-        <div className="mt-3 prose prose-sm max-w-none text-gray-600 font-body" dangerouslySetInnerHTML={{ __html: overview }} />
+        <div className="mt-3 prose prose-sm max-w-none text-gray-600 font-body overflow-hidden" dangerouslySetInnerHTML={{ __html: overview }} />
       </section>
       
       {/* Timeline Section - Main Focus */}
-      <section className="relative">
+      <section className="relative overflow-hidden">
         <h2 className="text-gray-800 mb-3">Your College Application Timeline</h2>
         {timelineData ? (
           <EnhancedTimelineView timelineData={timelineData} />
@@ -182,7 +182,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
       </section>
       
       {/* Next Steps Section - Simple List */}
-      <section className="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+      <section className="bg-white rounded-lg p-5 shadow-sm border border-gray-100 overflow-hidden">
         <button 
           className="w-full flex justify-between items-center text-left" 
           onClick={() => setShowNextSteps(!showNextSteps)}
@@ -196,7 +196,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         </button>
         
         {showNextSteps && (
-          <div className="mt-4 prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: nextSteps }} />
+          <div className="mt-4 prose prose-sm max-w-none text-gray-700 overflow-hidden" dangerouslySetInnerHTML={{ __html: nextSteps }} />
         )}
       </section>
       
