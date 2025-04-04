@@ -1,9 +1,6 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import PaymentModal from '../components/payment/PaymentModal';
-import usePaymentMock from '../hooks/usePaymentMock';
-
-// Backend API URL
-const API_URL = 'http://localhost:4000';
+import { useRealPayment } from '../hooks/usePayment';
 
 // Define the context type
 interface PaymentContextType {
@@ -16,13 +13,18 @@ interface PaymentContextType {
 // Create the context with a default value
 const PaymentContext = createContext<PaymentContextType | undefined>(undefined);
 
-// Storage key for access token
-const ACCESS_TOKEN_KEY = 'college_planner_access_token';
+// Storage key for access token - using localStorage to persist payment state between sessions
+const PAYMENT_STATUS_KEY = 'college_planner_payment_status';
 
 // Provider component
 export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isPaid, setIsPaid] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(true);
+  // Check localStorage for any existing payment status
+  const [isPaid, setIsPaid] = useState(() => {
+    const savedStatus = localStorage.getItem(PAYMENT_STATUS_KEY);
+    return savedStatus ? JSON.parse(savedStatus) : false;
+  });
+  
+  const [isVerifying, setIsVerifying] = useState(false);
   
   const {
     openPaymentModal,
@@ -35,99 +37,30 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
     resetPayment,
     txHash,
     data
-  } = usePaymentMock();
+  } = useRealPayment();
 
   const [paymentAmount, setPaymentAmount] = useState('0.01');
   const [paymentCurrency, setPaymentCurrency] = useState<'TWD' | 'USD'>('USD');
 
-  // Verify token on component mount
+  // Update local storage when isPaid changes
   useEffect(() => {
-    const verifyToken = async () => {
-      try {
-        const token = localStorage.getItem(ACCESS_TOKEN_KEY);
-        
-        if (!token) {
-          setIsVerifying(false);
-          return;
-        }
-        
-        // For mock implementation: Set isPaid based on token existence
-        console.log('Mock token found - user has paid');
-        setIsPaid(true);
-        setIsVerifying(false);
-        
-        /* Comment out actual backend verification for now
-        // Validate token with backend
-        const response = await fetch(`${API_URL}/api/validate-token`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ token }),
-        });
-        
-        const data = await response.json();
-        
-        if (data.success && data.valid) {
-          console.log('Token valid - user has paid');
-          setIsPaid(true);
-        } else {
-          // Clear invalid token
-          localStorage.removeItem(ACCESS_TOKEN_KEY);
-          setIsPaid(false);
-        }
-        */
-      } catch (err) {
-        console.error('Error verifying token:', err);
-        localStorage.removeItem(ACCESS_TOKEN_KEY);
-        setIsPaid(false);
-        setIsVerifying(false);
-      }
-    };
-    
-    verifyToken();
-  }, []);
+    localStorage.setItem(PAYMENT_STATUS_KEY, JSON.stringify(isPaid));
+  }, [isPaid]);
 
-  // Check for payment success and verify with backend
+  // Check for payment success from KryptoGO
   useEffect(() => {
-    const verifyPayment = async () => {
-      if (isSuccess && txHash) {
-        try {
-          console.log('Payment successful - verifying with backend', txHash);
-          
-          // For mock implementation: Set isPaid directly without backend
-          setIsPaid(true);
-          console.log('Mock payment verified - full report unlocked');
-          
-          /* Comment out actual backend verification for now
-          // Verify payment with backend
-          const response = await fetch(`${API_URL}/api/verify-access`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ txHash }),
-          });
-          
-          const result = await response.json();
-          
-          if (result.success && result.token) {
-            // Store the JWT token
-            localStorage.setItem(ACCESS_TOKEN_KEY, result.token);
-            setIsPaid(true);
-            console.log('Payment verified - full report unlocked');
-          } else {
-            console.error('Payment verification failed:', result);
-          }
-          */
-        } catch (err) {
-          console.error('Error verifying payment with backend:', err);
-        }
-      }
-    };
-    
-    verifyPayment();
-  }, [isSuccess, txHash]);
+    if (data && data.status === 'success' && txHash) {
+      console.log('Payment successful with txHash:', txHash);
+      console.log('Payment data:', data);
+      
+      // Set isPaid directly based on KryptoGO's successful transaction
+      setIsPaid(true);
+      
+      // For a production app, you would typically verify this transaction on a backend
+      // before granting access, but for this version we'll trust KryptoGO's response
+      console.log('Full report unlocked based on successful KryptoGO payment');
+    }
+  }, [data, txHash]);
 
   const initiatePayment = (amount: string, currency: 'TWD' | 'USD') => {
     setPaymentAmount(amount);
@@ -139,7 +72,6 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
     openPaymentModal({
       fiat_amount: amount,
       fiat_currency: currency,
-      callback_url: `${API_URL}/api/payment/callback`,
       order_data: {
         order_product_id: 'college-report-full',
         order_product_name: 'College Application Planner Full Report',
@@ -176,6 +108,7 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
         error={error}
         amount={paymentAmount}
         currency={paymentCurrency}
+        data={data}
       />
     </PaymentContext.Provider>
   );

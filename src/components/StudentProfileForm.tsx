@@ -1,8 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import { z } from "zod";
+import { usePayment } from '../context/PaymentContext';
 import { generateCollegeReport } from "../services/openaiService";
 import ReportDisplay from "./ReportDisplay";
 import SchoolLogos from "./SchoolLogos";
@@ -87,6 +89,10 @@ export function StudentProfileForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [submittedData, setSubmittedData] = useState<FormValues | null>(null);
+  const [pendingReportData, setPendingReportData] = useState<FormValues | null>(null);
+  
+  // Get payment state from context
+  const { isPaid, initiatePayment, isProcessingPayment } = usePayment();
   
   // Track the current section/step
   const [currentSection, setCurrentSection] = useState(0);
@@ -107,6 +113,36 @@ export function StudentProfileForm() {
       additionalInfo: "",
     },
   });
+
+  // Use useEffect to generate the report when payment is successful
+  useEffect(() => {
+    const generateReport = async () => {
+      if (isPaid && pendingReportData) {
+        setIsLoading(true);
+        try {
+          const report = await generateCollegeReport(pendingReportData);
+          setResult(report);
+          setPendingReportData(null);
+        } catch (error) {
+          console.error("Error generating report:", error);
+          toast.error("Failed to generate report. Please try again later.", {
+            icon: '❌',
+            duration: 4000,
+            style: {
+              borderRadius: '10px',
+              background: '#fef2f2',
+              color: '#991b1b',
+              border: '1px solid #fecaca'
+            },
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    generateReport();
+  }, [isPaid, pendingReportData]);
 
   // Function to move to the next section
   const goToNextSection = () => {
@@ -155,12 +191,21 @@ export function StudentProfileForm() {
     setIsLoading(true);
     setSubmittedData(data);
     try {
-      // Call OpenAI API through our service
+      // Call OpenAI API through our service to generate the report
       const report = await generateCollegeReport(data);
       setResult(report);
     } catch (error) {
       console.error("Error generating report:", error);
-      alert("Failed to generate report. Please try again later.");
+      toast.error("Failed to generate report. Please try again later.", {
+        icon: '❌',
+        duration: 4000,
+        style: {
+          borderRadius: '10px',
+          background: '#fef2f2',
+          color: '#991b1b',
+          border: '1px solid #fecaca'
+        },
+      });
     } finally {
       setIsLoading(false);
     }
@@ -169,7 +214,16 @@ export function StudentProfileForm() {
   // Add this function to show form errors
   const handleFormError = (errors: any) => {
     console.error("Form validation errors:", errors);
-    alert("Please fill out all required fields before submitting.");
+    toast.error("Please fill out all required fields before submitting.", {
+      icon: '⚠️',
+      duration: 4000,
+      style: {
+        borderRadius: '10px',
+        background: '#fef2f2',
+        color: '#991b1b',
+        border: '1px solid #fecaca'
+      },
+    });
   };
 
   // Function to render field labels with required indicator
@@ -490,7 +544,7 @@ export function StudentProfileForm() {
                   </FormDescription>
                   <FormControl>
                     <Textarea
-                      placeholder="AP Calculus BC (A+), AP Biology (A), AP Computer Science (A), Honors Chemistry (A-), Spanish III (B+)"
+                      placeholder="AP Calculus BC (A+), AP Computer Science A (A), AP Physics C (A-), Honors Chemistry (A), English Literature (A-), Spanish III (B+)"
                       className="min-h-[150px]"
                       {...field}
                     />
@@ -596,47 +650,52 @@ export function StudentProfileForm() {
 
   // Navigation buttons
   const renderNavigationButtons = () => {
-    // Explicitly check current index against the last index (3 for activities)
     const lastSectionIndex = FORM_SECTIONS.length - 1;
     const isLastSection = currentSection === lastSectionIndex;
+    const isFirstSection = currentSection === 0;
     
     return (
-      <div className="flex justify-between mt-6">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={goToPreviousSection}
-          disabled={currentSection === 0}
-          className="border-academic-navy text-academic-navy hover:bg-academic-cream disabled:opacity-50"
-        >
-          Previous
-        </Button>
-        
-        {!isLastSection ? (
+      <div className="space-y-6">
+        <div className="flex justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={goToPreviousSection}
+            disabled={isFirstSection}
+            className="border-academic-navy text-academic-navy hover:bg-academic-cream disabled:opacity-50"
+          >
+            Previous
+          </Button>
+          
           <Button
             type="button"
             onClick={(e) => {
-              e.preventDefault(); // Explicitly prevent any form submission
+              e.preventDefault();
               console.log(`Next button clicked, moving from section ${currentSection} to ${currentSection + 1}`);
               goToNextSection();
             }}
-            className="bg-academic-navy hover:bg-academic-slate text-white"
+            disabled={isLastSection}
+            className="bg-academic-navy hover:bg-academic-slate text-white disabled:opacity-50"
           >
             Next
           </Button>
-        ) : (
-          <Button 
-            type="submit" 
-            className="bg-academic-burgundy hover:bg-academic-navy text-white"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : "Generate Plan"}
-          </Button>
+        </div>
+        
+        {isLastSection && (
+          <div className="pt-6 border-t border-gray-100">
+            <Button 
+              type="submit" 
+              className="w-full bg-academic-burgundy hover:bg-academic-navy text-white py-3"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : "Generate Plan"}
+            </Button>
+          </div>
         )}
       </div>
     );
@@ -655,7 +714,7 @@ export function StudentProfileForm() {
     const templateData = {
       studentName: "Alex Johnson",
       highSchool: "Lincoln High School",
-      currentGrade: "10th",
+      currentGrade: "10th" as "<9th" | "9th" | "10th" | "11th" | "12th",
       intendedMajors: "Computer Science, Data Science",
       collegeList: "Stanford University, MIT, UC Berkeley, Carnegie Mellon, Georgia Tech",
       testScores: [
@@ -694,7 +753,19 @@ export function StudentProfileForm() {
     scrollToForm();
     
     // Show a toast or alert to instruct the user
-    alert("Template data loaded! Review the information and click 'Generate Plan' when ready.");
+    toast.success(
+      "Demo profile loaded! Review the information and click 'Generate Plan' when ready.", 
+      {
+        icon: '👨‍🎓',
+        duration: 5000,
+        style: {
+          borderRadius: '10px',
+          background: '#f0f9ff',
+          color: '#0c4a6e',
+          border: '1px solid #bae6fd'
+        },
+      }
+    );
   };
 
   // If a report has been generated, show the report display component instead of the form
@@ -756,10 +827,17 @@ export function StudentProfileForm() {
             <Loader2 className="inline-block mr-2 h-5 w-5 animate-spin" />
             Creating your personalized college application plan...
           </p>
-          <p className="text-sm text-academic-slate mb-4">This may take a minute or two</p>
-          <div className="w-full bg-academic-light rounded-full h-2.5">
-            <div className="bg-academic-gold h-2.5 rounded-full animate-[pulse_1.5s_ease-in-out_infinite]" style={{ width: "100%" }}></div>
-          </div>
+          <p className="text-sm text-academic-slate">This may take a minute or two</p>
+        </div>
+      )}
+      
+      {isProcessingPayment && !isLoading && (
+        <div className="mb-8 p-6 bg-academic-navy/10 rounded-lg text-center animate-pulse">
+          <p className="text-lg font-semibold mb-4 text-academic-navy">
+            <Loader2 className="inline-block mr-2 h-5 w-5 animate-spin" />
+            Processing your payment...
+          </p>
+          <p className="text-sm text-academic-slate">Please complete the payment to generate your plan</p>
         </div>
       )}
       
@@ -791,4 +869,4 @@ export function StudentProfileForm() {
       )}
     </div>
   );
-} 
+}

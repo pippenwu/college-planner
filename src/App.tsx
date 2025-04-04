@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Toaster } from 'react-hot-toast';
 import KryptogoPaymentProvider from './components/payment/PaymentProvider';
 import { StudentProfileForm } from './components/StudentProfileForm';
 import { PaymentProvider } from './context/PaymentContext';
@@ -36,6 +37,19 @@ function App() {
     <KryptogoPaymentProvider>
       <PaymentProvider>
         <div className="min-h-screen bg-academic-cream flex flex-col overflow-hidden">
+          <Toaster 
+            position="top-center"
+            toastOptions={{
+              duration: 3000,
+              style: {
+                background: '#FFFFFF',
+                color: '#1e293b',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                borderRadius: '0.5rem',
+                padding: '0.75rem 1rem',
+              },
+            }}
+          />
           <header className="w-full py-6 px-4 sm:px-6 relative z-10">
             <div className="max-w-6xl mx-auto w-full">
               {/* Fixed height container for success stories to prevent layout shifts */}
