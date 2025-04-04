@@ -35,8 +35,8 @@ function App() {
   return (
     <KryptogoPaymentProvider>
       <PaymentProvider>
-        <div className="min-h-screen bg-academic-cream/50 flex flex-col overflow-hidden">
-          <header className="w-full py-6 px-4 sm:px-6">
+        <div className="min-h-screen bg-academic-cream flex flex-col overflow-hidden">
+          <header className="w-full py-6 px-4 sm:px-6 relative z-10">
             <div className="max-w-6xl mx-auto w-full">
               {/* Fixed height container for success stories to prevent layout shifts */}
               <div className="h-14 mb-4 relative overflow-hidden">
@@ -44,7 +44,7 @@ function App() {
                   className={`absolute inset-0 p-3 rounded-lg bg-academic-navy/10 text-academic-navy text-center transition-all duration-500 ease-in-out ${
                     isAnimating 
                       ? 'translate-y-0' 
-                      : 'translate-y-full'
+                      : '-translate-y-full'
                   }`}
                 >
                   <span className="inline-block break-words">
@@ -56,13 +56,13 @@ function App() {
             </div>
           </header>
 
-          <main className="flex-grow w-full px-4 sm:px-6 overflow-x-hidden">
+          <main className="flex-grow w-full px-4 sm:px-6 overflow-x-hidden relative z-10">
             <div className="max-w-6xl mx-auto w-full">
               <StudentProfileForm />
             </div>
           </main>
 
-          <footer className="w-full py-4 px-4 sm:px-6 text-academic-slate border-t border-academic-light">
+          <footer className="w-full py-4 px-4 sm:px-6 text-academic-slate border-t border-academic-light relative z-10">
             <div className="max-w-6xl mx-auto w-full text-center">
               © {new Date().getFullYear()} College Application Planner. All rights reserved.
             </div>

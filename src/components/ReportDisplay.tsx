@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Download, Loader2, Lock, RotateCcw } from 'lucide-react';
+import { Download, Loader2, Lock, RotateCcw } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { usePayment } from '../context/PaymentContext';
 import { generatePDF } from '../utils/pdfUtils';
@@ -23,7 +23,6 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   const [nextSteps, setNextSteps] = useState<string>('');
   const [timelineData, setTimelineData] = useState<TimelinePeriod[] | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'plan' | 'next-steps'>('overview');
-  const [showNextSteps, setShowNextSteps] = useState(true);
   
   // Get payment state from context
   const { isPaid, initiatePayment, isProcessingPayment } = usePayment();
@@ -274,22 +273,10 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
       <section className="bg-white rounded-lg p-5 shadow-sm border border-gray-100 overflow-hidden">
         {isPaid ? (
           <>
-            <button 
-              className="w-full flex justify-between items-center text-left" 
-              onClick={() => setShowNextSteps(!showNextSteps)}
-            >
-              <h2 className="text-gray-800">Immediate Next Steps</h2>
-              {showNextSteps ? (
-                <ChevronUp className="h-5 w-5 text-gray-500" />
-              ) : (
-                <ChevronDown className="h-5 w-5 text-gray-500" />
-              )}
-            </button>
+            <h2 className="text-gray-800">Immediate Next Steps</h2>
             
-            {showNextSteps && (
-              <div className="mt-4 prose prose-sm max-w-none text-gray-700 overflow-hidden" 
-                   dangerouslySetInnerHTML={{ __html: nextSteps }} />
-            )}
+            <div className="mt-4 prose prose-sm max-w-none text-gray-700 overflow-hidden" 
+                 dangerouslySetInnerHTML={{ __html: nextSteps }} />
           </>
         ) : (
           <div className="w-full flex justify-between items-center">

@@ -723,11 +723,15 @@ export function StudentProfileForm() {
           is within reach.
         </h1>
         <p className="text-xl text-academic-slate mb-8 max-w-3xl mx-auto">
-          A personalized, data-backed college planning tool — trusted by top counselors.
+          A personalized, data-backed college planning tool — trusted by students admitted to top schools.
         </p>
         
         {/* School Logos Section */}
         <SchoolLogos />
+        
+        <p className="text-sm text-academic-slate mb-6 mt-4 max-w-2xl mx-auto">
+          Simply answer a few questions about your academic profile and goals to receive a personalized college application timeline and strategic recommendations. All your information is processed securely and never stored on our servers.
+        </p>
         
         <div className="flex justify-center gap-4 mt-8">
           <Button 
