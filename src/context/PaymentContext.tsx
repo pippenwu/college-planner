@@ -8,59 +8,50 @@ interface PaymentContextType {
   setIsPaid: React.Dispatch<React.SetStateAction<boolean>>;
   initiatePayment: (amount: string, currency: 'TWD' | 'USD') => void;
   isProcessingPayment: boolean;
+  resetPaymentState: () => void;
 }
 
 // Create the context with a default value
 const PaymentContext = createContext<PaymentContextType | undefined>(undefined);
 
-// Storage key for access token - using localStorage to persist payment state between sessions
-const PAYMENT_STATUS_KEY = 'college_planner_payment_status';
-
 // Provider component
 export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Check localStorage for any existing payment status
-  const [isPaid, setIsPaid] = useState(() => {
-    const savedStatus = localStorage.getItem(PAYMENT_STATUS_KEY);
-    return savedStatus ? JSON.parse(savedStatus) : false;
-  });
-  
+  // State for payment status with initial value always false
+  const [isPaid, setIsPaid] = useState<boolean>(false);
   const [isVerifying, setIsVerifying] = useState(false);
   
+  // Use the complete KryptoGO hook
   const {
     openPaymentModal,
     closePaymentModal,
+    data,
+    txHash,
+    error,
     isLoading,
     isSuccess,
     isError,
-    error,
     isModalOpen,
-    resetPayment,
-    txHash,
-    data
+    resetPayment
   } = useRealPayment();
 
   const [paymentAmount, setPaymentAmount] = useState('0.01');
   const [paymentCurrency, setPaymentCurrency] = useState<'TWD' | 'USD'>('USD');
 
-  // Update local storage when isPaid changes
+  // Check for successful payment - completely in-memory, no persistence
   useEffect(() => {
-    localStorage.setItem(PAYMENT_STATUS_KEY, JSON.stringify(isPaid));
-  }, [isPaid]);
-
-  // Check for payment success from KryptoGO
-  useEffect(() => {
+    console.log('Payment status effect: data=', data, 'txHash=', txHash);
     if (data && data.status === 'success' && txHash) {
-      console.log('Payment successful with txHash:', txHash);
       console.log('Payment data:', data);
-      
-      // Set isPaid directly based on KryptoGO's successful transaction
       setIsPaid(true);
-      
-      // For a production app, you would typically verify this transaction on a backend
-      // before granting access, but for this version we'll trust KryptoGO's response
-      console.log('Full report unlocked based on successful KryptoGO payment');
+      // No persistence - will be lost on refresh
     }
   }, [data, txHash]);
+
+  // Function to reset payment state manually
+  const resetPaymentState = () => {
+    setIsPaid(false);
+    console.log("Payment state has been manually reset");
+  };
 
   const initiatePayment = (amount: string, currency: 'TWD' | 'USD') => {
     setPaymentAmount(amount);
@@ -96,7 +87,8 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
       isPaid, 
       setIsPaid,
       initiatePayment,
-      isProcessingPayment: isLoading || isVerifying
+      isProcessingPayment: isLoading || isVerifying,
+      resetPaymentState
     }}>
       {children}
       <PaymentModal
@@ -104,7 +96,7 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
         onClose={handleCloseModal}
         isLoading={isLoading}
         isSuccess={isSuccess}
-        isError={isError}
+        isError={!!error}
         error={error}
         amount={paymentAmount}
         currency={paymentCurrency}

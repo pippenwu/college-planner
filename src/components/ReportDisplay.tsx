@@ -1,10 +1,19 @@
-import { Download, Loader2, Lock, RotateCcw } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Code, Download, Loader2, Lock, RotateCcw } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { usePayment } from '../context/PaymentContext';
 import { generatePDF } from '../utils/pdfUtils';
 import { EnhancedTimelineView } from './EnhancedTimelineView';
 import { TimelinePeriod } from './TimelineView';
-import { Button } from './ui/button';
 
 interface ReportDisplayProps {
   report: string;
@@ -23,9 +32,12 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   const [nextSteps, setNextSteps] = useState<string>('');
   const [timelineData, setTimelineData] = useState<TimelinePeriod[] | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'plan' | 'next-steps'>('overview');
+  const [betaCodeInput, setBetaCodeInput] = useState('');
+  const [showBetaDialog, setShowBetaDialog] = useState(false);
+  const [betaError, setBetaError] = useState<string | null>(null);
   
   // Get payment state from context
-  const { isPaid, initiatePayment, isProcessingPayment } = usePayment();
+  const { isPaid, setIsPaid, initiatePayment, isProcessingPayment } = usePayment();
 
   useEffect(() => {
     if (report) {
@@ -176,6 +188,20 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
     initiatePayment('0.01', 'USD');
   };
 
+  const handleBetaCodeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Hard-coded beta code - never persisted
+    if (betaCodeInput === 'betatester2024') {
+      // Update the payment state without any persistence
+      setIsPaid(true);
+      setBetaError(null);
+      setShowBetaDialog(false);
+    } else {
+      setBetaError('Invalid beta code. Please try again.');
+    }
+  };
+
   return (
     <div className="report-display space-y-8 max-w-full overflow-hidden">
       {/* Overview Section - Concise */}
@@ -271,36 +297,40 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
       
       {/* Next Steps Section - Visible to all users, but content only for paid users */}
       <section className="bg-white rounded-lg p-5 shadow-sm border border-gray-100 overflow-hidden">
-        {isPaid ? (
+        {isPaid && (
           <>
             <h2 className="text-gray-800">Immediate Next Steps</h2>
             
             <div className="mt-4 prose prose-sm max-w-none text-gray-700 overflow-hidden" 
                  dangerouslySetInnerHTML={{ __html: nextSteps }} />
           </>
-        ) : (
-          <div className="w-full flex justify-between items-center">
-            <h2 className="text-gray-800 flex items-center">
-              Immediate Next Steps
-              <Lock className="ml-2 h-4 w-4 text-gray-400" />
-            </h2>
-            <span className="text-xs text-academic-burgundy">
-              Premium Feature
-            </span>
-          </div>
         )}
       </section>
       
       {/* Action Buttons */}
       <div className="flex justify-between mt-6">
-        <Button 
-          variant="outline" 
-          onClick={onStartOver}
-          className="flex items-center gap-2"
-        >
-          <RotateCcw className="h-4 w-4" />
-          Start Over
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="outline" 
+            onClick={onStartOver}
+            className="flex items-center gap-2"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Start Over
+          </Button>
+          
+          {/* Beta code button - shown for unpaid users */}
+          {!isPaid && (
+            <Button
+              variant="outline"
+              onClick={() => setShowBetaDialog(true)}
+              className="flex items-center gap-2 border-academic-navy text-academic-navy"
+            >
+              <Code className="h-4 w-4" />
+              Beta Code
+            </Button>
+          )}
+        </div>
         
         {/* Only show download button for paid users */}
         {isPaid && (
@@ -334,6 +364,37 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
           </Button>
         )}
       </div>
+
+      {/* Beta Code Dialog */}
+      <Dialog open={showBetaDialog} onOpenChange={setShowBetaDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Enter Beta Tester Code</DialogTitle>
+            <DialogDescription>
+              If you have a beta tester code, enter it below to unlock the full report.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <Input
+              placeholder="Enter your beta code"
+              value={betaCodeInput}
+              onChange={(e) => setBetaCodeInput(e.target.value)}
+              className={betaError ? "border-red-500" : ""}
+            />
+            {betaError && (
+              <p className="text-red-500 text-sm">{betaError}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBetaDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleBetaCodeSubmit}>
+              Submit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

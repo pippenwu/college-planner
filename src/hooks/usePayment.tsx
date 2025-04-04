@@ -1,4 +1,5 @@
 import { usePayment as useKryptogoPayment } from '@kryptogo/kryptogokit-sdk-react';
+import { useEffect } from 'react';
 
 // This file will use the actual KryptoGO implementation when the packages are installed
 // For now, we're using a typed interface that matches KryptoGO's but with a mock implementation
@@ -42,6 +43,41 @@ export const useRealPayment = () => {
     isSuccess,
     isError
   } = useKryptogoPayment();
+
+  // Clear ALL storage on component mount to prevent any persistence
+  useEffect(() => {
+    try {
+      console.log("Clearing all storage to prevent persistence");
+      
+      // Safer way to clear localStorage without causing errors
+      try {
+        // Only clear payment-related items instead of everything
+        const paymentKeys = Object.keys(localStorage).filter(
+          key => key.includes('payment') || key.includes('kryptogo')
+        );
+        paymentKeys.forEach(key => localStorage.removeItem(key));
+      } catch (err) {
+        console.warn('Error clearing localStorage:', err);
+      }
+      
+      // Safer way to clear sessionStorage without causing errors
+      try {
+        // Only clear payment-related items instead of everything
+        const paymentKeys = Object.keys(sessionStorage).filter(
+          key => key.includes('payment') || key.includes('kryptogo')
+        );
+        paymentKeys.forEach(key => sessionStorage.removeItem(key));
+      } catch (err) {
+        console.warn('Error clearing sessionStorage:', err);
+      }
+      
+      // Don't attempt to clear all cookies, just payment ones if needed
+      
+      console.log("Payment storage items cleared");
+    } catch (e) {
+      console.error('Error in storage clearing effect:', e);
+    }
+  }, []);
 
   // Create a wrapper around the KryptoGO openPaymentModal to ensure it accepts our interface
   const openPaymentModal = (params: PaymentParams) => {
