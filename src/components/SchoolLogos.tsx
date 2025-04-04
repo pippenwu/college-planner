@@ -56,7 +56,7 @@ const SCHOOL_LOGOS = [
 export const SchoolLogos: React.FC = () => {
   return (
     <div className="w-full py-6 overflow-hidden">
-      <h4 className="text-xl text-academic-navy mb-4 font-heading text-center">Trusted by students admitted to top universities</h4>
+      <h4 className="text-xl text-academic-navy mb-4 font-heading text-center">The</h4>
       <div className="relative">
         {/* Gradient fade on left */}
         <div className="absolute left-0 top-0 h-full w-16 bg-gradient-to-r from-white to-transparent z-10"></div>

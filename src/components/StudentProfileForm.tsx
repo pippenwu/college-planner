@@ -655,7 +655,7 @@ export function StudentProfileForm() {
     const templateData = {
       studentName: "Alex Johnson",
       highSchool: "Lincoln High School",
-      currentGrade: "11th",
+      currentGrade: "10th",
       intendedMajors: "Computer Science, Data Science",
       collegeList: "Stanford University, MIT, UC Berkeley, Carnegie Mellon, Georgia Tech",
       testScores: [

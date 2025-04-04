@@ -23,7 +23,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   const [nextSteps, setNextSteps] = useState<string>('');
   const [timelineData, setTimelineData] = useState<TimelinePeriod[] | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'plan' | 'next-steps'>('overview');
-  const [showNextSteps, setShowNextSteps] = useState(false);
+  const [showNextSteps, setShowNextSteps] = useState(true);
   
   // Get payment state from context
   const { isPaid, initiatePayment, isProcessingPayment } = usePayment();
@@ -160,39 +160,21 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
     }
   };
 
-  // Get a truncated version of the overview for unpaid users
-  const getTruncatedOverview = () => {
-    // If the user has paid, show the full overview
-    if (isPaid) return overview;
-    
-    // Otherwise, show a truncated version (first 2 paragraphs or ~30% of content)
-    const paragraphs = overview.split('</p>');
-    if (paragraphs.length <= 2) {
-      // If there's only one or two paragraphs, show about 30% of it
-      const charLimit = Math.floor(overview.length * 0.3);
-      let truncatedText = overview.slice(0, charLimit);
-      // Find the last closing tag before the cut
-      const lastClosingTagIndex = truncatedText.lastIndexOf('>');
-      if (lastClosingTagIndex > 0) {
-        truncatedText = overview.slice(0, lastClosingTagIndex + 1);
-      }
-      return truncatedText + '... <span class="text-academic-burgundy font-semibold">Unlock full report to see more</span>';
-    }
-    
-    // Return just the first two paragraphs
-    return paragraphs.slice(0, 2).join('</p>') + '</p><p>... <span class="text-academic-burgundy font-semibold">Unlock full report to see more</span></p>';
+  // Get the overview - now returning the full overview for all users
+  const getOverview = () => {
+    return overview;
   };
 
   // Get a limited version of the timeline data for unpaid users
   const getLimitedTimelineData = () => {
-    if (isPaid || !timelineData) return timelineData;
+    if (!timelineData) return null;
     
-    // Show only the first period for free users
-    return timelineData.slice(0, 1);
+    // Show only the first period for free users if not paid
+    return isPaid ? timelineData : timelineData.slice(0, 1);
   };
 
   const handlePaymentClick = () => {
-    initiatePayment('19.99', 'USD');
+    initiatePayment('0.01', 'USD');
   };
 
   return (
@@ -205,7 +187,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         
         <div 
           className="mt-3 prose prose-sm max-w-none text-gray-600 font-body overflow-hidden" 
-          dangerouslySetInnerHTML={{ __html: getTruncatedOverview() }} 
+          dangerouslySetInnerHTML={{ __html: getOverview() }} 
         />
       </section>
       
@@ -219,7 +201,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
                 Unlock Your Complete College Application Plan
               </h3>
               <p className="text-academic-slate mb-2">
-                Get your full, personalized report with detailed action items, timeline, and strategic recommendations.
+                Get your full application timeline and step-by-step guidance with detailed recommendations.
               </p>
               <ul className="text-sm text-academic-slate space-y-1 mb-4">
                 <li className="flex items-center">
@@ -247,7 +229,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
                   Processing...
                 </>
               ) : (
-                <>Unlock Full Report - $19.99</>
+                <>Unlock Full Report - $0.01</>
               )}
             </Button>
           </div>
@@ -258,15 +240,17 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
       <section className="relative overflow-hidden">
         <div className="flex justify-between items-center mb-3">
           <h2 className="text-gray-800">Your College Application Timeline</h2>
-          {!isPaid && (
+          {!isPaid && timelineData && (
             <span className="text-xs bg-academic-gold/20 text-academic-burgundy px-2 py-1 rounded-full">
-              Preview - {timelineData?.length ? '1 of ' + timelineData.length + ' periods shown' : ''}
+              Preview - {timelineData.length > 0 ? '1 of ' + timelineData.length + ' periods shown' : ''}
             </span>
           )}
         </div>
         
-        {getLimitedTimelineData() ? (
-          <EnhancedTimelineView timelineData={getLimitedTimelineData()} />
+        {timelineData ? (
+          <EnhancedTimelineView 
+            timelineData={isPaid ? timelineData : timelineData.slice(0, 1)} 
+          />
         ) : (
           <div className="bg-white rounded-lg p-6 shadow-md text-center">
             <p className="text-gray-500">
@@ -286,26 +270,39 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         )}
       </section>
       
-      {/* Next Steps Section - Simple List - Only visible for paid users */}
-      {isPaid && (
-        <section className="bg-white rounded-lg p-5 shadow-sm border border-gray-100 overflow-hidden">
-          <button 
-            className="w-full flex justify-between items-center text-left" 
-            onClick={() => setShowNextSteps(!showNextSteps)}
-          >
-            <h2 className="text-gray-800">Immediate Next Steps</h2>
-            {showNextSteps ? (
-              <ChevronUp className="h-5 w-5 text-gray-500" />
-            ) : (
-              <ChevronDown className="h-5 w-5 text-gray-500" />
+      {/* Next Steps Section - Visible to all users, but content only for paid users */}
+      <section className="bg-white rounded-lg p-5 shadow-sm border border-gray-100 overflow-hidden">
+        {isPaid ? (
+          <>
+            <button 
+              className="w-full flex justify-between items-center text-left" 
+              onClick={() => setShowNextSteps(!showNextSteps)}
+            >
+              <h2 className="text-gray-800">Immediate Next Steps</h2>
+              {showNextSteps ? (
+                <ChevronUp className="h-5 w-5 text-gray-500" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-gray-500" />
+              )}
+            </button>
+            
+            {showNextSteps && (
+              <div className="mt-4 prose prose-sm max-w-none text-gray-700 overflow-hidden" 
+                   dangerouslySetInnerHTML={{ __html: nextSteps }} />
             )}
-          </button>
-          
-          {showNextSteps && (
-            <div className="mt-4 prose prose-sm max-w-none text-gray-700 overflow-hidden" dangerouslySetInnerHTML={{ __html: nextSteps }} />
-          )}
-        </section>
-      )}
+          </>
+        ) : (
+          <div className="w-full flex justify-between items-center">
+            <h2 className="text-gray-800 flex items-center">
+              Immediate Next Steps
+              <Lock className="ml-2 h-4 w-4 text-gray-400" />
+            </h2>
+            <span className="text-xs text-academic-burgundy">
+              Premium Feature
+            </span>
+          </div>
+        )}
+      </section>
       
       {/* Action Buttons */}
       <div className="flex justify-between mt-6">
@@ -344,7 +341,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
             ) : (
               <>
                 <Lock className="h-4 w-4" />
-                Unlock Full Report
+                Unlock Full Report - $0.01
               </>
             )}
           </Button>

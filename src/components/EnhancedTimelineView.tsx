@@ -35,11 +35,11 @@ export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ time
   const getCategoryColor = (category: string) => {
     switch (category.toLowerCase()) {
       case 'academics':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
+        return 'bg-slate-50 text-academic-navy border-slate-200';
       case 'extracurriculars':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        return 'bg-stone-50 text-academic-slate border-stone-200';
       case 'application':
-        return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+        return 'bg-gray-50 text-academic-burgundy border-gray-200';
       default:
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }

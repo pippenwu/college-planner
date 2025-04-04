@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import KryptogoPaymentProvider from './components/payment/PaymentProvider';
 import { StudentProfileForm } from './components/StudentProfileForm';
 import { PaymentProvider } from './context/PaymentContext';
 
@@ -32,36 +33,43 @@ function App() {
   }, []);
 
   return (
-    <PaymentProvider>
-      <div className="min-h-screen bg-academic-cream/50 flex flex-col overflow-hidden">
-        <header className="w-full py-6 px-4 sm:px-6">
-          <div className="max-w-6xl mx-auto w-full">
-            {isAnimating && (
-              <div className="mb-4 p-3 rounded-lg bg-academic-navy/10 text-academic-navy text-center animate-fade-in overflow-hidden">
-                <span className="inline-block break-words">
-                  <span className="font-semibold">{SUCCESS_STORIES[currentStory].name}</span> got into{" "}
-                  <span className="font-semibold">{SUCCESS_STORIES[currentStory].school}</span> using this planner! 🎉
-                </span>
+    <KryptogoPaymentProvider>
+      <PaymentProvider>
+        <div className="min-h-screen bg-academic-cream/50 flex flex-col overflow-hidden">
+          <header className="w-full py-6 px-4 sm:px-6">
+            <div className="max-w-6xl mx-auto w-full">
+              {/* Fixed height container for success stories to prevent layout shifts */}
+              <div className="h-14 mb-4 relative overflow-hidden">
+                <div 
+                  className={`absolute inset-0 p-3 rounded-lg bg-academic-navy/10 text-academic-navy text-center transition-all duration-500 ease-in-out ${
+                    isAnimating 
+                      ? 'translate-y-0' 
+                      : 'translate-y-full'
+                  }`}
+                >
+                  <span className="inline-block break-words">
+                    <span className="font-semibold">{SUCCESS_STORIES[currentStory].name}</span> got into{" "}
+                    <span className="font-semibold">{SUCCESS_STORIES[currentStory].school}</span> using this planner! 🎉
+                  </span>
+                </div>
               </div>
-            )}
-            <h1 className="text-4xl font-bold text-academic-navy mb-2">College Application Planner</h1>
-            <p className="text-lg text-academic-slate mb-4">Data-driven college planning, trusted by professional counselors</p>
-          </div>
-        </header>
+            </div>
+          </header>
 
-        <main className="flex-grow w-full px-4 sm:px-6 overflow-x-hidden">
-          <div className="max-w-6xl mx-auto w-full">
-            <StudentProfileForm />
-          </div>
-        </main>
+          <main className="flex-grow w-full px-4 sm:px-6 overflow-x-hidden">
+            <div className="max-w-6xl mx-auto w-full">
+              <StudentProfileForm />
+            </div>
+          </main>
 
-        <footer className="w-full py-4 px-4 sm:px-6 text-academic-slate border-t border-academic-light">
-          <div className="max-w-6xl mx-auto w-full text-center">
-            © {new Date().getFullYear()} College Application Planner. All rights reserved.
-          </div>
-        </footer>
-      </div>
-    </PaymentProvider>
+          <footer className="w-full py-4 px-4 sm:px-6 text-academic-slate border-t border-academic-light">
+            <div className="max-w-6xl mx-auto w-full text-center">
+              © {new Date().getFullYear()} College Application Planner. All rights reserved.
+            </div>
+          </footer>
+        </div>
+      </PaymentProvider>
+    </KryptogoPaymentProvider>
   );
 }
 
