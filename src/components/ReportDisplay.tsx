@@ -197,10 +197,20 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
       setIsPaid(true);
       setBetaError(null);
       setShowBetaDialog(false);
+      console.log("Beta code accepted - unlocking ONLY this report instance");
     } else {
       setBetaError('Invalid beta code. Please try again.');
     }
   };
+
+  // Reset beta code input when report changes
+  useEffect(() => {
+    if (report) {
+      setBetaCodeInput('');
+      setBetaError(null);
+      console.log("New report loaded - beta code state reset");
+    }
+  }, [report]);
 
   return (
     <div className="report-display space-y-8 max-w-full overflow-hidden">
@@ -367,7 +377,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
 
       {/* Beta Code Dialog */}
       <Dialog open={showBetaDialog} onOpenChange={setShowBetaDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-white">
           <DialogHeader>
             <DialogTitle>Enter Beta Tester Code</DialogTitle>
             <DialogDescription>

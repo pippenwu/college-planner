@@ -92,7 +92,7 @@ export function StudentProfileForm() {
   const [pendingReportData, setPendingReportData] = useState<FormValues | null>(null);
   
   // Get payment state from context
-  const { isPaid, initiatePayment, isProcessingPayment } = usePayment();
+  const { isPaid, initiatePayment, isProcessingPayment, resetPaymentState } = usePayment();
   
   // Track the current section/step
   const [currentSection, setCurrentSection] = useState(0);
@@ -120,6 +120,8 @@ export function StudentProfileForm() {
       if (isPaid && pendingReportData) {
         setIsLoading(true);
         try {
+          // Reset payment state whenever generating a new report
+          resetPaymentState();
           const report = await generateCollegeReport(pendingReportData);
           setResult(report);
           setPendingReportData(null);
@@ -142,7 +144,7 @@ export function StudentProfileForm() {
     };
     
     generateReport();
-  }, [isPaid, pendingReportData]);
+  }, [isPaid, pendingReportData, resetPaymentState]);
 
   // Function to move to the next section
   const goToNextSection = () => {
@@ -191,6 +193,9 @@ export function StudentProfileForm() {
     setIsLoading(true);
     setSubmittedData(data);
     try {
+      // Reset payment state whenever generating a new report
+      resetPaymentState();
+      
       // Call OpenAI API through our service to generate the report
       const report = await generateCollegeReport(data);
       setResult(report);

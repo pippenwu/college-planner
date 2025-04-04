@@ -16,11 +16,11 @@ const PaymentContext = createContext<PaymentContextType | undefined>(undefined);
 
 // Provider component
 export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // State for payment status with initial value always false
+  // State for payment status - ALWAYS starts as false, never persisted
   const [isPaid, setIsPaid] = useState<boolean>(false);
   const [isVerifying, setIsVerifying] = useState(false);
   
-  // Use the complete KryptoGO hook
+  // Use the KryptoGO hook
   const {
     openPaymentModal,
     closePaymentModal,
@@ -42,8 +42,8 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
     console.log('Payment status effect: data=', data, 'txHash=', txHash);
     if (data && data.status === 'success' && txHash) {
       console.log('Payment data:', data);
+      // Only set paid for the current session
       setIsPaid(true);
-      // No persistence - will be lost on refresh
     }
   }, [data, txHash]);
 
@@ -52,6 +52,16 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
     setIsPaid(false);
     console.log("Payment state has been manually reset");
   };
+
+  // This effect ensures isPaid state is reset whenever the component remounts
+  // (which happens when navigating between reports)
+  useEffect(() => {
+    console.log("PaymentProvider mounted - payment state reset");
+    setIsPaid(false);
+    return () => {
+      console.log("PaymentProvider unmounting");
+    };
+  }, []);
 
   const initiatePayment = (amount: string, currency: 'TWD' | 'USD') => {
     setPaymentAmount(amount);
