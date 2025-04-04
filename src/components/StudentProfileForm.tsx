@@ -242,11 +242,11 @@ export function StudentProfileForm() {
   // Progress indicator component
   const ProgressIndicator = () => (
     <div className="mb-8">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between relative">
         {FORM_SECTIONS.map((section, index) => (
-          <div key={section.id} className="flex flex-col items-center">
+          <div key={section.id} className="flex flex-col items-center z-10">
             <div 
-              className={`relative flex items-center justify-center w-10 h-10 rounded-full border-2 cursor-pointer
+              className={`flex items-center justify-center w-10 h-10 rounded-full border-2 cursor-pointer
                 ${currentSection === index 
                   ? 'bg-academic-navy text-white border-academic-navy' 
                   : completedSections.includes(index)
@@ -259,10 +259,21 @@ export function StudentProfileForm() {
                 : index + 1}
             </div>
             <span className="text-xs mt-1 text-center">{section.title}</span>
-            {index < FORM_SECTIONS.length - 1 && (
-              <div className="absolute left-[calc(50%+1.25rem)] w-[calc(100%-2.5rem)] h-0.5 bg-academic-light -z-10" />
-            )}
           </div>
+        ))}
+        
+        {/* Connector lines between steps */}
+        {FORM_SECTIONS.map((_, index) => (
+          index < FORM_SECTIONS.length - 1 && (
+            <div 
+              key={`connector-${index}`}
+              className="absolute top-5 h-0.5 bg-academic-light -z-10"
+              style={{
+                left: `calc(${(index * 100) / (FORM_SECTIONS.length - 1)}% + 2rem)`,
+                width: `calc(${100 / (FORM_SECTIONS.length - 1)}% - 4rem)`
+              }}
+            />
+          )
         ))}
       </div>
       <div className="mt-2 h-2 w-full bg-academic-light rounded-full overflow-hidden">
@@ -714,36 +725,209 @@ export function StudentProfileForm() {
   };
 
   // Fill form with sample data and go to last section
-  const loadTemplateData = () => {
-    // Sample form data
-    const templateData = {
-      studentName: "Alex Johnson",
-      highSchool: "Lincoln High School",
+  const loadTemplateData = (category?: string) => {
+    let templateData: FormValues;
+    
+    // Define templates for different categories
+    const businessTemplate: FormValues = {
+      studentName: "Jordan Chen",
+      highSchool: "Westlake High School",
       currentGrade: "10th" as "<9th" | "9th" | "10th" | "11th" | "12th",
-      intendedMajors: "Computer Science, Data Science",
-      collegeList: "Stanford University, MIT, UC Berkeley, Carnegie Mellon, Georgia Tech",
+      intendedMajors: "Business Administration, Finance, Economics",
+      collegeList: "Wharton (UPenn), NYU Stern, University of Michigan Ross, UC Berkeley Haas, Georgetown McDonough",
       testScores: [
-        { testName: "SAT", score: "1480" },
-        { testName: "AP", score: "Calculus BC: 5" },
-        { testName: "AP", score: "Computer Science A: 5" }
+        { testName: "SAT", score: "1520" },
+        { testName: "AP", score: "Macroeconomics: 5" },
+        { testName: "AP", score: "Statistics: 4" }
       ],
-      courseHistory: "AP Calculus BC (A+), AP Computer Science A (A), AP Physics C (A-), Honors Chemistry (A), English Literature (A-), Spanish III (B+)",
+      courseHistory: "Honors Algebra II (A), AP Macroeconomics (A), AP Statistics (A-), Honors English 10 (A-), Spanish III (B+), World History (A)",
+      activities: [
+        { 
+          name: "DECA Business Club", 
+          notes: "Chapter President, 3 years, 5 hrs/week, Led team to national finals in entrepreneurship competition"
+        },
+        { 
+          name: "Student Investment Club", 
+          notes: "Founder & President, 2 years, 3 hrs/week, Manage virtual $100k portfolio with 20+ members"
+        },
+        { 
+          name: "Junior Achievement", 
+          notes: "Student Company CFO, 1 year, 4 hrs/week, Managed finances for student-run business"
+        }
+      ],
+      additionalInfo: "I started a small e-commerce business selling custom phone cases that generated $5,000 in revenue. I also completed a summer internship at a local financial advisory firm."
+    };
+    
+    const scienceMathTemplate: FormValues = {
+      studentName: "Aisha Patel",
+      highSchool: "Oakridge High School",
+      currentGrade: "10th" as "<9th" | "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Biology, Biochemistry, Pre-Med",
+      collegeList: "Johns Hopkins, Duke, UCLA, UNC Chapel Hill, Washington University in St. Louis",
+      testScores: [
+        { testName: "SAT", score: "1490" },
+        { testName: "AP", score: "Biology: 5" },
+        { testName: "AP", score: "Chemistry: 4" }
+      ],
+      courseHistory: "AP Biology (A+), AP Chemistry (A), Honors Precalculus (A), Honors English 10 (A), Spanish II (A-), World History (A-)",
+      activities: [
+        { 
+          name: "Science Olympiad", 
+          notes: "Team Captain, 3 years, 6 hrs/week, State medalist in Anatomy & Physiology"
+        },
+        { 
+          name: "Hospital Volunteer", 
+          notes: "Volunteer, 2 years, 5 hrs/week, 200+ total hours in pediatric ward"
+        },
+        { 
+          name: "Research Assistant", 
+          notes: "Lab Assistant, 1 year, 6 hrs/week, Assisting with cancer research at local university"
+        }
+      ],
+      additionalInfo: "I'm passionate about pediatric medicine and have been shadowing doctors at the local children's hospital. I also participated in a summer research program focused on cell biology."
+    };
+    
+    const engineeringTemplate: FormValues = {
+      studentName: "Malik Johnson",
+      highSchool: "Central Technical High School",
+      currentGrade: "10th" as "<9th" | "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Mechanical Engineering, Aerospace Engineering",
+      collegeList: "MIT, Georgia Tech, Purdue, University of Michigan, Caltech",
+      testScores: [
+        { testName: "SAT", score: "1510" },
+        { testName: "AP", score: "Physics 1: 5" },
+        { testName: "AP", score: "Calculus AB: 5" }
+      ],
+      courseHistory: "AP Physics 1 (A+), AP Calculus AB (A), Honors Chemistry (A), Intro to Engineering Design (A+), English 10 (B+), US History (A-)",
       activities: [
         { 
           name: "Robotics Team", 
-          notes: "Team Captain, 4 years, 8 hrs/week, Led team to state finals"
+          notes: "Lead Engineer, 3 years, 10 hrs/week, Designed robot that won regional championship"
         },
         { 
-          name: "Math Club", 
-          notes: "Vice President, 3 years, 3 hrs/week, Organized math competitions"
+          name: "3D Printing Club", 
+          notes: "Founder & President, 2 years, 4 hrs/week, Teaching CAD design to 15+ members"
         },
         { 
-          name: "Coding Volunteer", 
-          notes: "Instructor, 2 years, 4 hrs/week, Taught coding to middle school students"
+          name: "Math Team", 
+          notes: "Member, 2 years, 3 hrs/week, Placed 5th in state math competition"
         }
       ],
-      additionalInfo: "I developed an app that helps students track their homework and study time. It has over 500 users at my school. I'm also passionate about using technology to solve environmental problems."
+      additionalInfo: "I designed and built a working drone with custom 3D printed parts. I also completed an online course in AutoCAD and have been using the software to design sustainable housing concepts."
     };
+    
+    const socialScienceTemplate: FormValues = {
+      studentName: "Sofia Rodriguez",
+      highSchool: "Lincoln Academy",
+      currentGrade: "10th" as "<9th" | "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Political Science, International Relations, Public Policy",
+      collegeList: "Georgetown, American University, UC Berkeley, Columbia, University of Chicago",
+      testScores: [
+        { testName: "SAT", score: "1470" },
+        { testName: "AP", score: "US Government: 5" },
+        { testName: "AP", score: "World History: 4" }
+      ],
+      courseHistory: "AP US Government (A), AP World History (A-), Honors English 10 (A), Algebra II (B+), Spanish III (A-), Biology (B+)",
+      activities: [
+        { 
+          name: "Model UN", 
+          notes: "Secretary General, 3 years, 5 hrs/week, Led team to national conference, Best Delegate award"
+        },
+        { 
+          name: "Debate Team", 
+          notes: "Captain, 2 years, 6 hrs/week, State finalist in Lincoln-Douglas debate"
+        },
+        { 
+          name: "Community Advocacy", 
+          notes: "Volunteer Coordinator, 2 years, 4 hrs/week, Organized voter registration drives"
+        }
+      ],
+      additionalInfo: "I interned at my local congressional office and helped research policy issues. I also started a podcast interviewing local political leaders about community issues that has over 500 listeners."
+    };
+    
+    const humanitiesTemplate: FormValues = {
+      studentName: "Ethan Williams",
+      highSchool: "Riverside High School",
+      currentGrade: "10th" as "<9th" | "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "English Literature, Philosophy, History",
+      collegeList: "Brown, Amherst, Williams, Swarthmore, Wesleyan",
+      testScores: [
+        { testName: "SAT", score: "1480" },
+        { testName: "AP", score: "English Language: 5" },
+        { testName: "AP", score: "European History: 4" }
+      ],
+      courseHistory: "AP English Language (A+), AP European History (A), Honors Algebra II (B+), Chemistry (B), French III (A), Psychology (A)",
+      activities: [
+        { 
+          name: "Literary Magazine", 
+          notes: "Editor-in-Chief, 3 years, 5 hrs/week, Published award-winning school magazine"
+        },
+        { 
+          name: "Writing Center", 
+          notes: "Peer Tutor, 2 years, 4 hrs/week, Helped students improve writing skills"
+        },
+        { 
+          name: "Philosophy Club", 
+          notes: "Founder & President, 2 years, 2 hrs/week, Organize weekly philosophical discussions"
+        }
+      ],
+      additionalInfo: "I've published short stories in two literary journals and won a regional essay contest. I also attended a summer program in creative writing at Columbia University."
+    };
+    
+    const artMusicTemplate: FormValues = {
+      studentName: "Zoe Kim",
+      highSchool: "Westwood Arts Academy",
+      currentGrade: "10th" as "<9th" | "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Fine Arts, Graphic Design, Music Composition",
+      collegeList: "Rhode Island School of Design, Juilliard, Berklee College of Music, Parsons School of Design, NYU Tisch",
+      testScores: [
+        { testName: "SAT", score: "1450" },
+        { testName: "AP", score: "Art History: 5" },
+        { testName: "AP", score: "Music Theory: 5" }
+      ],
+      courseHistory: "AP Art History (A+), AP Music Theory (A), Studio Art (A+), Honors English 10 (A-), Algebra II (B+), Chemistry (B)",
+      activities: [
+        { 
+          name: "Symphony Orchestra", 
+          notes: "First Violin, 4 years, 8 hrs/week, Selected for All-State Orchestra"
+        },
+        { 
+          name: "Digital Arts Club", 
+          notes: "President, 2 years, 5 hrs/week, Organized annual digital art exhibition"
+        },
+        { 
+          name: "Community Theater", 
+          notes: "Set Designer & Actor, 3 years, 10 hrs/week during productions, Lead roles in 3 plays"
+        }
+      ],
+      additionalInfo: "I've composed original music that was performed at our school's spring concert. My digital artwork was selected for display at our city's youth art exhibition, and I've completed an internship with a local graphic design firm."
+    };
+
+    // Select template based on category
+    switch (category) {
+      case 'business':
+        templateData = businessTemplate;
+        break;
+      case 'science-math':
+        templateData = scienceMathTemplate;
+        break;
+      case 'engineering':
+        templateData = engineeringTemplate;
+        break;
+      case 'social-science':
+        templateData = socialScienceTemplate;
+        break;
+      case 'humanities':
+        templateData = humanitiesTemplate;
+        break;
+      case 'art-music':
+        templateData = artMusicTemplate;
+        break;
+      default:
+        // Show template selection dialog if no category is provided
+        setShowTemplateDialog(true);
+        return;
+    }
     
     // Reset the form with template data
     form.reset(templateData);
@@ -773,6 +957,51 @@ export function StudentProfileForm() {
     );
   };
 
+  // Template selection dialog state
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+
+  // Template selection dialog
+  const TemplateSelectionDialog = () => (
+    <div className={`fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center ${showTemplateDialog ? 'block' : 'hidden'}`}>
+      <div className="bg-white rounded-lg p-6 max-w-md w-full">
+        <h3 className="text-xl font-bold mb-4 text-academic-navy">Choose a Student Profile</h3>
+        <p className="text-sm text-gray-600 mb-4">Select an academic interest to load a sample student profile:</p>
+        
+        <div className="space-y-2">
+          {[
+            { id: 'business', label: 'Business Student' },
+            { id: 'science-math', label: 'Science/Math Student' },
+            { id: 'engineering', label: 'Engineering Student' },
+            { id: 'social-science', label: 'Social Science Student' },
+            { id: 'humanities', label: 'Humanities Student' },
+            { id: 'art-music', label: 'Art/Music Student' }
+          ].map(template => (
+            <button
+              key={template.id}
+              onClick={() => {
+                setShowTemplateDialog(false);
+                loadTemplateData(template.id);
+              }}
+              className="w-full text-left px-4 py-3 border rounded-md hover:bg-academic-cream hover:border-academic-gold transition-colors"
+            >
+              {template.label}
+            </button>
+          ))}
+        </div>
+        
+        <div className="mt-6 flex justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowTemplateDialog(false)}
+          >
+            Cancel
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+
   // If a report has been generated, show the report display component instead of the form
   if (result) {
     return (
@@ -792,6 +1021,9 @@ export function StudentProfileForm() {
 
   return (
     <div className="max-w-full overflow-hidden">
+      {/* Template Selection Dialog */}
+      <TemplateSelectionDialog />
+      
       {/* Hero Section */}
       <div className="mb-12 pt-8 text-center">
         <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 bg-gradient-to-r from-academic-navy via-academic-burgundy to-academic-navy bg-clip-text text-transparent drop-shadow-sm leading-tight">
@@ -809,7 +1041,7 @@ export function StudentProfileForm() {
           Simply answer a few questions about your academic profile and goals to receive a personalized college application timeline and strategic recommendations. All your information is processed securely and never stored on our servers.
         </p>
         
-        <div className="flex justify-center gap-4 mt-8">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
           <Button 
             onClick={scrollToForm}
             className="bg-academic-burgundy hover:bg-academic-navy text-white px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl border-2 border-academic-burgundy hover:border-academic-navy"
@@ -817,8 +1049,10 @@ export function StudentProfileForm() {
             Start Planning
           </Button>
           
+          <div className="my-2 text-academic-slate font-semibold">OR</div>
+          
           <Button 
-            onClick={loadTemplateData}
+            onClick={() => loadTemplateData()}
             className="bg-white hover:bg-academic-cream text-academic-navy px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl border-2 border-academic-gold hover:border-academic-navy"
           >
             Use Demo Profile

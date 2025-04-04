@@ -180,8 +180,13 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   const getLimitedTimelineData = () => {
     if (!timelineData) return null;
     
-    // Show only the first period for free users if not paid
-    return isPaid ? timelineData : timelineData.slice(0, 1);
+    // Show 60% of the timeline data for free users
+    if (isPaid) {
+      return timelineData;
+    } else {
+      const visibleCount = Math.ceil(timelineData.length * 0.6);
+      return timelineData.slice(0, visibleCount);
+    }
   };
 
   const handlePaymentClick = () => {
@@ -277,14 +282,15 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
           <h2 className="text-gray-800">Your College Application Timeline</h2>
           {!isPaid && timelineData && (
             <span className="text-xs bg-academic-gold/20 text-academic-burgundy px-2 py-1 rounded-full">
-              Preview - {timelineData.length > 0 ? '1 of ' + timelineData.length + ' periods shown' : ''}
+              Preview - {timelineData.length > 0 ? 
+                Math.ceil(timelineData.length * 0.6) + ' of ' + timelineData.length + ' periods shown' : ''}
             </span>
           )}
         </div>
         
         {timelineData ? (
           <EnhancedTimelineView 
-            timelineData={isPaid ? timelineData : timelineData.slice(0, 1)} 
+            timelineData={getLimitedTimelineData() || []} 
           />
         ) : (
           <div className="bg-white rounded-lg p-6 shadow-md text-center">
@@ -295,24 +301,36 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         )}
         
         {/* Show a locked indicator for unpaid users */}
-        {!isPaid && timelineData && timelineData.length > 1 && (
+        {!isPaid && timelineData && timelineData.length > Math.ceil(timelineData.length * 0.6) && (
           <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">
             <p className="text-academic-slate flex items-center justify-center">
               <Lock className="mr-2 h-4 w-4" />
-              {timelineData.length - 1} more periods available in the full report
+              {timelineData.length - Math.ceil(timelineData.length * 0.6)} more periods available in the full report
             </p>
           </div>
         )}
       </section>
       
-      {/* Next Steps Section - Visible to all users, but content only for paid users */}
+      {/* Next Steps Section - Show preview for unpaid users */}
       <section className="bg-white rounded-lg p-5 shadow-sm border border-gray-100 overflow-hidden">
-        {isPaid && (
+        <h2 className="text-gray-800">Immediate Next Steps</h2>
+        
+        {isPaid ? (
+          <div className="mt-4 prose prose-sm max-w-none text-gray-700 overflow-hidden" 
+               dangerouslySetInnerHTML={{ __html: nextSteps }} />
+        ) : (
           <>
-            <h2 className="text-gray-800">Immediate Next Steps</h2>
-            
-            <div className="mt-4 prose prose-sm max-w-none text-gray-700 overflow-hidden" 
-                 dangerouslySetInnerHTML={{ __html: nextSteps }} />
+            <div className="mt-4 prose prose-sm max-w-none text-gray-700 overflow-hidden">
+              {nextSteps && (
+                <div dangerouslySetInnerHTML={{ __html: nextSteps.split('</p>').slice(0, 2).join('</p>') + '</p>' }} />
+              )}
+              <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <p className="text-academic-slate flex items-center">
+                  <Lock className="mr-2 h-4 w-4" />
+                  Unlock the complete action plan with the full report
+                </p>
+              </div>
+            </div>
           </>
         )}
       </section>
