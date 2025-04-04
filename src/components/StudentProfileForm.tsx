@@ -718,8 +718,9 @@ export function StudentProfileForm() {
     <div className="max-w-full overflow-hidden">
       {/* Hero Section */}
       <div className="mb-12 pt-8 text-center">
-        <h1 className="text-academic-navy mb-4">
-          Your dream school is within reach.
+        <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 bg-gradient-to-r from-academic-navy via-academic-burgundy to-academic-navy bg-clip-text text-transparent drop-shadow-sm leading-tight">
+          Your dream school<br />
+          is within reach.
         </h1>
         <p className="text-xl text-academic-slate mb-8 max-w-3xl mx-auto">
           A personalized, data-backed college planning tool — trusted by top counselors.
