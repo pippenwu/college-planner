@@ -1,17 +1,17 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Code, Download, Loader2, Lock, RotateCcw } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { usePayment } from '../context/PaymentContext';
-import { generatePDF } from '../utils/pdfUtils';
+import { authApi, reportApi } from '../services/apiClient';
 import { EnhancedTimelineView } from './EnhancedTimelineView';
 import { TimelinePeriod } from './TimelineView';
 
@@ -165,9 +165,20 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
     ];
   };
 
-  const handlePDFDownload = () => {
-    if (report) {
-      generatePDF(report, studentName || 'Student');
+  const handlePDFDownload = async () => {
+    try {
+      // Get the current report ID from localStorage
+      const reportId = localStorage.getItem('current_report_id');
+      
+      if (!reportId) {
+        console.error('No report ID found for PDF download');
+        return;
+      }
+      
+      // Call the backend API to generate and download the PDF
+      await reportApi.downloadReportPdf(reportId);
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
     }
   };
 
@@ -193,18 +204,25 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
     initiatePayment('0.01', 'USD');
   };
 
-  const handleBetaCodeSubmit = (e: React.FormEvent) => {
+  const handleBetaCodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Hard-coded beta code - never persisted
-    if (betaCodeInput === 'betatester2024') {
-      // Update the payment state without any persistence
-      setIsPaid(true);
+    try {
       setBetaError(null);
-      setShowBetaDialog(false);
-      console.log("Beta code accepted - unlocking ONLY this report instance");
-    } else {
-      setBetaError('Invalid beta code. Please try again.');
+      // Call the backend API to verify the beta code
+      const response = await authApi.verifyBetaCode(betaCodeInput);
+      
+      if (response.success) {
+        // Update the payment state
+        setIsPaid(true);
+        setShowBetaDialog(false);
+        console.log("Beta code verified successfully - unlocking report");
+      } else {
+        setBetaError('Invalid beta code. Please try again.');
+      }
+    } catch (error) {
+      console.error("Beta code verification error:", error);
+      setBetaError('Error verifying beta code. Please try again.');
     }
   };
 
@@ -231,7 +249,31 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         />
       </section>
       
-      {/* Payment CTA - Show only for unpaid users */}
+      {/* Timeline Section */}
+      <section className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+        <div className="flex justify-between items-center p-5 border-b border-gray-100">
+          <h2 className="text-gray-800">Application Timeline</h2>
+          {!isPaid && (
+            <div className="flex items-center">
+              <Lock className="h-4 w-4 text-gray-400 mr-2" />
+              <span className="text-xs text-gray-500">Partial view for free users</span>
+            </div>
+          )}
+        </div>
+        
+        <div className="p-5">
+          {/* Only render EnhancedTimelineView if there's valid timeline data */}
+          {timelineData && Array.isArray(timelineData) ? (
+            <EnhancedTimelineView timelineData={getLimitedTimelineData() || []} />
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p>Timeline data is loading or not available.</p>
+            </div>
+          )}
+        </div>
+      </section>
+      
+      {/* Payment CTA - Show only for unpaid users, moved below timeline */}
       {!isPaid && (
         <div className="bg-academic-cream/80 rounded-lg p-6 border border-academic-gold/50 shadow-md">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -276,42 +318,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         </div>
       )}
       
-      {/* Timeline Section - Main Focus */}
-      <section className="relative overflow-hidden">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-gray-800">Your College Application Timeline</h2>
-          {!isPaid && timelineData && (
-            <span className="text-xs bg-academic-gold/20 text-academic-burgundy px-2 py-1 rounded-full">
-              Preview - {timelineData.length > 0 ? 
-                Math.ceil(timelineData.length * 0.6) + ' of ' + timelineData.length + ' periods shown' : ''}
-            </span>
-          )}
-        </div>
-        
-        {timelineData ? (
-          <EnhancedTimelineView 
-            timelineData={getLimitedTimelineData() || []} 
-          />
-        ) : (
-          <div className="bg-white rounded-lg p-6 shadow-md text-center">
-            <p className="text-gray-500">
-              Timeline data could not be loaded properly.
-            </p>
-          </div>
-        )}
-        
-        {/* Show a locked indicator for unpaid users */}
-        {!isPaid && timelineData && timelineData.length > Math.ceil(timelineData.length * 0.6) && (
-          <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">
-            <p className="text-academic-slate flex items-center justify-center">
-              <Lock className="mr-2 h-4 w-4" />
-              {timelineData.length - Math.ceil(timelineData.length * 0.6)} more periods available in the full report
-            </p>
-          </div>
-        )}
-      </section>
-      
-      {/* Next Steps Section - Show preview for unpaid users */}
+      {/* Next Steps Section - Show premium message for unpaid users */}
       <section className="bg-white rounded-lg p-5 shadow-sm border border-gray-100 overflow-hidden">
         <h2 className="text-gray-800">Immediate Next Steps</h2>
         
@@ -319,19 +326,16 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
           <div className="mt-4 prose prose-sm max-w-none text-gray-700 overflow-hidden" 
                dangerouslySetInnerHTML={{ __html: nextSteps }} />
         ) : (
-          <>
-            <div className="mt-4 prose prose-sm max-w-none text-gray-700 overflow-hidden">
-              {nextSteps && (
-                <div dangerouslySetInnerHTML={{ __html: nextSteps.split('</p>').slice(0, 2).join('</p>') + '</p>' }} />
-              )}
-              <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <p className="text-academic-slate flex items-center">
-                  <Lock className="mr-2 h-4 w-4" />
-                  Unlock the complete action plan with the full report
-                </p>
-              </div>
-            </div>
-          </>
+          <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <p className="text-academic-slate flex items-center">
+              <Lock className="mr-2 h-4 w-4" />
+              Premium Content: Immediate Next Steps
+            </p>
+            <p className="mt-2 text-gray-600">
+              Upgrade to access 5 personalized, immediately actionable recommendations 
+              to strengthen your college application strategy.
+            </p>
+          </div>
         )}
       </section>
       

@@ -1,25 +1,27 @@
-# CollegeGPT
+# CollegeGPT - College Application Planner
 
-An AI-powered tool that helps students get personalized college counseling advice by analyzing their academic profile and interests.
+CollegeGPT is a web application that helps students plan their college applications by generating personalized timelines and recommendations based on their academic profile.
+
+## Project Structure
+
+The project consists of two main parts:
+- `server/` - Express backend that handles sensitive operations
+- `src/` - React frontend for user interaction
 
 ## Features
 
-- Student profile input form collecting key academic and personal information
-- AI-generated report with the following sections:
-  - Recommended reach/target/safety schools
-  - Recommended majors
-  - Essay theme ideas
-  - Summer activity suggestions
-  - Application strategy
-- PDF export functionality
-- Clean, responsive UI built with React, TypeScript, Vite, and Tailwind CSS
+- Generate personalized college application plans
+- Interactive timeline visualization
+- PDF report generation
+- Payment processing with KryptoGO
+- Beta code access for testing
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js v16+
-- npm v7+
+- Node.js 16+ and npm
+- API keys for OpenAI and KryptoGO
 
 ### Installation
 
@@ -29,22 +31,58 @@ git clone https://github.com/yourusername/collegegpt.git
 cd collegegpt
 ```
 
-2. Install dependencies:
+2. Install frontend dependencies:
 ```bash
 npm install
 ```
 
-3. Create a `.env` file in the project root with your OpenAI API key:
-```
-VITE_OPENAI_API_KEY=your-api-key-here
+3. Install backend dependencies:
+```bash
+cd server
+npm install
 ```
 
-4. Start the development server:
+4. Create the backend `.env` file in the `server` directory:
+```
+PORT=3001
+NODE_ENV=development
+JWT_SECRET=your_jwt_secret_key_change_this_in_production
+OPENAI_API_KEY=your_openai_api_key
+KRYPTOGO_CLIENT_ID=your_kryptogo_client_id
+KRYPTOGO_API_SECRET=your_kryptogo_api_secret
+BETA_CODE=betatester2024
+```
+
+### Running the Application
+
+1. Start the backend server:
+```bash
+cd server
+npm run dev
+```
+
+2. In a separate terminal, start the frontend development server:
 ```bash
 npm run dev
 ```
 
-5. Open your browser and visit [http://localhost:5173](http://localhost:5173)
+3. Open your browser and navigate to `http://localhost:5173` (or the URL shown in your terminal)
+
+## Deployment
+
+The application is designed to be easily deployed to platforms like Vercel or Netlify for the frontend, and services like Heroku or Railway for the backend.
+
+## Security Considerations
+
+This project now implements several security best practices:
+- JWT-based authentication
+- Server-side payment verification
+- Secure storage of API keys
+- No client-side persistence of sensitive data
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Technologies Used
 

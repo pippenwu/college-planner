@@ -137,8 +137,8 @@ function App() {
               </div>
             </main>
 
-            <footer className="w-full py-4 px-4 sm:px-6 text-academic-slate border-t border-academic-light relative z-10">
-              <div className="max-w-6xl mx-auto w-full text-center">
+            <footer className="w-full py-4 px-4 sm:px-6 text-academic-slate border-t border-academic-light relative z-10 mt-12">
+              <div className="max-w-6xl mx-auto w-full text-center text-xs">
                 © {new Date().getFullYear()} College Application Planner. All rights reserved.
               </div>
             </footer>

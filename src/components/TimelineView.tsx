@@ -12,6 +12,7 @@ export interface TimelineEvent {
 export interface TimelinePeriod {
   period: string;
   events: TimelineEvent[];
+  tasks?: string[];
 }
 
 interface TimelineViewProps {

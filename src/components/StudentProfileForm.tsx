@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { usePayment } from '../context/PaymentContext';
-import { generateCollegeReport } from "../services/openaiService";
+import { reportApi } from "../services/apiClient";
 import ReportDisplay from "./ReportDisplay";
 import SchoolLogos from "./SchoolLogos";
 import { Button } from "./ui/button";
@@ -122,7 +122,7 @@ export function StudentProfileForm() {
         try {
           // Reset payment state whenever generating a new report
           resetPaymentState();
-          const report = await generateCollegeReport(pendingReportData);
+          const report = await reportApi.generateReport(pendingReportData);
           setResult(report);
           setPendingReportData(null);
         } catch (error) {
@@ -196,9 +196,28 @@ export function StudentProfileForm() {
       // Reset payment state whenever generating a new report
       resetPaymentState();
       
-      // Call OpenAI API through our service to generate the report
-      const report = await generateCollegeReport(data);
-      setResult(report);
+      // Call our backend API to generate the report
+      const response = await reportApi.generateReport(data);
+      
+      if (response.success && response.data) {
+        // Store the reportId in localStorage for future reference
+        localStorage.setItem('current_report_id', response.data.reportId);
+        
+        // Return the generated report HTML
+        setResult(response.data.reportData);
+      } else {
+        console.error("API response error:", response);
+        toast.error("Failed to generate report. Please try again later.", {
+          icon: '❌',
+          duration: 4000,
+          style: {
+            borderRadius: '10px',
+            background: '#fef2f2',
+            color: '#991b1b',
+            border: '1px solid #fecaca'
+          },
+        });
+      }
     } catch (error) {
       console.error("Error generating report:", error);
       toast.error("Failed to generate report. Please try again later.", {
@@ -707,7 +726,7 @@ export function StudentProfileForm() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating...
+                  Creating your personalized college application plan... This may take a minute or two, do not leave the page.
                 </>
               ) : "Generate Plan"}
             </Button>
@@ -1060,26 +1079,6 @@ export function StudentProfileForm() {
         </div>
       </div>
 
-      {isLoading && (
-        <div className="mb-8 p-6 bg-academic-navy/10 rounded-lg text-center animate-pulse">
-          <p className="text-lg font-semibold mb-4 text-academic-navy">
-            <Loader2 className="inline-block mr-2 h-5 w-5 animate-spin" />
-            Creating your personalized college application plan...
-          </p>
-          <p className="text-sm text-academic-slate">This may take a minute or two</p>
-        </div>
-      )}
-      
-      {isProcessingPayment && !isLoading && (
-        <div className="mb-8 p-6 bg-academic-navy/10 rounded-lg text-center animate-pulse">
-          <p className="text-lg font-semibold mb-4 text-academic-navy">
-            <Loader2 className="inline-block mr-2 h-5 w-5 animate-spin" />
-            Processing your payment...
-          </p>
-          <p className="text-sm text-academic-slate">Please complete the payment to generate your plan</p>
-        </div>
-      )}
-      
       {result && !isLoading ? (
         <ReportDisplay 
           report={result} 
@@ -1094,16 +1093,37 @@ export function StudentProfileForm() {
         />
       ) : (
         <div id="application-form" className="bg-white shadow-md border border-academic-light rounded-lg p-6 mb-6 overflow-hidden">
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit, handleFormError)} className="space-y-8 max-w-full">
-              <ProgressIndicator />
-              <div key={`section-${FORM_SECTIONS[currentSection].id}`} className="max-w-full">
-                {renderSection(FORM_SECTIONS[currentSection].id)}
+          {isLoading ? (
+            <div className="py-12 px-4 text-center">
+              <div className="p-6 bg-academic-navy/10 rounded-lg text-center animate-pulse">
+                <p className="text-lg font-semibold mb-4 text-academic-navy">
+                  <Loader2 className="inline-block mr-2 h-5 w-5 animate-spin" />
+                  Creating your personalized college application plan...
+                </p>
+                <p className="text-sm text-academic-slate">This may take a minute or two, do not leave the page.</p>
               </div>
-              {renderNavigationButtons()}
-            </form>
-          </Form>
+            </div>
+          ) : isProcessingPayment ? (
+            <div className="py-12 px-4 text-center">
+              <div className="p-6 bg-academic-navy/10 rounded-lg text-center animate-pulse">
+                <p className="text-lg font-semibold mb-4 text-academic-navy">
+                  <Loader2 className="inline-block mr-2 h-5 w-5 animate-spin" />
+                  Processing your payment...
+                </p>
+                <p className="text-sm text-academic-slate">Please complete the payment to generate your plan</p>
+              </div>
+            </div>
+          ) : (
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit, handleFormError)} className="space-y-8 max-w-full">
+                <ProgressIndicator />
+                <div key={`section-${FORM_SECTIONS[currentSection].id}`} className="max-w-full">
+                  {renderSection(FORM_SECTIONS[currentSection].id)}
+                </div>
+                {renderNavigationButtons()}
+              </form>
+            </Form>
+          )}
         </div>
       )}
     </div>
