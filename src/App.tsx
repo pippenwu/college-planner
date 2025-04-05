@@ -14,6 +14,16 @@ const SUCCESS_STORIES = [
   { name: "Ethan Wilson", school: "Columbia University" },
 ];
 
+// Alternative message formats for success stories
+const SUCCESS_PHRASES = [
+  "was accepted to", 
+  "earned admission to",
+  "received an offer from",
+  "secured a spot at",
+  "achieved their dream of attending",
+  "celebrated their acceptance to"
+];
+
 // Error Boundary component to catch rendering errors
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -72,6 +82,8 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 function App() {
   const [currentStory, setCurrentStory] = useState(0);
   const [isAnimating, setIsAnimating] = useState(true);
+  const [currentPhrase, setCurrentPhrase] = useState(0);
+  const [isReportVisible, setIsReportVisible] = useState(false);
 
   // Cycle through success stories
   useEffect(() => {
@@ -81,6 +93,8 @@ function App() {
       // Wait for fade out animation to complete
       setTimeout(() => {
         setCurrentStory((prev) => (prev + 1) % SUCCESS_STORIES.length);
+        // Also rotate through different phrases
+        setCurrentPhrase((prev) => (prev + 1) % SUCCESS_PHRASES.length);
         setIsAnimating(true);
       }, 500);
     }, 4000);
@@ -113,27 +127,30 @@ function App() {
             />
             <header className="w-full py-6 px-4 sm:px-6 relative z-10">
               <div className="max-w-6xl mx-auto w-full">
-                {/* Fixed height container for success stories to prevent layout shifts */}
-                <div className="h-14 mb-4 relative overflow-hidden">
-                  <div 
-                    className={`absolute inset-0 p-3 rounded-lg bg-academic-navy/10 text-academic-navy text-center transition-all duration-500 ease-in-out ${
-                      isAnimating 
-                        ? 'translate-y-0' 
-                        : '-translate-y-full'
-                    }`}
-                  >
-                    <span className="inline-block break-words">
-                      <span className="font-semibold">{SUCCESS_STORIES[currentStory].name}</span> got into{" "}
-                      <span className="font-semibold">{SUCCESS_STORIES[currentStory].school}</span> using this planner! 🎉
-                    </span>
+                {/* Only show success stories when no report is visible */}
+                {!isReportVisible && (
+                  <div className="h-14 mb-4 relative overflow-hidden">
+                    <div 
+                      className={`absolute inset-0 p-3 rounded-lg bg-academic-navy/10 text-academic-navy flex items-center justify-center transition-all duration-500 ease-in-out ${
+                        isAnimating 
+                          ? 'translate-y-0' 
+                          : '-translate-y-full'
+                      }`}
+                    >
+                      <span className="block">
+                        <span className="font-semibold">{SUCCESS_STORIES[currentStory].name}</span>{" "}
+                        {SUCCESS_PHRASES[currentPhrase]}{" "}
+                        <span className="font-semibold">{SUCCESS_STORIES[currentStory].school}</span>! 🎉
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </header>
 
             <main className="flex-grow w-full px-4 sm:px-6 overflow-x-hidden relative z-10">
               <div className="max-w-6xl mx-auto w-full">
-                <StudentProfileForm />
+                <StudentProfileForm onReportVisibilityChange={setIsReportVisible} />
               </div>
             </main>
 

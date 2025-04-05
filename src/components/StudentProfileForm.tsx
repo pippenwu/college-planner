@@ -85,7 +85,11 @@ const FORM_SECTIONS = [
   }
 ];
 
-export function StudentProfileForm() {
+interface StudentProfileFormProps {
+  onReportVisibilityChange?: (isVisible: boolean) => void;
+}
+
+export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [pendingReportData, setPendingReportData] = useState<FormValues | null>(null);
@@ -99,6 +103,13 @@ export function StudentProfileForm() {
   // Track completed sections
   const [completedSections, setCompletedSections] = useState<number[]>([]);
   
+  // Update the parent component when a report is shown or hidden
+  useEffect(() => {
+    if (onReportVisibilityChange) {
+      onReportVisibilityChange(result !== null);
+    }
+  }, [result, onReportVisibilityChange]);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -1059,16 +1070,25 @@ export function StudentProfileForm() {
     </div>
   );
 
+  // Function to handle starting over
+  const handleStartOver = () => {
+    // Clear the result to hide the report
+    setResult(null);
+    // Reset the form
+    form.reset();
+    // Reset all form state
+    setCompletedSections([]);
+    setCurrentSection(0);
+    // Scroll back to the form
+    scrollToForm();
+  };
+
   // If a report has been generated, show the report display component instead of the form
   if (result) {
     return (
       <ReportDisplay 
-        report={result}
-        onStartOver={() => {
-          setResult(null);
-          setCurrentSection(0);
-          setCompletedSections([]);
-        }}
+        report={result} 
+        onStartOver={handleStartOver} 
       />
     );
   }
