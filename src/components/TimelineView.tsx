@@ -144,9 +144,6 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ timelineData }) => {
                   <div className="flex-1">
                     <div className="flex justify-between">
                       <h4 className="font-semibold text-gray-800">{event.title}</h4>
-                      <div className="text-sm text-gray-500">
-                        <span>Deadline: {event.deadline}</span>
-                      </div>
                     </div>
                     
                     {selectedEventIndex === index && (

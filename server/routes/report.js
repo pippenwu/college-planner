@@ -220,6 +220,8 @@ async function generateReportWithAI(studentData) {
       Extracurricular Activities: ${activities}
       Additional Info: ${studentData.additionalInfo || ''}
       
+      IMPORTANT: Today's date is ${new Date().toISOString().split('T')[0]}. Please use this exact date as reference and ensure all timeline periods and deadlines are in the future from this date.
+      
       Create a detailed HTML report with the following sections:
       
       1. Overview section with an id="overview"
@@ -229,17 +231,19 @@ async function generateReportWithAI(studentData) {
       Include a timeline inside special tags <timeline-data>...</timeline-data> with the following JSON structure:
       [
         {
-          "period": "Spring 2024",
+          "period": "Spring 2025",
           "events": [
             {
               "title": "Event title",
               "category": "academics|extracurriculars|application",
               "description": "Specific action with detailed, actionable advice",
-              "deadline": "2024-05-01"
+              "deadline": "2025-05-01"
             }
           ]
         }
       ]
+      
+      Start the timeline with the current season of the current year and include at least 6 periods that span approximately 2 years. Use realistic academic seasons: Winter (Jan-Feb), Spring (Mar-May), Summer (Jun-Aug), and Fall (Sep-Dec).
       
       The timeline should include SPECIFIC actions with detailed explanations in the descriptions. This is where most of the detailed advice should go. For example, instead of just saying "Join extracurricular activities," provide details like "Apply for Stanford's High School Summer College program (deadline March 15) - this 8-week residential program allows you to earn college credit while exploring your academic interests. Given your profile in [specific interest], focus on their [specific track] which accepts only 50 students per summer and greatly strengthens college applications to selective schools."
       
@@ -254,7 +258,8 @@ async function generateReportWithAI(studentData) {
     try {
       console.log('Using Gemini model: gemini-2.0-flash');
       // Use only gemini-2.0-flash model as specified
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      // const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-thinking-exp-01-21" });
       
       // Generate content
       const result = await model.generateContent(prompt);
