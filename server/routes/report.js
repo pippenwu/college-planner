@@ -256,9 +256,8 @@ async function generateReportWithAI(studentData) {
     `;
 
     try {
-      console.log('Using Gemini model: gemini-2.0-flash');
+      console.log('Using Gemini model: gemini-2.0-flash-thinking-exp-01-21');
       // Use only gemini-2.0-flash model as specified
-      // const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
       const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-thinking-exp-01-21" });
       
       // Generate content
@@ -267,10 +266,10 @@ async function generateReportWithAI(studentData) {
       const text = response.text();
       
       // Return HTML directly instead of attempting to parse as JSON
-      console.log('Successfully generated HTML report using gemini-2.0-flash');
+      console.log('Successfully generated HTML report using gemini-2.0-flash-thinking-exp-01-21');
       return text; // Return the HTML text directly
     } catch (modelError) {
-      console.error('Error using Gemini model gemini-2.0-flash:', modelError);
+      console.error('Error using Gemini model gemini-2.0-flash-thinking-exp-01-21:', modelError);
       console.log('Using fallback report generator due to model error.');
       return generateFallbackHtmlReport(studentData);
     }

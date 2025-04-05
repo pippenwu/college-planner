@@ -249,8 +249,8 @@ export function StudentProfileForm() {
   };
 
   // Function to render field labels with required indicator
-  const FieldLabel = ({ children, required }: { children: React.ReactNode, required?: boolean }) => (
-    <FormLabel>
+  const FieldLabel = ({ children, required, htmlFor }: { children: React.ReactNode, required?: boolean, htmlFor?: string }) => (
+    <FormLabel htmlFor={htmlFor}>
       {children}
       {required && <span className="text-red-500 ml-1">*</span>}
     </FormLabel>
@@ -324,9 +324,10 @@ export function StudentProfileForm() {
                 
                 return (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel htmlFor={`student-name-${field.name}`}>Full Name</FormLabel>
                     <FormControl>
                       <Input 
+                        id={`student-name-${field.name}`}
                         placeholder="John Smith" 
                         value={field.value} 
                         onChange={handleChange}
@@ -347,9 +348,9 @@ export function StudentProfileForm() {
               name="highSchool"
               render={({ field }) => (
                 <FormItem>
-                  <FieldLabel required>Current High School</FieldLabel>
+                  <FieldLabel required htmlFor={`high-school-${field.name}`}>Current High School</FieldLabel>
                   <FormControl>
-                    <Input placeholder="Westlake High School" {...field} />
+                    <Input id={`high-school-${field.name}`} placeholder="Westlake High School" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -362,13 +363,13 @@ export function StudentProfileForm() {
               name="currentGrade"
               render={({ field }) => (
                 <FormItem>
-                  <FieldLabel required>Current Grade</FieldLabel>
+                  <FieldLabel required htmlFor={`current-grade-${field.name}`}>Current Grade</FieldLabel>
                   <Select 
                     onValueChange={field.onChange} 
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger id={`current-grade-${field.name}`}>
                         <SelectValue placeholder="Select your current grade" />
                       </SelectTrigger>
                     </FormControl>
@@ -401,12 +402,13 @@ export function StudentProfileForm() {
                 
                 return (
                   <FormItem>
-                    <FieldLabel required>Intended Major(s)</FieldLabel>
+                    <FieldLabel required htmlFor={`intended-majors-${field.name}`}>Intended Major(s)</FieldLabel>
                     <FormDescription className="text-gray-500 text-sm">
                       You can list multiple majors. If not yet decided, you may put "Undecided."
                     </FormDescription>
                     <FormControl>
                       <Input 
+                        id={`intended-majors-${field.name}`}
                         placeholder="Computer Science, Business Analytics" 
                         value={field.value} 
                         onChange={handleChange}
@@ -427,12 +429,13 @@ export function StudentProfileForm() {
               name="collegeList"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>College List</FormLabel>
+                  <FormLabel htmlFor={`college-list-${field.name}`}>College List</FormLabel>
                   <FormDescription className="text-gray-500 text-sm">
                     Colleges you intend to apply to. If you do not have an idea yet, you may leave this list blank.
                   </FormDescription>
                   <FormControl>
                     <Textarea 
+                      id={`college-list-${field.name}`}
                       placeholder="Stanford, MIT, UC Berkeley, NYU, University of Michigan"
                       className="min-h-[100px]"
                       {...field} 
@@ -450,7 +453,7 @@ export function StudentProfileForm() {
           <div className="space-y-6">
             <div className="space-y-3">
               <div className="flex justify-between items-center mb-2">
-                <FormLabel className="text-base">Test Scores</FormLabel>
+                <FormLabel className="text-base" htmlFor="test-scores-section">Test Scores</FormLabel>
                 <Button
                   type="button"
                   variant="outline"
@@ -471,99 +474,104 @@ export function StudentProfileForm() {
                 Enter scores for tests you've taken. For AP or IB exams, include the subject (e.g., "Calculus BC: 5").
               </FormDescription>
               
-              {form.watch("testScores")?.map((_, index) => (
-                <div key={index} className="flex items-center gap-3 p-2 border rounded-lg">
-                  <div className="flex-1">
-                    <FormField
-                      control={form.control}
-                      name={`testScores.${index}.testName`}
-                      render={({ field }) => (
-                        <FormItem className="mb-0">
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
+              <div id="test-scores-section" className="space-y-2">
+                {form.watch("testScores")?.map((_, index) => (
+                  <div key={index} className="flex items-center gap-3 p-2 border rounded-lg">
+                    <div className="flex-1">
+                      <FormField
+                        control={form.control}
+                        name={`testScores.${index}.testName`}
+                        render={({ field }) => (
+                          <FormItem className="mb-0">
+                            <FormLabel htmlFor={`test-name-${index}`} className="sr-only">Test Name</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger id={`test-name-${index}`}>
+                                  <SelectValue placeholder="Select a test" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="bg-white">
+                                <SelectItem value="SAT">SAT</SelectItem>
+                                <SelectItem value="ACT">ACT</SelectItem>
+                                <SelectItem value="PSAT/NMSQT">PSAT/NMSQT</SelectItem>
+                                <SelectItem value="TOEFL">TOEFL</SelectItem>
+                                <SelectItem value="IELTS">IELTS</SelectItem>
+                                <SelectItem value="AP">AP Exam</SelectItem>
+                                <SelectItem value="IB">IB Exam</SelectItem>
+                                <SelectItem value="Other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <div className="flex-1">
+                      <FormField
+                        control={form.control}
+                        name={`testScores.${index}.score`}
+                        render={({ field }) => (
+                          <FormItem className="mb-0">
+                            <FormLabel htmlFor={`test-score-${index}`} className="sr-only">Test Score</FormLabel>
                             <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a test" />
-                              </SelectTrigger>
+                              <div className="flex items-center gap-2">
+                                <Input 
+                                  id={`test-score-${index}`}
+                                  placeholder={
+                                    form.watch(`testScores.${index}.testName`) === "SAT" ? "1480" :
+                                    form.watch(`testScores.${index}.testName`) === "ACT" ? "32" :
+                                    form.watch(`testScores.${index}.testName`) === "PSAT/NMSQT" ? "1420" :
+                                    form.watch(`testScores.${index}.testName`) === "TOEFL" ? "105" :
+                                    form.watch(`testScores.${index}.testName`) === "IELTS" ? "7.5" :
+                                    form.watch(`testScores.${index}.testName`) === "AP" ? "Calculus BC: 5" :
+                                    form.watch(`testScores.${index}.testName`) === "IB" ? "Mathematics HL: 7" :
+                                    "Score or status"
+                                  } 
+                                  {...field} 
+                                  className="flex-grow"
+                                />
+                                {form.watch(`testScores.${index}.testName`) && (
+                                  <span className="text-xs text-gray-500 whitespace-nowrap">
+                                    {form.watch(`testScores.${index}.testName`) === "SAT" ? "/ 1600" :
+                                     form.watch(`testScores.${index}.testName`) === "ACT" ? "/ 36" :
+                                     form.watch(`testScores.${index}.testName`) === "PSAT/NMSQT" ? "/ 1520" :
+                                     form.watch(`testScores.${index}.testName`) === "TOEFL" ? "/ 120" :
+                                     form.watch(`testScores.${index}.testName`) === "IELTS" ? "/ 9" :
+                                     form.watch(`testScores.${index}.testName`) === "AP" ? "(1-5)" :
+                                     form.watch(`testScores.${index}.testName`) === "IB" ? "(1-7)" :
+                                     form.watch(`testScores.${index}.testName`) === "Other" ? "" : ""}
+                                  </span>
+                                )}
+                              </div>
                             </FormControl>
-                            <SelectContent className="bg-white">
-                              <SelectItem value="SAT">SAT</SelectItem>
-                              <SelectItem value="ACT">ACT</SelectItem>
-                              <SelectItem value="PSAT/NMSQT">PSAT/NMSQT</SelectItem>
-                              <SelectItem value="TOEFL">TOEFL</SelectItem>
-                              <SelectItem value="IELTS">IELTS</SelectItem>
-                              <SelectItem value="AP">AP Exam</SelectItem>
-                              <SelectItem value="IB">IB Exam</SelectItem>
-                              <SelectItem value="Other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    {index > 0 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="px-2"
+                        onClick={() => {
+                          const currentScores = form.getValues("testScores");
+                          form.setValue(
+                            "testScores",
+                            currentScores.filter((_, i) => i !== index)
+                          );
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 hover:text-red-500"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      </Button>
+                    )}
                   </div>
-                  
-                  <div className="flex-1">
-                    <FormField
-                      control={form.control}
-                      name={`testScores.${index}.score`}
-                      render={({ field }) => (
-                        <FormItem className="mb-0">
-                          <FormControl>
-                            <div className="flex items-center gap-2">
-                              <Input 
-                                placeholder={
-                                  form.watch(`testScores.${index}.testName`) === "SAT" ? "1480" :
-                                  form.watch(`testScores.${index}.testName`) === "ACT" ? "32" :
-                                  form.watch(`testScores.${index}.testName`) === "PSAT/NMSQT" ? "1420" :
-                                  form.watch(`testScores.${index}.testName`) === "TOEFL" ? "105" :
-                                  form.watch(`testScores.${index}.testName`) === "IELTS" ? "7.5" :
-                                  form.watch(`testScores.${index}.testName`) === "AP" ? "Calculus BC: 5" :
-                                  form.watch(`testScores.${index}.testName`) === "IB" ? "Mathematics HL: 7" :
-                                  "Score or status"
-                                } 
-                                {...field} 
-                                className="flex-grow"
-                              />
-                              {form.watch(`testScores.${index}.testName`) && (
-                                <span className="text-xs text-gray-500 whitespace-nowrap">
-                                  {form.watch(`testScores.${index}.testName`) === "SAT" ? "/ 1600" :
-                                   form.watch(`testScores.${index}.testName`) === "ACT" ? "/ 36" :
-                                   form.watch(`testScores.${index}.testName`) === "PSAT/NMSQT" ? "/ 1520" :
-                                   form.watch(`testScores.${index}.testName`) === "TOEFL" ? "/ 120" :
-                                   form.watch(`testScores.${index}.testName`) === "IELTS" ? "/ 9" :
-                                   form.watch(`testScores.${index}.testName`) === "AP" ? "(1-5)" :
-                                   form.watch(`testScores.${index}.testName`) === "IB" ? "(1-7)" :
-                                   form.watch(`testScores.${index}.testName`) === "Other" ? "" : ""}
-                                </span>
-                              )}
-                            </div>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  {index > 0 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="px-2"
-                      onClick={() => {
-                        const currentScores = form.getValues("testScores");
-                        form.setValue(
-                          "testScores",
-                          currentScores.filter((_, i) => i !== index)
-                        );
-                      }}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 hover:text-red-500"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                    </Button>
-                  )}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             <FormField
@@ -571,12 +579,13 @@ export function StudentProfileForm() {
               name="courseHistory"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base">Course History</FormLabel>
+                  <FormLabel className="text-base" htmlFor={`course-history-${field.name}`}>Course History</FormLabel>
                   <FormDescription className="text-gray-500 text-sm mb-2">
                     List courses you've taken with grades if available (include AP scores if applicable)
                   </FormDescription>
                   <FormControl>
                     <Textarea
+                      id={`course-history-${field.name}`}
                       placeholder="AP Calculus BC (A+), AP Computer Science A (A), AP Physics C (A-), Honors Chemistry (A), English Literature (A-), Spanish III (B+)"
                       className="min-h-[150px]"
                       {...field}
@@ -594,7 +603,7 @@ export function StudentProfileForm() {
           <div className="space-y-6">
             <div className="space-y-3">
               <div className="flex justify-between items-center mb-2">
-                <FormLabel className="text-base">Activities</FormLabel>
+                <FormLabel className="text-base" htmlFor="activities-section">Activities</FormLabel>
                 <Button
                   type="button"
                   variant="outline"
@@ -615,65 +624,96 @@ export function StudentProfileForm() {
                 Enter your extracurricular activities, leadership roles, work experience, and other involvements.
               </FormDescription>
               
-              {form.watch("activities")?.map((_, index) => (
-                <div key={index} className="flex items-center gap-3 p-2 border rounded-lg">
-                  <div className="w-1/4">
-                    <FormField
-                      control={form.control}
-                      name={`activities.${index}.name`}
-                      render={({ field }) => (
-                        <FormItem className="mb-0">
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Activity name (e.g., Debate Team, Volunteer Work)" 
-                              {...field} 
-                              className="w-full min-h-[90px] resize-none"
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+              <div id="activities-section" className="space-y-2">
+                {form.watch("activities")?.map((_, index) => (
+                  <div key={index} className="flex items-center gap-3 p-2 border rounded-lg">
+                    <div className="w-1/4">
+                      <FormField
+                        control={form.control}
+                        name={`activities.${index}.name`}
+                        render={({ field }) => (
+                          <FormItem className="mb-0">
+                            <FormLabel htmlFor={`activity-name-${index}`} className="sr-only">Activity Name</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                id={`activity-name-${index}`}
+                                placeholder="Activity name (e.g., Debate Team, Volunteer Work)" 
+                                {...field} 
+                                className="w-full min-h-[90px] resize-none"
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <div className="w-2/3">
+                      <FormField
+                        control={form.control}
+                        name={`activities.${index}.notes`}
+                        render={({ field }) => (
+                          <FormItem className="mb-0">
+                            <FormLabel htmlFor={`activity-notes-${index}`} className="sr-only">Activity Details</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                id={`activity-notes-${index}`}
+                                placeholder="Details (e.g., President, 3 years, 5 hrs/week, achievements)" 
+                                {...field} 
+                                className="w-full min-h-[90px] resize-none"
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    {form.watch("activities").length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="px-2"
+                        onClick={() => {
+                          const currentActivities = form.getValues("activities");
+                          form.setValue(
+                            "activities",
+                            currentActivities.filter((_, i) => i !== index)
+                          );
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 hover:text-red-500"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      </Button>
+                    )}
                   </div>
-                  
-                  <div className="w-2/3">
-                    <FormField
-                      control={form.control}
-                      name={`activities.${index}.notes`}
-                      render={({ field }) => (
-                        <FormItem className="mb-0">
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Details (e.g., President, 3 years, 5 hrs/week, achievements)" 
-                              {...field} 
-                              className="w-full min-h-[90px] resize-none"
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  {form.watch("activities").length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="px-2"
-                      onClick={() => {
-                        const currentActivities = form.getValues("activities");
-                        form.setValue(
-                          "activities",
-                          currentActivities.filter((_, i) => i !== index)
-                        );
-                      }}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 hover:text-red-500"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                    </Button>
-                  )}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
+        );
+
+      case "additionalInfo":
+        return (
+          <FormField
+            control={form.control}
+            name="additionalInfo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel htmlFor={`additional-info-${field.name}`}>Additional Information</FormLabel>
+                <FormDescription className="text-gray-500 text-sm mb-2">
+                  Is there anything else you'd like to share that wasn't covered in the earlier sections?
+                </FormDescription>
+                <FormControl>
+                  <Textarea
+                    id={`additional-info-${field.name}`}
+                    placeholder="Share any additional information that might be relevant to your college applications and planning."
+                    className="min-h-[150px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         );
 
       default:
