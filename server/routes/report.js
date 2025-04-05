@@ -211,48 +211,70 @@ async function generateReportWithAI(studentData) {
 
     // Add safe handling for properties that might be undefined
     const prompt = `
-      Generate a comprehensive college application plan based on the following student profile:
-      
+      You are a professional college counselor generating a personalized and strategic college planning report for a student based on the following profile.
+
+      Please follow these specific instructions carefully to create a structured HTML report with three sections:
+      1. Overview
+      2. Timeline (in JSON)
+      3. Next Steps
+
+      ---
+
+      ### Student Profile:
       Name: ${studentName}
       Grade: ${currentGrade}
       High School: ${highSchool}
       Academic Interests: ${interests}
       Extracurricular Activities: ${activities}
       Additional Info: ${studentData.additionalInfo || ''}
-      
-      IMPORTANT: Today's date is ${new Date().toISOString().split('T')[0]}. Please use this exact date as reference and ensure all timeline periods and deadlines are in the future from this date.
-      
-      Create a detailed HTML report with the following sections:
-      
-      1. Overview section with an id="overview"
-      Provide a CONCISE (no more than 100 words) data-driven assessment of the student's college readiness. Be direct and honest about strengths and weaknesses. Keep this brief and focused on the student's overall positioning - detailed advice should go in the timeline and next steps sections.
-      
-      2. Timeline section with id="timeline"
-      Include a timeline inside special tags <timeline-data>...</timeline-data> with the following JSON structure:
+
+      If any information is missing, make reasonable assumptions based on the high school and grade level.
+
+      ### Contextual Instructions:
+      - Today's date is ${new Date().toISOString().split('T')[0]}. Use this to ensure all recommendations are timely and relevant.
+      - The student is either from the U.S. or Taiwan. Base summer programs, extracurriculars, and opportunities on what is realistically available based on their high school location.
+      - For GPA and SAT benchmarks, reference actual data from Common Data Sets. Include 25th, 50th (mean), and 75th percentile scores for any recommended schools.
+      - Course selection advice should include specific AP courses, how many to take, and justifications. Include anecdotes or real case examples from successful applicants or forums when possible.
+      - The Common App allows 10 activities and 5 awards. Spread these throughout the timeline using real, named competitions, programs, and initiatives. Focus on key themes: leadership, community service, academic alignment, initiative, and competitiveness.
+      - Essay theme suggestions should reference real essay angles, case studies, or sample prompts. Include links or descriptions of successful essays.
+      - Recommended activities and programs may be chosen from a curated internal list (assume this is embedded), such as ArtEffect, iGEM, HOSA, Wharton Global Youth, AMC, YoungArts, NYT Summer School, etc.
+
+      ---
+
+      ### Output Format:
+
+      #### 1. Overview Section (HTML id="overview")
+      Write a concise (≤100 words) summary of the student's current academic position, strengths, and readiness. Focus on facts — avoid generic praise. Include test score and GPA context.
+
+      #### 2. Timeline Section (HTML id="timeline")
+      Output a <timeline-data>...</timeline-data> block containing structured JSON, like:
+
       [
         {
           "period": "Spring 2025",
           "events": [
             {
-              "title": "Event title",
-              "category": "academics|extracurriculars|application",
-              "description": "Specific action with detailed, actionable advice",
-              "deadline": "2025-05-01"
-            }
+              "title": "Apply to Veritas AI Scholars Program",
+              "category": "academics",
+              "description": "This selective AI program provides hands-on mentorship and aligns with your interest in computer science. Deadline: March 15.",
+              "deadline": "2025-03-15"
+            },
+            ...
           ]
-        }
+        },
+        ...
       ]
-      
+
       Start the timeline with the current season of the current year and include at least 6 periods that span approximately 2 years. Use realistic academic seasons: Winter (Jan-Feb), Spring (Mar-May), Summer (Jun-Aug), and Fall (Sep-Dec).
-      
-      The timeline should include SPECIFIC actions with detailed explanations in the descriptions. This is where most of the detailed advice should go. For example, instead of just saying "Join extracurricular activities," provide details like "Apply for Stanford's High School Summer College program (deadline March 15) - this 8-week residential program allows you to earn college credit while exploring your academic interests. Given your profile in [specific interest], focus on their [specific track] which accepts only 50 students per summer and greatly strengthens college applications to selective schools."
-      
-      3. Next steps section with id="next-steps"
-      Include NO MORE THAN 5 specific, immediately actionable recommendations. These should be the highest-priority steps the student should take in the next 30-60 days. Be specific and detailed with each recommendation, but limit to the 5 most important actions.
-      
-      Be direct when setting expectations. If the student's profile suggests they might not be competitive for certain schools, state so clearly while providing constructive alternatives: "Based on your current profile, admission to Ivy League schools is unlikely without significant improvements. Consider schools like X, Y, and Z where your profile would be competitive, or focus on these specific improvements: [detailed list]."
-      
-      Make the HTML readable and well-structured with appropriate headings (h2) for each section. Maintain a professional and supportive tone, but be honest and specific.
+
+      #### 3. Next Steps Section (HTML id="next-steps")
+      List exactly 5 high-priority, immediately actionable recommendations for the next 30–60 days. Be specific and strategic (e.g., register for a SAT retake, contact a research mentor, start drafting the Common App essay, etc.)
+
+      Style & Tone:
+      - Use clear, professional language.
+      - Be honest but supportive. If a student's current profile does not align with Ivy League admissions, state that clearly and recommend better-fit options.
+      - Ensure each section offers new value — do not repeat the same points across sections.
+      - Make the HTML structure readable with <h2> tags for each section, and include <div id="college-report"> as the outer container.
     `;
 
     try {
