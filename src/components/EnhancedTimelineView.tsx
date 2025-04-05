@@ -112,7 +112,7 @@ export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ time
           </div>
           
           <div className="absolute inset-x-0 flex justify-between">
-            {processedTimelineData.map((period, index) => (
+            {processedTimelineData.map((_, index) => (
               <div key={index} className="flex flex-col items-center z-10" style={{ 
                 left: `calc(${(index / (processedTimelineData.length - 1)) * 100}% - 15px)`
               }}>

@@ -21,7 +21,6 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [isPaid, setIsPaid] = useState<boolean>(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [currentPaymentId, setCurrentPaymentId] = useState<string | null>(null);
-  const [currentReportId, setCurrentReportId] = useState<string | null>(null);
   
   // Use the KryptoGO hook
   const {
@@ -32,7 +31,6 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
     error,
     isLoading,
     isSuccess,
-    isError,
     isModalOpen,
     resetPayment
   } = useRealPayment();
@@ -74,7 +72,6 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const resetPaymentState = () => {
     setIsPaid(false);
     setCurrentPaymentId(null);
-    setCurrentReportId(null);
     console.log("Payment state has been manually reset");
   };
 
@@ -122,7 +119,6 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
       
       // Get the current report ID from localStorage
       const reportId = localStorage.getItem('current_report_id') || `report_${Date.now()}`;
-      setCurrentReportId(reportId);
       
       console.log('Initializing payment for report:', reportId);
       

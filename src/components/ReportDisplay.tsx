@@ -17,21 +17,16 @@ import { TimelinePeriod } from './TimelineView';
 
 interface ReportDisplayProps {
   report: string;
-  studentName?: string;
-  studentGrade?: string;
   onStartOver: () => void;
 }
 
 const ReportDisplay: React.FC<ReportDisplayProps> = ({ 
   report, 
-  studentName,
-  studentGrade,
   onStartOver 
 }) => {
   const [overview, setOverview] = useState<string>('');
   const [nextSteps, setNextSteps] = useState<string>('');
   const [timelineData, setTimelineData] = useState<TimelinePeriod[] | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'plan' | 'next-steps'>('overview');
   const [betaCodeInput, setBetaCodeInput] = useState('');
   const [showBetaDialog, setShowBetaDialog] = useState(false);
   const [betaError, setBetaError] = useState<string | null>(null);

@@ -89,7 +89,7 @@ export const generatePDF = (reportHTML: string, studentName: string): void => {
           doc.setFontSize(11);
           doc.setTextColor(0, 0, 0);
           
-          timelineData.forEach((period: any, index: number) => {
+          timelineData.forEach((period: any) => {
             // Check if we need a new page
             if (yPosition > 270) {
               doc.addPage();

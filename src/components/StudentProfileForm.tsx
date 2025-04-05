@@ -88,11 +88,10 @@ const FORM_SECTIONS = [
 export function StudentProfileForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
-  const [submittedData, setSubmittedData] = useState<FormValues | null>(null);
   const [pendingReportData, setPendingReportData] = useState<FormValues | null>(null);
   
   // Get payment state from context
-  const { isPaid, initiatePayment, isProcessingPayment, resetPaymentState } = usePayment();
+  const { isPaid, isProcessingPayment, resetPaymentState } = usePayment();
   
   // Track the current section/step
   const [currentSection, setCurrentSection] = useState(0);
@@ -191,7 +190,6 @@ export function StudentProfileForm() {
     }
     
     setIsLoading(true);
-    setSubmittedData(data);
     try {
       // Reset payment state whenever generating a new report
       resetPaymentState();
@@ -1026,11 +1024,8 @@ export function StudentProfileForm() {
     return (
       <ReportDisplay 
         report={result}
-        studentName={submittedData?.studentName}
-        studentGrade={submittedData?.currentGrade}
         onStartOver={() => {
           setResult(null);
-          setSubmittedData(null);
           setCurrentSection(0);
           setCompletedSections([]);
         }}
@@ -1081,12 +1076,9 @@ export function StudentProfileForm() {
 
       {result && !isLoading ? (
         <ReportDisplay 
-          report={result} 
-          studentName={submittedData?.studentName}
-          studentGrade={submittedData?.currentGrade}
+          report={result}
           onStartOver={() => {
             setResult(null);
-            setSubmittedData(null);
             setCurrentSection(0);
             setCompletedSections([]);
           }}

@@ -1,10 +1,11 @@
+import type { ReactNode } from 'react';
 import React from 'react';
 
 // Real implementation now that packages are installed
 import {
-    KryptogoKitProvider,
-    connectorsForWallets,
-    kryptogoConnector,
+  KryptogoKitProvider,
+  connectorsForWallets,
+  kryptogoConnector,
 } from "@kryptogo/kryptogokit-sdk-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createClient, http } from "viem";
@@ -15,18 +16,18 @@ import { arbitrum, bsc, mainnet, polygon } from "wagmi/chains";
 
 // Import wallets
 import {
-    coinbaseWallet,
-    injectedWallet,
-    kryptogoWallet,
-    okxWallet,
-    walletConnectWallet,
+  coinbaseWallet,
+  injectedWallet,
+  kryptogoWallet,
+  okxWallet,
+  walletConnectWallet,
 } from "@kryptogo/kryptogokit-sdk-react/wallets";
 
 // Import pre-built styles
 import "@kryptogo/kryptogokit-sdk-react/styles.css";
 
 interface PaymentProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export const KryptogoPaymentProvider: React.FC<PaymentProviderProps> = ({ children }) => {
@@ -68,7 +69,7 @@ export const KryptogoPaymentProvider: React.FC<PaymentProviderProps> = ({ childr
           clientId={clientId}
           appInfo={{ appName: "College Application Planner" }}
         >
-          {children}
+          {children as any}
         </KryptogoKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
