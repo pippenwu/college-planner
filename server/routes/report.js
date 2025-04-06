@@ -250,13 +250,24 @@ async function generateReportWithAI(studentData) {
         },
         "timeline": [
           {
-            "period": "Spring 2023",
+            "period": "Spring 2023 (sophomore)",
             "events": [
               {
                 "title": "Apply to Veritas AI Scholars Program",
                 "category": "academics",
                 "description": "This selective AI program provides hands-on mentorship and aligns with your interest in computer science. Deadline: March 15.",
                 "deadline": "2023-03-15"
+              }
+            ]
+          },
+          {
+            "period": "Summer 2023 (rising junior)",
+            "events": [
+              {
+                "title": "Attend Stanford Summer Session",
+                "category": "academics",
+                "description": "Take a college-level course in your area of interest to demonstrate academic rigor and commitment.",
+                "deadline": "2023-06-15"
               }
             ]
           }
@@ -274,6 +285,10 @@ async function generateReportWithAI(studentData) {
       - Start with the current season of the current year
       - Include at least 6 periods spanning approximately 2 years
       - Use realistic academic seasons: Winter (Jan-Feb), Spring (Mar-May), Summer (Jun-Aug), and Fall (Sep-Dec)
+      - Include the student's grade level in parentheses for each period:
+        - Regular school terms: "Spring 2024 (sophomore)" - use the actual grade level
+        - Summer periods: "Summer 2024 (rising junior)" - use "rising [next grade]"
+      - Automatically calculate the changing grade levels as time progresses in the timeline
 
       For nextSteps:
       - Include exactly 5 high-priority, immediately actionable items for the next 30-60 days
