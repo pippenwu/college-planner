@@ -286,6 +286,8 @@ async function generateReportWithAI(studentData) {
       - Ensure each section offers new value — do not repeat the same points across sections
 
       Return ONLY valid JSON with no additional text, comments, or explanations. The response must be parseable by JSON.parse().
+      DO NOT wrap the JSON in markdown code blocks (do not use ```json or ``` tags).
+      DO NOT include any extra whitespace, newlines, or formatting that would break JSON parsing.
     `;
 
     try {
@@ -299,8 +301,16 @@ async function generateReportWithAI(studentData) {
       const text = response.text();
       
       try {
+        // Check if the text is wrapped in code blocks (```json ... ```)
+        let jsonText = text;
+        const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (codeBlockMatch && codeBlockMatch[1]) {
+          jsonText = codeBlockMatch[1].trim();
+          console.log('Extracted JSON from code block');
+        }
+        
         // Try to parse the response as JSON
-        const jsonData = JSON.parse(text);
+        const jsonData = JSON.parse(jsonText);
         console.log('Successfully generated JSON report using gemini-2.0-flash-thinking-exp-01-21');
         return jsonData;
       } catch (parseError) {
