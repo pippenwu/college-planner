@@ -167,18 +167,6 @@ export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ time
                               {event.description || event.title}
                             </p>
                             
-                            {event.deadline && event.deadline !== 'Ongoing' && (
-                              <div className="mt-2 flex items-center">
-                                <span className="text-xs font-medium bg-amber-100 text-amber-800 px-2 py-1 rounded">
-                                  Deadline: {new Date(event.deadline).toLocaleDateString('en-US', { 
-                                    year: 'numeric', 
-                                    month: 'short', 
-                                    day: 'numeric' 
-                                  })}
-                                </span>
-                              </div>
-                            )}
-                            
                             {event.url && (
                               <a 
                                 href={event.url} 

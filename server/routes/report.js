@@ -226,7 +226,6 @@ async function generateReportWithAI(studentData) {
       High School: ${highSchool}
       Academic Interests: ${interests}
       Extracurricular Activities: ${activities}
-      Additional Info: ${studentData.additionalInfo || ''}
 
       If any information is missing, make reasonable assumptions based on the high school and grade level.
 
@@ -237,7 +236,226 @@ async function generateReportWithAI(studentData) {
       - Course selection advice should include specific AP courses, how many to take, and justifications. Include anecdotes or real case examples from successful applicants or forums when possible.
       - The Common App allows 10 activities and 5 awards. Spread these throughout the timeline using real, named competitions, programs, and initiatives. Focus on key themes: leadership, community service, academic alignment, initiative, and competitiveness.
       - Essay theme suggestions should reference real essay angles, case studies, or sample prompts.
-      - Recommended activities and programs may be chosen from a curated internal list (assume this is embedded), such as ArtEffect, iGEM, HOSA, Wharton Global Youth, AMC, YoungArts, NYT Summer School, etc.
+      - Here is a list of activities that you may want to suggest, based on the student's profile:
+          ArtEffect
+          Congressional Art Competition
+          From The Top Fellowship (Music)
+          International Youth Fellowship
+          Kaira Looro
+          National Association for Music Education Competitions
+          National High School Musical Theatre Awards
+          Superior Culture
+          YoungArts National Arts Competetion
+          Health Occupations Students of America (HOSA)
+          International Genetically Engineered Machine (iGEM)
+          Medic Mentor
+          Stockholm Junior Water Prize
+          British Biology Olympiad
+          Blue Ocean Entrepreneurship Competition
+          Conrad Spirit of Innovation
+          DECA
+          Diamond Challenge
+          Future Business Leaders of America
+          Harvard Undergraduate Economics Association Writing Contest
+          High School Fed Challenge
+          International [School] Cyberfair (世界網界博覽會白金獎)
+          Model Entrepreneur Competition (MEC)
+          NFTE World Series of Innovation
+          Otis ESG
+          Rice Business Plan Competition
+          The Stock Market Game
+          Wharton Investment Competition
+          AICrowd
+          BEST Robotics Competition
+          CERN's Beamline for Schools Competition
+          Clean Tech Competition
+          Congressional App Challenge
+          CyberPatriot
+          First Robotics Competition
+          ITEX WYIE (Young Inventors)
+          Kaggle
+          Microsoft Imagine Cup (Junior)
+          MIT THINK Scholars Program
+          National Scholastic Press Association (Pacemaker and Individual Awards)
+          Technology Student Association High School Competition
+          Toshiba/NSTA ExploraVision
+          Vex Robotics Competition
+          Young Turing Program
+          International Olympiad in Artificial Intelligence
+          Austin Film Festival Young Filmmaker's Competition
+          2023 ARML Local 美國高中數學聯賽
+          AMC
+          American Regions Mathematics League
+          Caribou Mathematics Competition
+          COMAP
+          Cybermath
+          Harvard MIT Mathematics Tournament
+          High School Mathematical Contest in Modeling (HiMCM)
+          IMMC (International Math Modeling Competition)
+          Math Without Borders Competition
+          Pi Math Contest
+          Academic Decathlon
+          National Academic League
+          National History Bowl
+          Non-Trivial
+          Odyssey of the Mind
+          Quiz Bowl Tournament of Champions
+          The Brain Bee
+          University Interscholastic League
+          Astronomy Olympiad
+          IAAC
+          Physics Bowl
+          Climate Science Olympiad
+          Astrophysics Olympiad
+          AFSA American Foreign Service Affairs
+          American Foreign Service National H.S. Essay Contest
+          High School Democrats of America
+          We The People (Constitutional Scholars)
+          Asian Debate League
+          National Speech and Debate
+          National Speech and Debate Association
+          WSDC Taiwan
+          Profile in Courage Essay Contest 
+          Adroit Prizes for Poetry and Prose
+          Bennington College Essay competition ( Young Writers Awards)
+          Betty L. Yu and Jin C. Yu Creative Writing Prize
+          DNA Day Essay Competition
+          Immerse Essay Competition
+          John Locke Essay Competition
+          Kuen Tai Writing Competition
+          "Lewis Center for the Arts
+          High School Contests"
+          National Scholastic Press Association (Pacemaker and Individual Awards)
+          NCTE Student Writing Awards
+          NYTimes Contest
+          Polyphony Lit Seasonal Essay Competitions
+          Scholastic Art & Writing Awards
+          The Concord Review
+          World Historian Student Essay Competition
+          AI Song Contest
+          Cambridge Re:Think
+          MIT Inspire (Arts, Humanities, & Social Sciences)
+          Project Paradigm
+          Regeneron STS
+          Shell Eco-marathon regional mileage competitions
+          Columbia Political Review's High School Essay Contest
+          Congressional Award
+
+          Publications such as JSR, JEI, IJRES, IJHSR, Stanford Intersect, Schola, Whitman Journal of Psych, Young Scientist Journal, TAAI, ACMM, NYT, The Concord Review, The Adroit Journal, Polyphony Lit, Cathartic Lit, Parallax, Apprentice Writer, Ember Journal, Teen Ink, Incandescent Review, Adroit Journal, The Scholarly Review
+          
+          Here are also some potential summer programs:
+          Aspire: Five-Week Music Performance Intensive
+          Berklee Summer Programs
+          Early College Program Summer Institute
+          High School Summer Live Courses
+          Pratt Institute Summer Precollege
+          Sotheby's Institute of Art Summer Institute
+          UAL Summer Courses
+          Manhattan School of Music Pre-college
+          Stevens Select Summer Scholars Program
+          LaunchX IN PERSON
+          Wharton Global Youth Programs (LBW)
+          Berkeley High School Entrepreneurship
+          LaunchX Online
+          Wharton Global Youth Programs (non LBW)
+          Penn State BOSS business program
+          UCLA Anderson High School Discovery
+          MathILy
+          Veritas AI
+          MIT RSI
+          PROMYS
+          Ross Math Program
+          USA/Canada Mathcamp
+          Honors Math Program
+          Wolfram High School Summer
+          Princeton AI4All
+          AI Scholars CMU
+          YSPA (Yale Summer Program in Astrophysics)
+          RAL Work Placement
+          Imperial Global Summer School
+          Inspirit AI
+          Kode With Klossy
+          NYU TISCH SUMMER HIGH SCHOOL DRAMATIC WRITING PROGRAM 
+          Chapman Summer Film Academy 
+          Socapa Screenwriting Camp
+          Iowa Young Writer's Studio
+          Kenyon Review Young Writers Workshop
+          Clinical Science, Technology and Medicine Summer Internships
+          BU Rise
+          Stanford Institutes of Medicine Summer Research Program
+          Summer Internship in Biomedical Research (SIP)
+          NTU Yau Lab
+          SSP
+          Garcia Polymers Center Summer Program
+          Salish Sea Sciences Pre-College Program
+          Penn Medicine Summer Program
+          Summer High School Internship Program (Fred Hutchinson Cancer Center)
+          Wake Forest Summer Immersion (business math science film law etc)
+          COSMOS
+          Notre Dame Leadership Seminars
+          UChicago Summer College
+          UCSB Research Mentorship Program
+          YYGS
+          Harvard: Pre-College & Secondary School Program
+          Boston College Six-Week Honors Program
+          UMass Amherst Research Intensives
+          Boston Leadership Institute
+          Boston University High School Honors
+          CMU pre-college
+          Cornell Summer Session
+          Emory Pre-College and Summer College
+          Math BioU and Bio Exlpor
+          Northwestern College Preparation Program
+          Purdue Summer College for High School Students
+          Stanford Summer Session
+          UC Berkeley Pre-College
+          UPenn Summer Academies.
+          Oxford Summer Courses
+          Barnard Pre-College Programs
+          Brown Pre-college program
+          Duke Pre-College
+          Johns Hopkins CTY
+          KCL Pre-U
+          LMU Pre-College
+          NSLC
+          Rice University Visiting Owls
+          RISD Summer
+          Sarah Lawrence Pre-college Summer Programs
+          Smith College Summer Precollege Programs
+          SOCAPA camps (general)
+          Syracuse University Summer College
+          Tufts Pre-College Programs
+          UBC Future Global Leaders
+          UCL Pre-U
+          University of Rochester Pre-College Online
+          UMass Amherst Precollege
+          Syracuse Summer College Research Immersion
+          Columbia University Pre-College Programs
+          Adventures in Veterinary Medicine (Tufts Pre-college)
+          Bank of America Student Leaders
+          Simons Summer Research Program
+          Telluride Association Summer Seminar
+          Clark Young Scholars
+          Northwestern Medill Summer Journalism
+          Summer Journalism Program
+          Stanford Clinic Neuroscience Immersion Program (CNI-X)
+          NYU Middle/High School
+          UCLA Pre-college summer institute
+          Summer Business Programs
+          Walter Reed GEM
+          Georgetown Summer Academies
+          NYT Summer School
+          Rice Summer Camps
+          Vanderbilt Summer Academy
+          MSM Summer 
+          NTU Plus Academy
+          MSU Engineering
+          JHU EI
+          Middlebury Summer Language Immersion
+          Georgetown Global Academy
+          Stanford National Forensics Institute
+          NIST Lab Placement (Colorado)
+          Navy STEM 
 
       ---
 
@@ -255,8 +473,7 @@ async function generateReportWithAI(studentData) {
               {
                 "title": "Apply to Veritas AI Scholars Program",
                 "category": "academics",
-                "description": "This selective AI program (12% acceptance rate) provides hands-on mentorship with industry professionals. Past participants have published papers in IEEE conferences. Program runs June 15-August 10 with 3 tracks: Computer Vision, NLP, and Reinforcement Learning. Average participants report 85 hours of coding practice. Application requires: transcript, 500-word statement, coding sample, and one recommendation letter. Deadline: March 15.",
-                "deadline": "2023-03-15"
+                "description": "This selective AI program (12% acceptance rate) provides hands-on mentorship with industry professionals. Past participants have published papers in IEEE conferences. Program runs June 15-August 10 with 3 tracks: Computer Vision, NLP, and Reinforcement Learning. Average participants report 85 hours of coding practice. Application requires: transcript, 500-word statement, coding sample, and one recommendation letter."
               }
             ]
           },
@@ -266,8 +483,7 @@ async function generateReportWithAI(studentData) {
               {
                 "title": "Attend Stanford Summer Session",
                 "category": "academics",
-                "description": "Application success rate: 65% for high-achieving students. Choose from 25+ STEM courses that align with your interests. 68% of participants report the experience was 'extremely valuable' on college applications. Program cost: $7,800-9,500 for 8-week session, with financial aid available (avg. award: $3,200). Alumni report 92% satisfaction with knowledge gained. Courses feature real-world projects evaluated by Stanford faculty. Admission requires: 3.7+ GPA, transcript, and one recommendation letter.",
-                "deadline": "2023-06-15"
+                "description": "Application success rate: 65% for high-achieving students. Choose from 25+ STEM courses that align with your interests. 68% of participants report the experience was 'extremely valuable' on college applications. Program cost: $7,800-9,500 for 8-week session, with financial aid available (avg. award: $3,200). Alumni report 92% satisfaction with knowledge gained. Courses feature real-world projects evaluated by Stanford faculty. Admission requires: 3.7+ GPA, transcript, and one recommendation letter."
               }
             ]
           }
@@ -293,7 +509,7 @@ async function generateReportWithAI(studentData) {
       For each timeline event, provide highly detailed descriptions with:
       - Specific data points and statistics: acceptance rates, success rates, average outcomes
       - Concrete requirements: prerequisites, materials needed, time commitments
-      - Real deadlines and program dates when applicable
+      - Real program dates when applicable
       - Quantifiable benefits: percentage of participants reporting success, average score improvements
       - Specific application components, word counts, and competition details
       - Relevant contextual information like costs, awards, and recognition value
@@ -476,9 +692,6 @@ async function generateReportPDF(report) {
         period.events.forEach((event, j) => {
           doc.text(`   • ${event.title} (${event.category})`, { bold: true });
           doc.text(`     ${event.description}`);
-          if (event.deadline) {
-            doc.text(`     Deadline: ${event.deadline}`);
-          }
           if (j < period.events.length - 1) doc.moveDown(0.5);
         });
         if (i < reportData.timeline.length - 1) doc.moveDown();
