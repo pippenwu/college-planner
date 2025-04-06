@@ -35,7 +35,7 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
     resetPayment
   } = useRealPayment();
 
-  const [paymentAmount, setPaymentAmount] = useState('0.01');
+  const [paymentAmount, setPaymentAmount] = useState('9.99');
   const [paymentCurrency, setPaymentCurrency] = useState<'TWD' | 'USD'>('USD');
 
   // Check for successful payment and verify with backend

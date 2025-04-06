@@ -77,7 +77,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   };
 
   const handlePaymentClick = () => {
-    initiatePayment('0.01', 'USD');
+    initiatePayment('9.99', 'USD');
   };
 
   const handleVerifyBetaCode = async () => {
@@ -147,7 +147,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
                   Processing...
                 </>
               ) : (
-                <>Unlock Full Report - $0.01</>
+                <>Unlock Full Report - $9.99</>
               )}
             </Button>
           </div>
@@ -286,7 +286,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
             ) : (
               <>
                 <Lock className="h-4 w-4" />
-                Unlock Full Report - $0.01
+                Unlock Full Report - $9.99
               </>
             )}
           </Button>
