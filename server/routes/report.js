@@ -188,7 +188,7 @@ async function generateReportWithAI(studentData) {
         process.env.GEMINI_API_KEY === 'your-gemini-api-key-goes-here' ||
         process.env.GEMINI_API_KEY.includes('your')) {
       console.log('No valid Gemini API key found. Using fallback report generator.');
-      return generateFallbackHtmlReport(studentData);
+      return generateFallbackReport(studentData);
     }
 
     // Create a formatted string for student details
@@ -213,10 +213,10 @@ async function generateReportWithAI(studentData) {
     const prompt = `
       You are a professional college counselor generating a personalized and strategic college planning report for a student based on the following profile.
 
-      Please follow these specific instructions carefully to create a structured HTML report with three sections:
-      1. Overview
-      2. Timeline (in JSON)
-      3. Next Steps
+      Please follow these specific instructions carefully to create a structured JSON report with three sections:
+      1. overview
+      2. timeline
+      3. nextSteps
 
       ---
 
@@ -236,45 +236,56 @@ async function generateReportWithAI(studentData) {
       - For GPA and SAT benchmarks, reference actual data from Common Data Sets. Include 25th, 50th (mean), and 75th percentile scores for any recommended schools.
       - Course selection advice should include specific AP courses, how many to take, and justifications. Include anecdotes or real case examples from successful applicants or forums when possible.
       - The Common App allows 10 activities and 5 awards. Spread these throughout the timeline using real, named competitions, programs, and initiatives. Focus on key themes: leadership, community service, academic alignment, initiative, and competitiveness.
-      - Essay theme suggestions should reference real essay angles, case studies, or sample prompts. Include links or descriptions of successful essays.
+      - Essay theme suggestions should reference real essay angles, case studies, or sample prompts.
       - Recommended activities and programs may be chosen from a curated internal list (assume this is embedded), such as ArtEffect, iGEM, HOSA, Wharton Global Youth, AMC, YoungArts, NYT Summer School, etc.
 
       ---
 
       ### Output Format:
+      You must return valid, parseable JSON with the following structure:
 
-      #### 1. Overview Section (HTML id="overview")
-      Write a concise (≤100 words) summary of the student's current academic position, strengths, and readiness. Focus on facts — avoid generic praise. Include test score and GPA context.
-
-      #### 2. Timeline Section (HTML id="timeline")
-      Output a <timeline-data>...</timeline-data> block containing structured JSON, like:
-
-      [
-        {
-          "period": "Spring 2025",
-          "events": [
-            {
-              "title": "Apply to Veritas AI Scholars Program",
-              "category": "academics",
-              "description": "This selective AI program provides hands-on mentorship and aligns with your interest in computer science. Deadline: March 15.",
-              "deadline": "2025-03-15"
-            },
-            ...
-          ]
+      {
+        "overview": {
+          "text": "A concise (≤100 words) summary of the student's current academic position, strengths, and readiness. Focus on facts — avoid generic praise. Include test score and GPA context."
         },
-        ...
-      ]
+        "timeline": [
+          {
+            "period": "Spring 2023",
+            "events": [
+              {
+                "title": "Apply to Veritas AI Scholars Program",
+                "category": "academics",
+                "description": "This selective AI program provides hands-on mentorship and aligns with your interest in computer science. Deadline: March 15.",
+                "deadline": "2023-03-15"
+              }
+            ]
+          }
+        ],
+        "nextSteps": [
+          {
+            "title": "Register for the December SAT",
+            "description": "Registration deadline is November 3. Focus on improving your math score from 680 to 730+ by using Khan Academy's official SAT practice.",
+            "priority": 1
+          }
+        ]
+      }
 
-      Start the timeline with the current season of the current year and include at least 6 periods that span approximately 2 years. Use realistic academic seasons: Winter (Jan-Feb), Spring (Mar-May), Summer (Jun-Aug), and Fall (Sep-Dec).
+      For the timeline:
+      - Start with the current season of the current year
+      - Include at least 6 periods spanning approximately 2 years
+      - Use realistic academic seasons: Winter (Jan-Feb), Spring (Mar-May), Summer (Jun-Aug), and Fall (Sep-Dec)
 
-      #### 3. Next Steps Section (HTML id="next-steps")
-      List exactly 5 high-priority, immediately actionable recommendations for the next 30–60 days. Be specific and strategic (e.g., register for a SAT retake, contact a research mentor, start drafting the Common App essay, etc.)
+      For nextSteps:
+      - Include exactly 5 high-priority, immediately actionable items for the next 30-60 days
+      - Be specific and strategic (e.g., register for SAT, contact research mentor, etc.)
+      - Order them by priority (1 = highest priority)
 
       Style & Tone:
-      - Use clear, professional language.
-      - Be honest but supportive. If a student's current profile does not align with Ivy League admissions, state that clearly and recommend better-fit options.
-      - Ensure each section offers new value — do not repeat the same points across sections.
-      - Make the HTML structure readable with <h2> tags for each section, and include <div id="college-report"> as the outer container.
+      - Use clear, professional language
+      - Be honest but supportive. If a student's current profile does not align with Ivy League admissions, state that clearly and recommend better-fit options
+      - Ensure each section offers new value — do not repeat the same points across sections
+
+      Return ONLY valid JSON with no additional text, comments, or explanations. The response must be parseable by JSON.parse().
     `;
 
     try {
@@ -287,107 +298,95 @@ async function generateReportWithAI(studentData) {
       const response = await result.response;
       const text = response.text();
       
-      // Return HTML directly instead of attempting to parse as JSON
-      console.log('Successfully generated HTML report using gemini-2.0-flash-thinking-exp-01-21');
-      return text; // Return the HTML text directly
+      try {
+        // Try to parse the response as JSON
+        const jsonData = JSON.parse(text);
+        console.log('Successfully generated JSON report using gemini-2.0-flash-thinking-exp-01-21');
+        return jsonData;
+      } catch (parseError) {
+        console.error('Failed to parse AI response as JSON:', parseError);
+        console.log('AI response was:', text.substring(0, 200) + '...');
+        // Fall back to the basic HTML report if parsing fails
+        return generateFallbackReport(studentData);
+      }
     } catch (modelError) {
       console.error('Error using Gemini model gemini-2.0-flash-thinking-exp-01-21:', modelError);
       console.log('Using fallback report generator due to model error.');
-      return generateFallbackHtmlReport(studentData);
+      return generateFallbackReport(studentData);
     }
   } catch (error) {
     console.error('Gemini API error:', error);
     // Use fallback report generator if Gemini API fails
     console.log('Using fallback report generator due to API error.');
-    return generateFallbackHtmlReport(studentData);
+    return generateFallbackReport(studentData);
   }
 }
 
 /**
- * Generate a fallback HTML report when Gemini is not available
+ * Generate a fallback report when Gemini is not available
  */
-function generateFallbackHtmlReport(studentData) {
-  // Return a simple message instead of a detailed fallback report
-  return `
-    <div class="college-report">
-      <section id="overview">
-        <h2>Report Generation Error</h2>
-        <p>The report cannot be generated at this time. Please try again later.</p>
-      </section>
-      
-      <section id="timeline">
-        <h2>Timeline Unavailable</h2>
-        <p>Timeline data could not be generated.</p>
-        <timeline-data>[]</timeline-data>
-      </section>
-      
-      <section id="next-steps">
-        <h2>Next Steps</h2>
-        <p>Please try submitting your information again later when the service is available.</p>
-      </section>
-    </div>
-  `;
+function generateFallbackReport(studentData) {
+  // Return a simple structured fallback report
+  return {
+    overview: {
+      text: "The report cannot be generated at this time. Please try again later."
+    },
+    timeline: [
+      {
+        period: "Current Semester",
+        events: [
+          {
+            title: "Report Generation Error",
+            category: "academics",
+            description: "The timeline data could not be generated. Please try again later.",
+            deadline: new Date().toISOString().split('T')[0]
+          }
+        ]
+      }
+    ],
+    nextSteps: [
+      {
+        title: "Try Again Later",
+        description: "Please try submitting your information again later when the service is available.",
+        priority: 1
+      }
+    ]
+  };
 }
 
 /**
  * Helper function to get limited report data for free users
  */
 function getLimitedReportData(reportData) {
-  // Use a regex-based approach to extract sections since we're in Node.js (no DOM)
+  // Create a copy of the report data
+  const limitedData = JSON.parse(JSON.stringify(reportData));
   
-  // Extract the overview section
-  let overviewHtml = '';
-  const overviewMatch = reportData.match(/<section id="overview">([\s\S]*?)<\/section>/i);
-  if (overviewMatch && overviewMatch[0]) {
-    overviewHtml = overviewMatch[0];
-  } else {
-    overviewHtml = '<section id="overview"><h2>Overview</h2><p>Overview not available.</p></section>';
+  // For timeline, only show 60% of the periods
+  if (limitedData.timeline && Array.isArray(limitedData.timeline)) {
+    const visibleCount = Math.ceil(limitedData.timeline.length * 0.6);
+    limitedData.timeline = limitedData.timeline.slice(0, visibleCount);
   }
   
-  // Extract and limit the timeline data
-  let timelineData = [];
-  const timelineDataMatch = reportData.match(/<timeline-data>([\s\S]*?)<\/timeline-data>/i);
-  if (timelineDataMatch && timelineDataMatch[1]) {
-    try {
-      const parsedTimeline = JSON.parse(timelineDataMatch[1]);
-      // Only show 60% of timeline periods
-      const visibleCount = Math.ceil(parsedTimeline.length * 0.6);
-      timelineData = parsedTimeline.slice(0, visibleCount);
-    } catch (e) {
-      console.error('Error parsing timeline data:', e);
-      timelineData = [];
+  // Replace nextSteps with a premium content message
+  limitedData.nextSteps = [
+    {
+      title: "Unlock Premium Content",
+      description: "Unlock the full report to access 5 specific, immediately actionable next steps tailored to your profile.",
+      priority: 1
+    },
+    {
+      title: "Complete Timeline",
+      description: "The full report includes a complete timeline with all recommended actions.",
+      priority: 2
+    },
+    {
+      title: "Detailed College Recommendations",
+      description: "Access personalized college recommendations with admission statistics.",
+      priority: 3
     }
-  }
+  ];
   
-  // Remove any next-steps section from the report completely
-  // We do this by NOT including the next-steps section in our reconstructed HTML
-  
-  // Create a limited version of the report HTML with premium content instead of next steps
-  return `
-    <div class="college-report">
-      ${overviewHtml}
-      
-      <section id="timeline">
-        <h2>Application Timeline</h2>
-        <p>Below is a partial timeline with key actions to take. Unlock the full report to see all recommended steps.</p>
-        <timeline-data>${JSON.stringify(timelineData)}</timeline-data>
-      </section>
-      
-      <section id="next-steps">
-        <h2>Premium Content: Next Steps</h2>
-        <div class="premium-content-message">
-          <p>The detailed next steps and additional recommendations are available in the full report.</p>
-          <p>Unlock the full report to access:</p>
-          <ul>
-            <li>5 specific, immediately actionable next steps</li>
-            <li>Complete timeline with all recommended actions</li>
-            <li>Detailed college recommendations with admission statistics</li>
-            <li>Personalized essay topic suggestions</li>
-          </ul>
-        </div>
-      </section>
-    </div>
-  `;
+  return limitedData;
 }
 
 /**
@@ -429,64 +428,38 @@ async function generateReportPDF(report) {
       
       // Overview
       doc.fontSize(16).text('Overview', { underline: true });
-      doc.fontSize(12).text(reportData.overview);
-      doc.moveDown();
-      
-      // Strengths
-      doc.fontSize(16).text('Strengths', { underline: true });
-      doc.fontSize(12);
-      reportData.strengths.forEach((strength, i) => {
-        doc.text(`${i + 1}. ${strength}`);
-      });
-      doc.moveDown();
-      
-      // Areas for Improvement
-      doc.fontSize(16).text('Areas for Improvement', { underline: true });
-      doc.fontSize(12);
-      reportData.areasForImprovement.forEach((area, i) => {
-        doc.text(`${i + 1}. ${area}`);
-      });
+      doc.fontSize(12).text(reportData.overview.text);
       doc.moveDown();
       
       // Timeline
       doc.fontSize(16).text('Application Timeline', { underline: true });
       doc.fontSize(12);
+      
       reportData.timeline.forEach((period, i) => {
         doc.text(`${period.period}:`, { bold: true });
-        period.tasks.forEach((task, j) => {
-          doc.text(`   • ${task}`);
+        period.events.forEach((event, j) => {
+          doc.text(`   • ${event.title} (${event.category})`, { bold: true });
+          doc.text(`     ${event.description}`);
+          if (event.deadline) {
+            doc.text(`     Deadline: ${event.deadline}`);
+          }
+          if (j < period.events.length - 1) doc.moveDown(0.5);
         });
-        if (i < reportData.timeline.length - 1) doc.moveDown(0.5);
+        if (i < reportData.timeline.length - 1) doc.moveDown();
       });
       doc.moveDown();
       
-      // Recommended Colleges
-      doc.fontSize(16).text('Recommended Colleges', { underline: true });
+      // Next Steps
+      doc.fontSize(16).text('Immediate Next Steps', { underline: true });
       doc.fontSize(12);
-      reportData.recommendedColleges.forEach((college, i) => {
-        doc.text(`${i + 1}. ${college.name}`, { bold: true });
-        doc.text(`   ${college.reason}`);
-        if (i < reportData.recommendedColleges.length - 1) doc.moveDown(0.5);
-      });
-      doc.moveDown();
       
-      // Essay Topics
-      doc.fontSize(16).text('Essay Topic Suggestions', { underline: true });
-      doc.fontSize(12);
-      reportData.essayTopics.forEach((topic, i) => {
-        doc.text(`${i + 1}. ${topic.topic}`, { bold: true });
-        doc.text(`   ${topic.rationale}`);
-        if (i < reportData.essayTopics.length - 1) doc.moveDown(0.5);
-      });
-      doc.moveDown();
+      // Sort next steps by priority
+      const sortedNextSteps = [...reportData.nextSteps].sort((a, b) => a.priority - b.priority);
       
-      // Extracurricular Recommendations
-      doc.fontSize(16).text('Extracurricular Recommendations', { underline: true });
-      doc.fontSize(12);
-      reportData.extracurricularRecommendations.forEach((rec, i) => {
-        doc.text(`${i + 1}. ${rec.activity}`, { bold: true });
-        doc.text(`   ${rec.benefit}`);
-        if (i < reportData.extracurricularRecommendations.length - 1) doc.moveDown(0.5);
+      sortedNextSteps.forEach((step, i) => {
+        doc.text(`${i + 1}. ${step.title}`, { bold: true });
+        doc.text(`   ${step.description}`);
+        if (i < sortedNextSteps.length - 1) doc.moveDown(0.5);
       });
       
       // Footer

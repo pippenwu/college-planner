@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import { z } from "zod";
 import { usePayment } from '../context/PaymentContext';
 import { reportApi } from "../services/apiClient";
-import ReportDisplay from "./ReportDisplay";
+import ReportDisplay, { ReportData } from "./ReportDisplay";
 import SchoolLogos from "./SchoolLogos";
 import { Button } from "./ui/button";
 import {
@@ -91,7 +91,7 @@ interface StudentProfileFormProps {
 
 export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileFormProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
+  const [result, setResult] = useState<ReportData | null>(null);
   const [pendingReportData, setPendingReportData] = useState<FormValues | null>(null);
   
   // Get payment state from context
@@ -132,8 +132,12 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
         try {
           // Reset payment state whenever generating a new report
           resetPaymentState();
-          const report = await reportApi.generateReport(pendingReportData);
-          setResult(report);
+          const response = await reportApi.generateReport(pendingReportData);
+          if (response.success && response.data) {
+            setResult(response.data.reportData);
+          } else {
+            throw new Error("Failed to generate report");
+          }
           setPendingReportData(null);
         } catch (error) {
           console.error("Error generating report:", error);
@@ -212,7 +216,7 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
         // Store the reportId in localStorage for future reference
         localStorage.setItem('current_report_id', response.data.reportId);
         
-        // Return the generated report HTML
+        // Set the result with the JSON report data
         setResult(response.data.reportData);
       } else {
         console.error("API response error:", response);
