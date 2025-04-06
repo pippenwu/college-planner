@@ -163,7 +163,21 @@ export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ time
                         
                         {isEventSelected(periodIndex, eventIndex) && (
                           <div className="mt-3 pt-2 border-t border-gray-100">
-                            <p className="text-gray-600 text-sm">{event.description || event.title}</p>
+                            <p className="text-gray-600 text-sm whitespace-pre-line">
+                              {event.description || event.title}
+                            </p>
+                            
+                            {event.deadline && event.deadline !== 'Ongoing' && (
+                              <div className="mt-2 flex items-center">
+                                <span className="text-xs font-medium bg-amber-100 text-amber-800 px-2 py-1 rounded">
+                                  Deadline: {new Date(event.deadline).toLocaleDateString('en-US', { 
+                                    year: 'numeric', 
+                                    month: 'short', 
+                                    day: 'numeric' 
+                                  })}
+                                </span>
+                              </div>
+                            )}
                             
                             {event.url && (
                               <a 
@@ -206,11 +220,13 @@ export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ time
       
       {/* Category Legend */}
       <div className="category-legend p-4 border-t border-gray-200 bg-gray-50">
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-4">
           {['academics', 'extracurriculars', 'application'].map((category) => (
             <div key={category} className="flex items-center">
-              <div className={`w-3 h-3 rounded-full mr-1 ${getCategoryColor(category).split(' ')[0]}`}></div>
-              <span className="text-xs text-gray-600 capitalize">{category}</span>
+              <div className={`w-6 h-6 rounded-full mr-2 flex items-center justify-center ${getCategoryColor(category)}`}>
+                {getCategoryIcon(category)}
+              </div>
+              <span className="text-sm text-gray-700 capitalize">{category}</span>
             </div>
           ))}
         </div>

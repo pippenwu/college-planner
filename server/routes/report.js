@@ -255,7 +255,7 @@ async function generateReportWithAI(studentData) {
               {
                 "title": "Apply to Veritas AI Scholars Program",
                 "category": "academics",
-                "description": "This selective AI program provides hands-on mentorship and aligns with your interest in computer science. Deadline: March 15.",
+                "description": "This selective AI program (12% acceptance rate) provides hands-on mentorship with industry professionals. Past participants have published papers in IEEE conferences. Program runs June 15-August 10 with 3 tracks: Computer Vision, NLP, and Reinforcement Learning. Average participants report 85 hours of coding practice. Application requires: transcript, 500-word statement, coding sample, and one recommendation letter. Deadline: March 15.",
                 "deadline": "2023-03-15"
               }
             ]
@@ -266,7 +266,7 @@ async function generateReportWithAI(studentData) {
               {
                 "title": "Attend Stanford Summer Session",
                 "category": "academics",
-                "description": "Take a college-level course in your area of interest to demonstrate academic rigor and commitment.",
+                "description": "Application success rate: 65% for high-achieving students. Choose from 25+ STEM courses that align with your interests. 68% of participants report the experience was 'extremely valuable' on college applications. Program cost: $7,800-9,500 for 8-week session, with financial aid available (avg. award: $3,200). Alumni report 92% satisfaction with knowledge gained. Courses feature real-world projects evaluated by Stanford faculty. Admission requires: 3.7+ GPA, transcript, and one recommendation letter.",
                 "deadline": "2023-06-15"
               }
             ]
@@ -275,7 +275,7 @@ async function generateReportWithAI(studentData) {
         "nextSteps": [
           {
             "title": "Register for the December SAT",
-            "description": "Registration deadline is November 3. Focus on improving your math score from 680 to 730+ by using Khan Academy's official SAT practice.",
+            "description": "Registration deadline is November 3. Focus on improving your math score from 680 to 730+ by using Khan Academy's official SAT practice. Statistics show students who practice 20+ hours on Khan Academy gain an average of 115 points. Target schools require: Harvard (mid-50%: 1460-1580), Stanford (1420-1570), UC Berkeley (1330-1530).",
             "priority": 1
           }
         ]
@@ -290,15 +290,26 @@ async function generateReportWithAI(studentData) {
         - Summer periods: "Summer 2024 (rising junior)" - use "rising [next grade]"
       - Automatically calculate the changing grade levels as time progresses in the timeline
 
+      For each timeline event, provide highly detailed descriptions with:
+      - Specific data points and statistics: acceptance rates, success rates, average outcomes
+      - Concrete requirements: prerequisites, materials needed, time commitments
+      - Real deadlines and program dates when applicable
+      - Quantifiable benefits: percentage of participants reporting success, average score improvements
+      - Specific application components, word counts, and competition details
+      - Relevant contextual information like costs, awards, and recognition value
+      - Make all recommendations highly actionable with clear next steps
+
       For nextSteps:
       - Include exactly 5 high-priority, immediately actionable items for the next 30-60 days
       - Be specific and strategic (e.g., register for SAT, contact research mentor, etc.)
       - Order them by priority (1 = highest priority)
+      - Include relevant data points, statistics, and concrete benchmarks for each step
 
       Style & Tone:
       - Use clear, professional language
       - Be honest but supportive. If a student's current profile does not align with Ivy League admissions, state that clearly and recommend better-fit options
       - Ensure each section offers new value — do not repeat the same points across sections
+      - Be data-driven and specific rather than generic
 
       Return ONLY valid JSON with no additional text, comments, or explanations. The response must be parseable by JSON.parse().
       DO NOT wrap the JSON in markdown code blocks (do not use triple backtick tags).
