@@ -286,7 +286,7 @@ async function generateReportWithAI(studentData) {
       - Ensure each section offers new value — do not repeat the same points across sections
 
       Return ONLY valid JSON with no additional text, comments, or explanations. The response must be parseable by JSON.parse().
-      DO NOT wrap the JSON in markdown code blocks (do not use \```json or \``` tags).
+      DO NOT wrap the JSON in markdown code blocks (do not use triple backtick tags).
       DO NOT include any extra whitespace, newlines, or formatting that would break JSON parsing.
     `;
 
