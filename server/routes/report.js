@@ -209,6 +209,25 @@ async function generateReportWithAI(studentData) {
           .join('\n')
       : 'Not specified';
 
+    // Format college list if available
+    const collegeList = Array.isArray(studentData.collegeList) 
+      ? studentData.collegeList.join(', ')
+      : (studentData.collegeList || 'Not specified');
+    
+    // Format test scores if available
+    const testScores = studentData.testScores 
+      ? Object.entries(studentData.testScores)
+          .map(([test, score]) => `${test}: ${score}`)
+          .join('\n')
+      : 'Not specified';
+    
+    // Format course history if available
+    const courseHistory = Array.isArray(studentData.courseHistory)
+      ? studentData.courseHistory
+          .map(course => `${course.name || ''}: ${course.grade || ''}`)
+          .join('\n')
+      : (studentData.courseHistory || 'Not specified');
+
     // Add safe handling for properties that might be undefined
     const prompt = `
       You are a professional college counselor generating a personalized and strategic college planning report for a student based on the following profile.
@@ -224,8 +243,11 @@ async function generateReportWithAI(studentData) {
       Name: ${studentName}
       Grade: ${currentGrade}
       High School: ${highSchool}
-      Academic Interests: ${interests}
+      Intended Majors: ${interests}
       Extracurricular Activities: ${activities}
+      College List: ${collegeList}
+      Test Scores: ${testScores}
+      Course History: ${courseHistory}
 
       If any information is missing, make reasonable assumptions based on the high school and grade level.
 
@@ -499,7 +521,7 @@ async function generateReportWithAI(studentData) {
 
       For the timeline:
       - Start with the current season of the current year
-      - Include at least 6 periods spanning approximately 2 years
+      - Include at least 6 periods spanning approximately 2 years, or until the student graduates high school
       - Use realistic academic seasons: Winter (Jan-Feb), Spring (Mar-May), Summer (Jun-Aug), and Fall (Sep-Dec)
       - Include the student's grade level in parentheses for each period:
         - Regular school terms: "Spring 2024 (sophomore)" - use the actual grade level
