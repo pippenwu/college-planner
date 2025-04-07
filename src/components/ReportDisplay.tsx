@@ -1,3 +1,13 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -51,6 +61,9 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   
   // Get payment state from context
   const { isPaid, setIsPaid, initiatePayment, isProcessingPayment } = usePayment();
+
+  // Add state for the confirmation dialog
+  const [showStartOverDialog, setShowStartOverDialog] = useState(false);
 
   const handlePDFDownload = async () => {
     try {
@@ -140,9 +153,71 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
     }
   };
 
+  // Handle start over click
+  const handleStartOverClick = () => {
+    if (isPaid) {
+      setShowStartOverDialog(true);
+    } else {
+      onStartOver();
+    }
+  };
+
   // Render the next steps section
   const renderNextSteps = () => {
     // If user is not paid, show the teaser/limited steps
+    if (!isPaid) {
+      return (
+        <div className="bg-white rounded-lg p-6 shadow-md">
+          <h2 className="text-xl font-bold text-academic-navy mb-2">Next Steps</h2>
+          
+          {/* Show tip about partial next steps */}
+          <div className="flex justify-between items-center mb-4">
+            <div className="p-2 bg-academic-cream/50 border border-academic-gold/30 rounded-md text-sm text-academic-slate">
+              <p className="flex items-center">
+                <Lock className="h-4 w-4 mr-2 text-academic-gold" />
+                <span>This shows partial next actions. Unlock the full report to see all recommended steps.</span>
+              </p>
+            </div>
+            <div className="text-xs text-academic-slate bg-gray-100 px-2 py-1 rounded">
+              1 out of {report.nextSteps.length} next actions shown
+            </div>
+          </div>
+          
+          {/* Show one next step for free users */}
+          {report.nextSteps.length > 0 && (
+            <div className="space-y-4">
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                <h3 className="text-lg font-semibold text-academic-navy mb-1">
+                  1. {report.nextSteps[0].title}
+                </h3>
+                <p className="text-academic-slate">{report.nextSteps[0].description}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Otherwise, render the full next steps
+    return (
+      <div className="bg-white rounded-lg p-6 shadow-md">
+        <h2 className="text-xl font-bold text-academic-navy mb-4">Next Steps</h2>
+        <div className="space-y-4">
+          {report.nextSteps.map((step, index) => (
+            <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+              <h3 className="text-lg font-semibold text-academic-navy mb-1">
+                {index + 1}. {step.title}
+              </h3>
+              <p className="text-academic-slate">{step.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Render the unlock section
+  const renderUnlockSection = () => {
     if (!isPaid) {
       return (
         <div className="bg-academic-cream/80 rounded-lg p-6 border border-academic-gold/50 shadow-md">
@@ -192,23 +267,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         </div>
       );
     }
-
-    // Otherwise, render the full next steps
-    return (
-      <div className="bg-white rounded-lg p-6 shadow-md">
-        <h2 className="text-xl font-bold text-academic-navy mb-4">Next Steps</h2>
-        <div className="space-y-4">
-          {report.nextSteps.map((step, index) => (
-            <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-              <h3 className="text-lg font-semibold text-academic-navy mb-1">
-                {index + 1}. {step.title}
-              </h3>
-              <p className="text-academic-slate">{step.description}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+    return null;
   };
 
   return (
@@ -223,21 +282,30 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
       
       {/* Timeline Section */}
       <div className="bg-white rounded-lg p-6 shadow-md">
-        <h2 className="text-xl font-bold text-academic-navy mb-4">Application Timeline</h2>
-        <EnhancedTimelineView timelineData={getLimitedTimelineData() || []} />
+        <h2 className="text-xl font-bold text-academic-navy mb-2">Application Timeline</h2>
         
         {!isPaid && (
-          <div className="mt-4 p-3 bg-academic-cream/50 border border-academic-gold/30 rounded-md text-sm text-academic-slate">
-            <p className="flex items-center">
-              <Lock className="h-4 w-4 mr-2 text-academic-gold" />
-              <span>This is a partial timeline. Unlock the full report to see all recommended steps.</span>
-            </p>
+          <div className="flex justify-between items-center mb-4">
+            <div className="p-2 bg-academic-cream/50 border border-academic-gold/30 rounded-md text-sm text-academic-slate">
+              <p className="flex items-center">
+                <Lock className="h-4 w-4 mr-2 text-academic-gold" />
+                <span>This is a partial timeline. Unlock the full report to see all recommended steps.</span>
+              </p>
+            </div>
+            <div className="text-xs text-academic-slate bg-gray-100 px-2 py-1 rounded">
+              {getLimitedTimelineData()?.length || 0} out of {report.timeline.length} sections shown
+            </div>
           </div>
         )}
+        
+        <EnhancedTimelineView timelineData={getLimitedTimelineData() || []} />
       </div>
       
       {/* Next Steps Section */}
       {renderNextSteps()}
+      
+      {/* Unlock Section */}
+      {renderUnlockSection()}
       
       {/* Beta Code Dialog */}
       <Dialog open={showBetaDialog} onOpenChange={setShowBetaDialog}>
@@ -312,11 +380,27 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         </DialogContent>
       </Dialog>
       
+      {/* Start Over Confirmation Dialog */}
+      <AlertDialog open={showStartOverDialog} onOpenChange={setShowStartOverDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Start Over?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Please make sure to save or download your report before starting over. Your report will not be stored on our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={onStartOver}>Start Over</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
       <div className="flex justify-between mt-6">
         <div className="flex items-center gap-3">
           <Button 
             variant="outline" 
-            onClick={onStartOver}
+            onClick={handleStartOverClick}
             className="flex items-center gap-2"
           >
             <RotateCcw className="h-4 w-4" />
@@ -356,31 +440,6 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
           >
             <Download className="h-4 w-4" />
             Download Plan (PDF)
-          </Button>
-        )}
-        
-        {/* Show payment button for unpaid users */}
-        {!isPaid && (
-          <Button 
-            onClick={handlePaymentClick}
-            disabled={isProcessingPayment}
-            className="flex items-center gap-2 bg-academic-burgundy hover:bg-academic-navy text-white"
-          >
-            {isProcessingPayment ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-                <Lock className="h-4 w-4" />
-                {hasAppliedCoupon ? (
-                  <>Unlock Full Report - $0.01 <span className="text-xs line-through ml-1">$9.99</span></>
-                ) : (
-                  <>Unlock Full Report - $9.99</>
-                )}
-              </>
-            )}
           </Button>
         )}
       </div>
