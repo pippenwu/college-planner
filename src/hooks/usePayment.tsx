@@ -82,16 +82,36 @@ export const useRealPayment = () => {
   // Create a wrapper around the KryptoGO openPaymentModal to ensure it accepts our interface
   const openPaymentModal = (params: PaymentParams) => {
     console.log('Opening KryptoGO payment modal with params:', params);
+    // First cleanup any potential DOM issues
+    document.querySelectorAll('[data-kryptogo-modal]').forEach(el => {
+      el.remove();
+    });
+    // Then open the modal
     kryptogoOpenPaymentModal(params);
   };
 
-  // For compatibility with our existing interface, maintain isModalOpen and resetPayment
-  const isModalOpen = isLoading || isSuccess || isError;
-  const resetPayment = closePaymentModal;
+  // Enhanced close modal function to clean up any visual artifacts
+  const enhancedCloseModal = () => {
+    closePaymentModal();
+    // Clean up any layout issues after closing
+    setTimeout(() => {
+      document.querySelectorAll('[data-kryptogo-modal]').forEach(el => {
+        el.remove();
+      });
+      // Remove any body classes that might have been added
+      document.body.classList.remove('kryptogo-open');
+      // Reset any overflow styles
+      document.body.style.overflow = '';
+    }, 100);
+  };
+
+  // For compatibility with our existing interface
+  const isModalOpen = false; // Always return false to prevent our own modal from showing
+  const resetPayment = enhancedCloseModal;
 
   return {
     openPaymentModal,
-    closePaymentModal,
+    closePaymentModal: enhancedCloseModal,
     data,
     txHash,
     error,

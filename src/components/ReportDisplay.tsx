@@ -43,6 +43,12 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   const [showBetaDialog, setShowBetaDialog] = useState(false);
   const [betaError, setBetaError] = useState<string | null>(null);
   
+  // Add coupon code state
+  const [couponCodeInput, setCouponCodeInput] = useState('');
+  const [showCouponDialog, setShowCouponDialog] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [hasAppliedCoupon, setHasAppliedCoupon] = useState(false);
+  
   // Get payment state from context
   const { isPaid, setIsPaid, initiatePayment, isProcessingPayment } = usePayment();
 
@@ -77,7 +83,8 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   };
 
   const handlePaymentClick = () => {
-    initiatePayment('9.99', 'USD');
+    // Use discounted price if coupon was applied
+    initiatePayment(hasAppliedCoupon ? '0.01' : '9.99', 'USD');
   };
 
   const handleVerifyBetaCode = async () => {
@@ -103,6 +110,33 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
     } catch (error) {
       console.error('Error verifying beta code:', error);
       setBetaError('Error verifying code. Please try again.');
+    }
+  };
+
+  // Handle coupon code verification
+  const handleVerifyCouponCode = async () => {
+    if (!couponCodeInput.trim()) {
+      setCouponError('Please enter a coupon code');
+      return;
+    }
+    
+    try {
+      // For this implementation, we'll check if the code is 'DISCOUNT2024'
+      // In a real app, this would validate against the backend
+      if (couponCodeInput.trim() === 'DISCOUNT2024') {
+        // Close the dialog
+        setShowCouponDialog(false);
+        // Reset the input and error
+        setCouponCodeInput('');
+        setCouponError(null);
+        // Set the coupon as applied
+        setHasAppliedCoupon(true);
+      } else {
+        setCouponError('Invalid coupon code');
+      }
+    } catch (error) {
+      console.error('Error verifying coupon code:', error);
+      setCouponError('Error verifying code. Please try again.');
     }
   };
 
@@ -147,7 +181,11 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
                   Processing...
                 </>
               ) : (
-                <>Unlock Full Report - $9.99</>
+                hasAppliedCoupon ? (
+                  <>Unlock Full Report - $0.01 <span className="text-xs line-through ml-1">$9.99</span></>
+                ) : (
+                  <>Unlock Full Report - $9.99</>
+                )
               )}
             </Button>
           </div>
@@ -171,6 +209,26 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         </div>
       </div>
     );
+  };
+
+  // Update the button text to show the discounted price if coupon is applied
+  const getPaymentButtonText = () => {
+    if (isProcessingPayment) {
+      return (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Processing...
+        </>
+      );
+    } else if (hasAppliedCoupon) {
+      return (
+        <>Unlock Full Report - $0.01 <span className="text-xs line-through ml-1">$9.99</span></>
+      );
+    } else {
+      return (
+        <>Unlock Full Report - $9.99</>
+      );
+    }
   };
 
   return (
@@ -236,6 +294,44 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         </DialogContent>
       </Dialog>
       
+      {/* Coupon Code Dialog */}
+      <Dialog open={showCouponDialog} onOpenChange={setShowCouponDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Enter Coupon Code</DialogTitle>
+            <DialogDescription>
+              If you have a coupon code, enter it below to get a discount.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Input
+              placeholder="Enter your coupon code"
+              value={couponCodeInput}
+              onChange={(e) => setCouponCodeInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleVerifyCouponCode();
+                }
+              }}
+            />
+            {couponError && (
+              <p className="text-red-500 text-sm">{couponError}</p>
+            )}
+            {hasAppliedCoupon && (
+              <p className="text-green-600 text-sm">Coupon applied! Your price is now $0.01</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCouponDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleVerifyCouponCode}>
+              Apply Coupon
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       <div className="flex justify-between mt-6">
         <div className="flex items-center gap-3">
           <Button 
@@ -256,6 +352,18 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
             >
               <Code className="h-4 w-4" />
               Beta Code
+            </Button>
+          )}
+          
+          {/* Coupon code button - shown for unpaid users */}
+          {!isPaid && (
+            <Button
+              variant="outline"
+              onClick={() => setShowCouponDialog(true)}
+              className="flex items-center gap-2 border-academic-burgundy text-academic-burgundy"
+            >
+              <span className="text-xs font-bold">%</span>
+              Coupon
             </Button>
           )}
         </div>
@@ -286,7 +394,11 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
             ) : (
               <>
                 <Lock className="h-4 w-4" />
-                Unlock Full Report - $9.99
+                {hasAppliedCoupon ? (
+                  <>Unlock Full Report - $0.01 <span className="text-xs line-through ml-1">$9.99</span></>
+                ) : (
+                  <>Unlock Full Report - $9.99</>
+                )}
               </>
             )}
           </Button>

@@ -1,5 +1,4 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import PaymentModal from '../components/payment/PaymentModal';
 import { useRealPayment } from '../hooks/usePayment';
 import { paymentApi } from '../services/apiClient';
 
@@ -168,17 +167,6 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
       resetPaymentState
     }}>
       {children}
-      <PaymentModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        isLoading={isLoading}
-        isSuccess={isSuccess}
-        isError={!!error}
-        error={error}
-        amount={paymentAmount}
-        currency={paymentCurrency}
-        data={data}
-      />
     </PaymentContext.Provider>
   );
 };
