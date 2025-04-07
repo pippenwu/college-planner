@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import KryptogoPaymentProvider from './components/payment/PaymentProvider';
 import { StudentProfileForm } from './components/StudentProfileForm';
+import { Navbar } from './components/ui/Navbar';
 import { PaymentProvider } from './context/PaymentContext';
 
 // Success stories showing students who got admitted to top universities
@@ -112,6 +113,7 @@ function App() {
       <KryptogoPaymentProvider>
         <PaymentProvider>
           <div className="min-h-screen bg-academic-cream flex flex-col overflow-hidden">
+            <Navbar />
             <Toaster 
               position="top-center"
               toastOptions={{
@@ -131,16 +133,16 @@ function App() {
                 {!isReportVisible && (
                   <div className="h-14 mb-4 relative overflow-hidden">
                     <div 
-                      className={`absolute inset-0 p-3 rounded-lg bg-academic-navy/10 text-academic-navy flex items-center justify-center transition-all duration-500 ease-in-out ${
+                      className={`absolute inset-0 p-3 rounded-lg bg-gradient-to-r from-academic-navy/20 to-academic-burgundy/20 text-academic-navy flex items-center justify-center transition-all duration-500 ease-in-out ${
                         isAnimating 
                           ? 'translate-y-0' 
                           : '-translate-y-full'
                       }`}
                     >
                       <span className="block">
-                        <span className="font-semibold">{SUCCESS_STORIES[currentStory].name}</span>{" "}
+                        <span className="font-semibold font-heading text-academic-burgundy">{SUCCESS_STORIES[currentStory].name}</span>{" "}
                         {SUCCESS_PHRASES[currentPhrase]}{" "}
-                        <span className="font-semibold">{SUCCESS_STORIES[currentStory].school}</span>! 🎉
+                        <span className="font-semibold font-heading text-academic-navy">{SUCCESS_STORIES[currentStory].school}</span> 🎉
                       </span>
                     </div>
                   </div>
@@ -156,7 +158,7 @@ function App() {
 
             <footer className="w-full py-4 px-4 sm:px-6 text-academic-slate border-t border-academic-light relative z-10 mt-12">
               <div className="max-w-6xl mx-auto w-full text-center text-xs">
-                © {new Date().getFullYear()} College Application Planner. All rights reserved.
+                © {new Date().getFullYear()} CAT - College Application Timeline. All rights reserved.
               </div>
             </footer>
           </div>

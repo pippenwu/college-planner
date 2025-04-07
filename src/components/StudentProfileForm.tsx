@@ -33,7 +33,7 @@ const formSchema = z.object({
   // Student Information
   studentName: z.string().optional(),
   highSchool: z.string().min(1, "High school is required"),
-  currentGrade: z.enum(["<9th", "9th", "10th", "11th", "12th"], {
+  currentGrade: z.enum(["9th", "10th", "11th", "12th"], {
     required_error: "Current grade is required",
   }),
 
@@ -389,7 +389,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-white">
-                      <SelectItem value="<9th">Before 9th Grade</SelectItem>
                       <SelectItem value="9th">9th Grade</SelectItem>
                       <SelectItem value="10th">10th Grade</SelectItem>
                       <SelectItem value="11th">11th Grade</SelectItem>
@@ -596,7 +595,7 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
                 <FormItem>
                   <FormLabel className="text-base" htmlFor={`course-history-${field.name}`}>Course History</FormLabel>
                   <FormDescription className="text-gray-500 text-sm mb-2">
-                    List courses you've taken with grades if available (include AP scores if applicable)
+                    List courses you've taken with grades if available.
                   </FormDescription>
                   <FormControl>
                     <Textarea
@@ -800,12 +799,220 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
   const loadTemplateData = (category?: string) => {
     let templateData: FormValues;
     
-    // Define templates for different categories
+    // Define templates for different majors
+    const accountingTemplate: FormValues = {
+      studentName: "Taylor Schmidt",
+      highSchool: "Lincoln High School",
+      currentGrade: "11th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Accounting",
+      collegeList: "NYU Stern, University of Illinois, University of Texas Austin, University of Michigan, Boston College",
+      testScores: [
+        { testName: "SAT", score: "1410" },
+        { testName: "AP", score: "Calculus AB: 4" },
+        { testName: "AP", score: "Macroeconomics: 5" }
+      ],
+      courseHistory: "AP Calculus AB (A), AP Macroeconomics (A), AP Statistics (A-), Honors Precalculus (A), English 11 (B+), Spanish IV (B+)",
+      activities: [
+        { 
+          name: "Accounting Club", 
+          notes: "President, 2 years, 3 hrs/week, Led team in regional accounting competition"
+        },
+        { 
+          name: "DECA Business Club", 
+          notes: "Treasurer, 3 years, 4 hrs/week, Placed 2nd in state finance competition"
+        },
+        { 
+          name: "Tax Preparation Volunteer", 
+          notes: "Volunteer, 1 year, seasonal 6 hrs/week, Assisted low-income families with tax filing"
+        }
+      ],
+      additionalInfo: "I completed a summer internship at a local accounting firm where I helped with bookkeeping and financial statement preparation. I've also been developing a budget tracking app as a personal project."
+    };
+    
+    const architectureTemplate: FormValues = {
+      studentName: "Maya Richardson",
+      highSchool: "Westview Academy",
+      currentGrade: "10th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Architecture",
+      collegeList: "Cornell, Rhode Island School of Design, Cooper Union, Cal Poly, Pratt Institute",
+      testScores: [
+        { testName: "SAT", score: "1390" },
+        { testName: "AP", score: "Studio Art: 5" },
+        { testName: "AP", score: "Physics 1: 4" }
+      ],
+      courseHistory: "AP Studio Art (A+), AP Physics 1 (B+), Calculus (A-), Architecture Elective (A+), Digital Design (A), English 12 (A-)",
+      activities: [
+        { 
+          name: "Architecture Club", 
+          notes: "Founder & President, 2 years, 4 hrs/week, Organized architecture field trips and design workshops"
+        },
+        { 
+          name: "Habitat for Humanity", 
+          notes: "Volunteer Designer, 2 years, 5 hrs/week, Assisted with home design and construction projects"
+        },
+        { 
+          name: "City Planning Internship", 
+          notes: "Summer Intern, 200 hours total, Shadowed architects and contributed to urban design projects"
+        }
+      ],
+      additionalInfo: "I've built a portfolio of architectural drawings and 3D models featuring sustainable housing designs. I won 2nd place in a state architecture competition for high school students with my design for an urban community center."
+    };
+    
+    const artTemplate: FormValues = {
+      studentName: "Zoe Kim",
+      highSchool: "Westwood Arts Academy",
+      currentGrade: "11th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Fine Arts, Studio Art",
+      collegeList: "Rhode Island School of Design, School of the Art Institute of Chicago, California Institute of the Arts, Pratt Institute, Maryland Institute College of Art",
+      testScores: [
+        { testName: "SAT", score: "1320" },
+        { testName: "AP", score: "Studio Art: 5" },
+        { testName: "AP", score: "Art History: 5" }
+      ],
+      courseHistory: "AP Studio Art (A+), AP Art History (A+), Advanced Painting (A+), Digital Media (A), English 12 (A-), Precalculus (B+)",
+      activities: [
+        { 
+          name: "Art Portfolio Club", 
+          notes: "President, 3 years, 6 hrs/week, Organized student exhibitions and portfolio workshops"
+        },
+        { 
+          name: "Local Gallery Internship", 
+          notes: "Intern, 1 year, 8 hrs/week, Assisted with exhibition setup and art curation"
+        },
+        { 
+          name: "Community Art Initiative", 
+          notes: "Founder, 2 years, 5 hrs/week, Led team creating murals for local businesses and schools"
+        }
+      ],
+      additionalInfo: "My artwork has been exhibited in three local galleries, and I won the Youth Artist Award at our state's annual art competition. I've also completed courses in digital illustration and graphic design through a pre-college summer program."
+    };
+    
+    const biochemistryTemplate: FormValues = {
+      studentName: "Raj Patel",
+      highSchool: "North Central High School",
+      currentGrade: "10th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Biochemistry",
+      collegeList: "MIT, Caltech, UC Berkeley, University of Michigan, Johns Hopkins",
+      testScores: [
+        { testName: "SAT", score: "1550" },
+        { testName: "AP", score: "Biology: 5" },
+        { testName: "AP", score: "Chemistry: 5" },
+        { testName: "AP", score: "Calculus BC: 5" }
+      ],
+      courseHistory: "AP Biology (A+), AP Chemistry (A+), AP Calculus BC (A), AP Physics 1 (A), AP English Language (A-), Spanish IV (A)",
+      activities: [
+        { 
+          name: "Research Internship", 
+          notes: "Lab Assistant, 2 summers, 200+ hours total, Assisted with protein analysis research at university lab"
+        },
+        { 
+          name: "Science Olympiad", 
+          notes: "Captain, 3 years, 8 hrs/week, 1st place in state biochemistry competition"
+        },
+        { 
+          name: "Chemistry Club", 
+          notes: "President, 2 years, 3 hrs/week, Organized demonstrations and competitions"
+        }
+      ],
+      additionalInfo: "I co-authored a research paper on enzyme kinetics that was published in a youth science journal. I also attended a summer biochemistry program at the University of Pennsylvania where I conducted independent research on protein folding."
+    };
+    
+    const biologyTemplate: FormValues = {
+      studentName: "Aisha Patel",
+      highSchool: "Oakridge High School",
+      currentGrade: "11th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Biology, Pre-Med",
+      collegeList: "Johns Hopkins, Stanford, Duke, UCLA, Washington University in St. Louis",
+      testScores: [
+        { testName: "SAT", score: "1490" },
+        { testName: "AP", score: "Biology: 5" },
+        { testName: "AP", score: "Chemistry: 4" }
+      ],
+      courseHistory: "AP Biology (A+), AP Chemistry (A), Honors Precalculus (A), Honors English 11 (A), Spanish III (A-), AP Psychology (A-)",
+      activities: [
+        { 
+          name: "Science Olympiad", 
+          notes: "Team Captain, 3 years, 6 hrs/week, State medalist in Anatomy & Physiology"
+        },
+        { 
+          name: "Hospital Volunteer", 
+          notes: "Volunteer, 2 years, 5 hrs/week, 200+ total hours in pediatric ward"
+        },
+        { 
+          name: "Biology Research", 
+          notes: "Student Researcher, 1 year, 6 hrs/week, Conducting independent research on plant cellular responses"
+        }
+      ],
+      additionalInfo: "I'm passionate about cellular biology and have been shadowing doctors at the local children's hospital. I also participated in a summer research program focused on microbiology where I studied antibiotic resistance in bacteria."
+    };
+    
+    // Business template is already defined
+    
+    const chemistryTemplate: FormValues = {
+      studentName: "Liam Nelson",
+      highSchool: "Parkside Academy",
+      currentGrade: "10th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Chemistry",
+      collegeList: "UC Berkeley, Caltech, MIT, University of Michigan, Northwestern",
+      testScores: [
+        { testName: "SAT", score: "1520" },
+        { testName: "AP", score: "Chemistry: 5" },
+        { testName: "AP", score: "Physics 1: 5" },
+        { testName: "AP", score: "Calculus BC: 5" }
+      ],
+      courseHistory: "AP Chemistry (A+), AP Physics 1 (A), AP Calculus BC (A), Organic Chemistry (A, dual enrollment), AP English Literature (A-), French IV (A)",
+      activities: [
+        { 
+          name: "Chemistry Research", 
+          notes: "Research Assistant, 2 years, 8 hrs/week, Conducting catalyst efficiency experiments at university lab"
+        },
+        { 
+          name: "Science Bowl", 
+          notes: "Team Captain, 3 years, 4 hrs/week, Led team to nationals, specialized in chemistry questions"
+        },
+        { 
+          name: "Environmental Club", 
+          notes: "Vice President, 2 years, 3 hrs/week, Led water quality testing initiative for local waterways"
+        }
+      ],
+      additionalInfo: "I developed a method for detecting heavy metal contaminants in water samples that won first place at our state science fair. I also completed a summer research program in analytical chemistry at the University of Wisconsin."
+    };
+    
+    const communicationsTemplate: FormValues = {
+      studentName: "Olivia Martinez",
+      highSchool: "Riverdale High School",
+      currentGrade: "11th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Communications, Journalism",
+      collegeList: "Northwestern, Syracuse, University of Southern California, Boston University, University of Texas Austin",
+      testScores: [
+        { testName: "SAT", score: "1380" },
+        { testName: "AP", score: "English Language: 5" },
+        { testName: "AP", score: "Psychology: 4" }
+      ],
+      courseHistory: "AP English Language (A+), AP Psychology (A), Honors World History (A), Journalism (A+), Public Speaking (A), Spanish IV (A-)",
+      activities: [
+        { 
+          name: "School Newspaper", 
+          notes: "Editor-in-Chief, 3 years, 10 hrs/week, Led team of 15 student journalists, won state awards"
+        },
+        { 
+          name: "Podcast Production", 
+          notes: "Creator & Host, 2 years, 5 hrs/week, 1,500+ monthly listeners, interviews local leaders"
+        },
+        { 
+          name: "Debate Team", 
+          notes: "Captain, 3 years, 6 hrs/week, State finalist in Public Forum debate"
+        }
+      ],
+      additionalInfo: "I interned at our local NPR affiliate radio station where I helped produce segments for their youth program. I also attended a summer journalism workshop at Northwestern's Medill School of Journalism where I produced a multimedia feature story."
+    };
+    
+    // Define templates for different categories (keep old ones for backwards compatibility)
     const businessTemplate: FormValues = {
       studentName: "Jordan Chen",
       highSchool: "Westlake High School",
-      currentGrade: "10th" as "<9th" | "9th" | "10th" | "11th" | "12th",
-      intendedMajors: "Business Administration, Finance, Economics",
+      currentGrade: "10th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Business Administration",
       collegeList: "Wharton (UPenn), NYU Stern, University of Michigan Ross, UC Berkeley Haas, Georgetown McDonough",
       testScores: [
         { testName: "SAT", score: "1520" },
@@ -830,170 +1037,524 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
       additionalInfo: "I started a small e-commerce business selling custom phone cases that generated $5,000 in revenue. I also completed a summer internship at a local financial advisory firm."
     };
     
-    const scienceMathTemplate: FormValues = {
-      studentName: "Aisha Patel",
-      highSchool: "Oakridge High School",
-      currentGrade: "10th" as "<9th" | "9th" | "10th" | "11th" | "12th",
-      intendedMajors: "Biology, Biochemistry, Pre-Med",
-      collegeList: "Johns Hopkins, Duke, UCLA, UNC Chapel Hill, Washington University in St. Louis",
+    const computerScienceTemplate: FormValues = {
+      studentName: "Alex Wang",
+      highSchool: "Central Tech High School",
+      currentGrade: "11th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Computer Science",
+      collegeList: "MIT, Stanford, Carnegie Mellon, UC Berkeley, Georgia Tech",
       testScores: [
-        { testName: "SAT", score: "1490" },
-        { testName: "AP", score: "Biology: 5" },
-        { testName: "AP", score: "Chemistry: 4" }
+        { testName: "SAT", score: "1560" },
+        { testName: "AP", score: "Computer Science A: 5" },
+        { testName: "AP", score: "Calculus BC: 5" },
+        { testName: "AP", score: "Physics C: 5" }
       ],
-      courseHistory: "AP Biology (A+), AP Chemistry (A), Honors Precalculus (A), Honors English 10 (A), Spanish II (A-), World History (A-)",
+      courseHistory: "AP Computer Science A (A+), AP Calculus BC (A+), AP Physics C (A), Data Structures (A+, dual enrollment), AP English Literature (A-), Spanish IV (B+)",
       activities: [
         { 
-          name: "Science Olympiad", 
-          notes: "Team Captain, 3 years, 6 hrs/week, State medalist in Anatomy & Physiology"
+          name: "Robotics Team", 
+          notes: "Programming Lead, 3 years, 12 hrs/week, Designed AI algorithms for competition robot"
         },
         { 
-          name: "Hospital Volunteer", 
-          notes: "Volunteer, 2 years, 5 hrs/week, 200+ total hours in pediatric ward"
+          name: "Hackathon Participant", 
+          notes: "Team Leader, 3 years, 10+ hackathons, Won Best Mobile App award at StateHacks"
+        },
+        { 
+          name: "CS Tutor", 
+          notes: "Volunteer, 2 years, 4 hrs/week, Teaching coding to middle school students"
+        }
+      ],
+      additionalInfo: "I've developed three mobile apps that are published on the App Store with over 10,000 combined downloads. I also completed a summer internship at a tech startup where I worked on their backend systems using Node.js and MongoDB."
+    };
+    
+    const economicsTemplate: FormValues = {
+      studentName: "Elijah Brooks",
+      highSchool: "Riverside Prep Academy",
+      currentGrade: "10th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Economics",
+      collegeList: "Harvard, Princeton, Chicago, Northwestern, Duke",
+      testScores: [
+        { testName: "SAT", score: "1540" },
+        { testName: "AP", score: "Microeconomics: 5" },
+        { testName: "AP", score: "Macroeconomics: 5" },
+        { testName: "AP", score: "Calculus AB: 5" }
+      ],
+      courseHistory: "AP Microeconomics (A+), AP Macroeconomics (A+), AP Calculus AB (A), AP Statistics (A), AP English Language (A), World History (A-)",
+      activities: [
+        { 
+          name: "Economics Challenge", 
+          notes: "Team Captain, 2 years, 4 hrs/week, National finalists, specialized in economic policy"
         },
         { 
           name: "Research Assistant", 
-          notes: "Lab Assistant, 1 year, 6 hrs/week, Assisting with cancer research at local university"
+          notes: "Volunteer, 1 year, 5 hrs/week, Helping economics professor with data analysis"
+        },
+        { 
+          name: "Investment Club", 
+          notes: "Vice President, 2 years, 3 hrs/week, Analyzing economic trends and stock market patterns"
         }
       ],
-      additionalInfo: "I'm passionate about pediatric medicine and have been shadowing doctors at the local children's hospital. I also participated in a summer research program focused on cell biology."
+      additionalInfo: "I wrote a research paper on the economic impact of climate change policies that was published in our state's high school economics journal. I also participated in the Economics for Leaders summer program at Yale University."
     };
     
-    const engineeringTemplate: FormValues = {
+    const mechanicalEngineeringTemplate: FormValues = {
       studentName: "Malik Johnson",
       highSchool: "Central Technical High School",
-      currentGrade: "10th" as "<9th" | "9th" | "10th" | "11th" | "12th",
-      intendedMajors: "Mechanical Engineering, Aerospace Engineering",
+      currentGrade: "11th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Mechanical Engineering",
       collegeList: "MIT, Georgia Tech, Purdue, University of Michigan, Caltech",
       testScores: [
         { testName: "SAT", score: "1510" },
         { testName: "AP", score: "Physics 1: 5" },
-        { testName: "AP", score: "Calculus AB: 5" }
+        { testName: "AP", score: "Calculus BC: 5" }
       ],
-      courseHistory: "AP Physics 1 (A+), AP Calculus AB (A), Honors Chemistry (A), Intro to Engineering Design (A+), English 10 (B+), US History (A-)",
+      courseHistory: "AP Physics 1 (A+), AP Calculus BC (A), AP Chemistry (A-), Intro to Engineering Design (A+), English 12 (B+), US History (A-)",
       activities: [
         { 
           name: "Robotics Team", 
-          notes: "Lead Engineer, 3 years, 10 hrs/week, Designed robot that won regional championship"
+          notes: "Lead Engineer, 3 years, 10 hrs/week, Designed mechanical systems for robot that won regional championship"
         },
         { 
           name: "3D Printing Club", 
           notes: "Founder & President, 2 years, 4 hrs/week, Teaching CAD design to 15+ members"
         },
         { 
-          name: "Math Team", 
-          notes: "Member, 2 years, 3 hrs/week, Placed 5th in state math competition"
+          name: "Engineering Internship", 
+          notes: "Intern, 1 summer, 160 hours total, Assisted with product design at local manufacturing company"
         }
       ],
-      additionalInfo: "I designed and built a working drone with custom 3D printed parts. I also completed an online course in AutoCAD and have been using the software to design sustainable housing concepts."
+      additionalInfo: "I designed and built a working drone with custom 3D printed parts that can be controlled through smartphone gestures. I also completed an online course in Computational Fluid Dynamics through Coursera."
     };
     
-    const socialScienceTemplate: FormValues = {
+    const environmentalEngineeringTemplate: FormValues = {
+      studentName: "Nina Rodriguez",
+      highSchool: "Bayside Science Academy",
+      currentGrade: "10th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Environmental Engineering",
+      collegeList: "Stanford, UC Berkeley, Cornell, University of Michigan, Georgia Tech",
+      testScores: [
+        { testName: "SAT", score: "1480" },
+        { testName: "AP", score: "Environmental Science: 5" },
+        { testName: "AP", score: "Chemistry: 5" },
+        { testName: "AP", score: "Calculus AB: 4" }
+      ],
+      courseHistory: "AP Environmental Science (A+), AP Chemistry (A), AP Calculus AB (A-), AP Biology (A), English 11 Honors (A), Spanish IV (A-)",
+      activities: [
+        { 
+          name: "Environmental Club", 
+          notes: "President, 3 years, 5 hrs/week, Led campus sustainability initiatives that reduced waste by 30%"
+        },
+        { 
+          name: "Water Quality Research", 
+          notes: "Student Researcher, 2 years, 6 hrs/week, Monitoring local watershed and developing filtration systems"
+        },
+        { 
+          name: "Engineers Without Borders", 
+          notes: "Student Member, 1 year, 4 hrs/week, Working on rainwater collection system design"
+        }
+      ],
+      additionalInfo: "I developed a low-cost solar-powered water filtration system that won first place at our state science fair. I also attended a summer program in sustainable engineering at Stanford University where I worked on a team project focused on urban water management."
+    };
+    
+    const financeTemplate: FormValues = {
+      studentName: "William Zhang",
+      highSchool: "Eastside Preparatory Academy",
+      currentGrade: "11th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Finance",
+      collegeList: "Wharton (UPenn), NYU Stern, University of Michigan Ross, Indiana Kelley, UT Austin McCombs",
+      testScores: [
+        { testName: "SAT", score: "1530" },
+        { testName: "AP", score: "Calculus BC: 5" },
+        { testName: "AP", score: "Statistics: 5" },
+        { testName: "AP", score: "Microeconomics: 5" }
+      ],
+      courseHistory: "AP Calculus BC (A), AP Statistics (A+), AP Microeconomics (A+), AP Macroeconomics (A), Financial Math (A+), AP English Language (A-)",
+      activities: [
+        { 
+          name: "Investment Club", 
+          notes: "Founder & President, 3 years, 5 hrs/week, Managing real $5,000 portfolio with 15% annual returns"
+        },
+        { 
+          name: "DECA Finance Team", 
+          notes: "Team Captain, 2 years, 4 hrs/week, State champion in Financial Consulting event"
+        },
+        { 
+          name: "Financial Literacy Program", 
+          notes: "Founder, 2 years, 3 hrs/week, Teaching personal finance to 100+ high school students"
+        }
+      ],
+      additionalInfo: "I completed a summer internship at Morgan Stanley where I shadowed financial analysts. I've also passed Level 1 of the CFA Institute Investment Foundations Program and created a personal finance YouTube channel with over 5,000 subscribers."
+    };
+    
+    const internationalRelationsTemplate: FormValues = {
       studentName: "Sofia Rodriguez",
       highSchool: "Lincoln Academy",
-      currentGrade: "10th" as "<9th" | "9th" | "10th" | "11th" | "12th",
-      intendedMajors: "Political Science, International Relations, Public Policy",
-      collegeList: "Georgetown, American University, UC Berkeley, Columbia, University of Chicago",
+      currentGrade: "10th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "International Relations",
+      collegeList: "Georgetown, Johns Hopkins SAIS, Tufts, George Washington, American University",
       testScores: [
         { testName: "SAT", score: "1470" },
-        { testName: "AP", score: "US Government: 5" },
-        { testName: "AP", score: "World History: 4" }
+        { testName: "AP", score: "World History: 5" },
+        { testName: "AP", score: "Comparative Government: 5" },
+        { testName: "AP", score: "Spanish Language: 5" }
       ],
-      courseHistory: "AP US Government (A), AP World History (A-), Honors English 10 (A), Algebra II (B+), Spanish III (A-), Biology (B+)",
+      courseHistory: "AP World History (A+), AP Comparative Government (A), AP Spanish Language (A+), AP English Language (A), Honors Economics (A-), AP US History (A-)",
       activities: [
         { 
           name: "Model UN", 
-          notes: "Secretary General, 3 years, 5 hrs/week, Led team to national conference, Best Delegate award"
+          notes: "Secretary General, 3 years, 8 hrs/week, Led team to national conference, Best Delegate award at multiple conferences"
         },
         { 
-          name: "Debate Team", 
-          notes: "Captain, 2 years, 6 hrs/week, State finalist in Lincoln-Douglas debate"
+          name: "International Affairs Club", 
+          notes: "Founder & President, 2 years, 3 hrs/week, Organizing discussions on global issues with 30+ members"
         },
         { 
-          name: "Community Advocacy", 
-          notes: "Volunteer Coordinator, 2 years, 4 hrs/week, Organized voter registration drives"
+          name: "Embassy Internship", 
+          notes: "Summer Intern, 160 hours total, Assisted with cultural affairs programming at Spanish Consulate"
         }
       ],
-      additionalInfo: "I interned at my local congressional office and helped research policy issues. I also started a podcast interviewing local political leaders about community issues that has over 500 listeners."
+      additionalInfo: "I'm fluent in Spanish and Portuguese and spent a summer studying international politics in Brazil. I also launched a podcast interviewing immigrants about their stories and experiences, which has listeners in over 15 countries."
     };
     
-    const humanitiesTemplate: FormValues = {
+    const linguisticsTemplate: FormValues = {
+      studentName: "Emma Chang",
+      highSchool: "Westfield Academy",
+      currentGrade: "11th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Linguistics",
+      collegeList: "Stanford, MIT, Swarthmore, Pomona, Georgetown",
+      testScores: [
+        { testName: "SAT", score: "1520" },
+        { testName: "AP", score: "English Language: 5" },
+        { testName: "AP", score: "French Language: 5" },
+        { testName: "AP", score: "Spanish Language: 5" }
+      ],
+      courseHistory: "AP English Language (A+), AP French Language (A+), AP Spanish Language (A+), Honors Latin III (A), AP Computer Science Principles (A), AP Psychology (A)",
+      activities: [
+        { 
+          name: "Linguistics Olympiad", 
+          notes: "Team Captain, 3 years, 5 hrs/week, National finalist, specialized in computational linguistics"
+        },
+        { 
+          name: "Language Exchange", 
+          notes: "Founder, 2 years, 4 hrs/week, Organizing conversational practice for 40+ students across 6 languages"
+        },
+        { 
+          name: "Translation Services", 
+          notes: "Volunteer, 2 years, 3 hrs/week, Providing translation for community events and documents"
+        }
+      ],
+      additionalInfo: "I speak five languages fluently (English, Mandarin, Spanish, French, and conversational Arabic). I created a computational algorithm to analyze phonological patterns across languages that won honorable mention at our state science fair. I also participated in a summer linguistics research program at Stanford."
+    };
+        
+    const marketingTemplate: FormValues = {
+      studentName: "Madison Taylor",
+      highSchool: "Lakeside High School",
+      currentGrade: "10th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Marketing",
+      collegeList: "NYU Stern, Indiana Kelley, Michigan Ross, Penn State, University of Texas Austin",
+      testScores: [
+        { testName: "SAT", score: "1380" },
+        { testName: "AP", score: "Psychology: 4" },
+        { testName: "AP", score: "Statistics: 4" }
+      ],
+      courseHistory: "AP Psychology (A), AP Statistics (A-), Business Elective (A+), Digital Media (A+), AP English Language (A), Spanish III (B+)",
+      activities: [
+        { 
+          name: "Social Media Marketing", 
+          notes: "Consultant, 2 years, 8 hrs/week, Managing campaigns for three local businesses, increased engagement by 40%"
+        },
+        { 
+          name: "DECA Marketing Team", 
+          notes: "Team Leader, 3 years, 5 hrs/week, State finalist in Marketing Communications"
+        },
+        { 
+          name: "School Spirit Committee", 
+          notes: "Marketing Director, 2 years, 4 hrs/week, Created promotional campaigns for school events"
+        }
+      ],
+      additionalInfo: "I completed Google's Digital Marketing certification and ran successful Instagram campaigns for our school's fundraising events, raising over $5,000. I also interned with a local marketing agency where I helped develop content strategies for small businesses."
+    };
+    
+    const mathTemplate: FormValues = {
+      studentName: "Daniel Park",
+      highSchool: "Princeton High School",
+      currentGrade: "11th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Mathematics",
+      collegeList: "MIT, Stanford, Princeton, Harvard, Harvey Mudd",
+      testScores: [
+        { testName: "SAT", score: "1580" },
+        { testName: "AP", score: "Calculus BC: 5" },
+        { testName: "AP", score: "Statistics: 5" },
+        { testName: "AP", score: "Physics C: 5" }
+      ],
+      courseHistory: "AP Calculus BC (A+), AP Statistics (A+), AP Physics C (A+), Multivariable Calculus (A+, dual enrollment), AP Computer Science A (A), AP English Literature (A-)",
+      activities: [
+        { 
+          name: "Math Team", 
+          notes: "Captain, 4 years, 8 hrs/week, Multiple state champion, AIME qualifier for 3 years"
+        },
+        { 
+          name: "Math Research", 
+          notes: "Student Researcher, 2 years, 5 hrs/week, Working on number theory problems with university professor"
+        },
+        { 
+          name: "Math Circle", 
+          notes: "Instructor, 2 years, 3 hrs/week, Teaching advanced math concepts to middle school students"
+        }
+      ],
+      additionalInfo: "I published a paper on prime number patterns in a youth mathematics journal. I've qualified for the USAMO (United States of America Mathematical Olympiad) and attended the Program in Mathematics for Young Scientists (PROMYS) at Boston University for two summers."
+    };
+    
+    const philosophyTemplate: FormValues = {
       studentName: "Ethan Williams",
       highSchool: "Riverside High School",
-      currentGrade: "10th" as "<9th" | "9th" | "10th" | "11th" | "12th",
-      intendedMajors: "English Literature, Philosophy, History",
-      collegeList: "Brown, Amherst, Williams, Swarthmore, Wesleyan",
+      currentGrade: "10th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Philosophy",
+      collegeList: "Yale, Princeton, Williams, Swarthmore, Amherst",
       testScores: [
-        { testName: "SAT", score: "1480" },
-        { testName: "AP", score: "English Language: 5" },
-        { testName: "AP", score: "European History: 4" }
+        { testName: "SAT", score: "1510" },
+        { testName: "AP", score: "English Literature: 5" },
+        { testName: "AP", score: "European History: 5" },
+        { testName: "AP", score: "Psychology: 5" }
       ],
-      courseHistory: "AP English Language (A+), AP European History (A), Honors Algebra II (B+), Chemistry (B), French III (A), Psychology (A)",
+      courseHistory: "AP English Literature (A+), AP European History (A+), AP Psychology (A+), AP US History (A), Ethics Elective (A+), Latin IV (A)",
       activities: [
-        { 
-          name: "Literary Magazine", 
-          notes: "Editor-in-Chief, 3 years, 5 hrs/week, Published award-winning school magazine"
-        },
-        { 
-          name: "Writing Center", 
-          notes: "Peer Tutor, 2 years, 4 hrs/week, Helped students improve writing skills"
-        },
         { 
           name: "Philosophy Club", 
-          notes: "Founder & President, 2 years, 2 hrs/week, Organize weekly philosophical discussions"
+          notes: "Founder & President, 3 years, 4 hrs/week, Organizing weekly philosophical discussions and debates"
+        },
+        { 
+          name: "Ethics Bowl", 
+          notes: "Team Captain, 2 years, 6 hrs/week, Regional champions, competed at national level"
+        },
+        { 
+          name: "Literary Magazine", 
+          notes: "Editor-in-Chief, 2 years, 5 hrs/week, Publishing philosophical essays and literary criticism"
         }
       ],
-      additionalInfo: "I've published short stories in two literary journals and won a regional essay contest. I also attended a summer program in creative writing at Columbia University."
+      additionalInfo: "I've written a 40-page thesis on epistemology and skepticism that won a state philosophy essay contest. I also participated in a summer philosophy program at Yale where I studied contemporary moral theory and completed an independent research project."
     };
     
-    const artMusicTemplate: FormValues = {
-      studentName: "Zoe Kim",
-      highSchool: "Westwood Arts Academy",
-      currentGrade: "10th" as "<9th" | "9th" | "10th" | "11th" | "12th",
-      intendedMajors: "Fine Arts, Graphic Design, Music Composition",
-      collegeList: "Rhode Island School of Design, Juilliard, Berklee College of Music, Parsons School of Design, NYU Tisch",
+    const physicsTemplate: FormValues = {
+      studentName: "Nathan Chen",
+      highSchool: "Oakwood Science Academy",
+      currentGrade: "11th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Physics, Astrophysics",
+      collegeList: "MIT, Caltech, Princeton, Stanford, UC Berkeley",
       testScores: [
-        { testName: "SAT", score: "1450" },
-        { testName: "AP", score: "Art History: 5" },
-        { testName: "AP", score: "Music Theory: 5" }
+        { testName: "SAT", score: "1570" },
+        { testName: "AP", score: "Physics C: Mechanics: 5" },
+        { testName: "AP", score: "Physics C: E&M: 5" },
+        { testName: "AP", score: "Calculus BC: 5" }
       ],
-      courseHistory: "AP Art History (A+), AP Music Theory (A), Studio Art (A+), Honors English 10 (A-), Algebra II (B+), Chemistry (B)",
+      courseHistory: "AP Physics C: Mechanics (A+), AP Physics C: E&M (A+), AP Calculus BC (A+), Linear Algebra (A, dual enrollment), AP Computer Science A (A), AP Chemistry (A)",
       activities: [
         { 
-          name: "Symphony Orchestra", 
-          notes: "First Violin, 4 years, 8 hrs/week, Selected for All-State Orchestra"
+          name: "Physics Olympiad", 
+          notes: "Participant, 3 years, 10 hrs/week, National semifinalist, specialized in mechanics and electromagnetism"
         },
         { 
-          name: "Digital Arts Club", 
-          notes: "President, 2 years, 5 hrs/week, Organized annual digital art exhibition"
+          name: "Astrophysics Research", 
+          notes: "Research Assistant, 2 years, 8 hrs/week, Analyzing stellar spectra data with university professor"
         },
         { 
-          name: "Community Theater", 
-          notes: "Set Designer & Actor, 3 years, 10 hrs/week during productions, Lead roles in 3 plays"
+          name: "Science Bowl", 
+          notes: "Team Captain, 3 years, 5 hrs/week, Regional champions, specialized in physics questions"
         }
       ],
-      additionalInfo: "I've composed original music that was performed at our school's spring concert. My digital artwork was selected for display at our city's youth art exhibition, and I've completed an internship with a local graphic design firm."
+      additionalInfo: "I developed a computational model for simulating galaxy formation that won first place at the International Science and Engineering Fair. I also attended the Summer Science Program in Astrophysics where I helped determine the orbit of a near-Earth asteroid using original observations."
     };
-
+    
+    const politicalScienceTemplate: FormValues = {
+      studentName: "James Washington",
+      highSchool: "Capitol Hill Academy",
+      currentGrade: "10th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Political Science",
+      collegeList: "Georgetown, Harvard, American University, George Washington, Columbia",
+      testScores: [
+        { testName: "SAT", score: "1490" },
+        { testName: "AP", score: "US Government: 5" },
+        { testName: "AP", score: "US History: 5" },
+        { testName: "AP", score: "Comparative Government: 5" }
+      ],
+      courseHistory: "AP US Government (A+), AP Comparative Government (A+), AP US History (A), AP English Language (A), Honors Economics (A-), AP Statistics (B+)",
+      activities: [
+        { 
+          name: "Student Government", 
+          notes: "President, 3 years, 10 hrs/week, Led major policy reforms for school discipline system"
+        },
+        { 
+          name: "Model UN", 
+          notes: "Head Delegate, 3 years, 6 hrs/week, Best Delegate awards at multiple conferences"
+        },
+        { 
+          name: "Congressional Campaign", 
+          notes: "Intern, 1 year, 15 hrs/week seasonal, Managed youth outreach and voter registration drives"
+        }
+      ],
+      additionalInfo: "I founded a non-partisan voter education initiative that registered 500+ first-time voters. I also attended the Junior State of America summer program at Georgetown University where I specialized in constitutional law and participated in moot court competitions."
+    };
+    
+    const psychologyTemplate: FormValues = {
+      studentName: "Isabella Rodriguez",
+      highSchool: "Westridge Academy",
+      currentGrade: "11th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Psychology",
+      collegeList: "Stanford, Yale, University of Michigan, UCLA, Washington University in St. Louis",
+      testScores: [
+        { testName: "SAT", score: "1480" },
+        { testName: "AP", score: "Psychology: 5" },
+        { testName: "AP", score: "Biology: 4" },
+        { testName: "AP", score: "Statistics: 4" }
+      ],
+      courseHistory: "AP Psychology (A+), AP Biology (A), AP Statistics (A-), AP English Literature (A), Honors Sociology (A+), Spanish IV (A)",
+      activities: [
+        { 
+          name: "Psychology Research", 
+          notes: "Research Assistant, 2 years, 6 hrs/week, Conducting adolescent development study with university professor"
+        },
+        { 
+          name: "Mental Health Awareness", 
+          notes: "Founder & President, 3 years, 5 hrs/week, Organizing workshops and support groups for 200+ students"
+        },
+        { 
+          name: "Peer Counseling", 
+          notes: "Lead Counselor, 2 years, 4 hrs/week, Providing support services to fellow students after specialized training"
+        }
+      ],
+      additionalInfo: "I designed and conducted an original research study on social media's effects on teen anxiety that won our state psychology competition. I also completed a summer internship at a clinical psychology practice where I observed therapy sessions and helped with administrative tasks."
+    };
+    
+    const sociologyTemplate: FormValues = {
+      studentName: "Marcus Johnson",
+      highSchool: "Metropolitan Academy",
+      currentGrade: "10th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Sociology",
+      collegeList: "UC Berkeley, University of Chicago, University of Wisconsin-Madison, Northwestern, NYU",
+      testScores: [
+        { testName: "SAT", score: "1440" },
+        { testName: "AP", score: "Psychology: 5" },
+        { testName: "AP", score: "Human Geography: 5" },
+        { testName: "AP", score: "Statistics: 4" }
+      ],
+      courseHistory: "AP Psychology (A+), AP Human Geography (A+), AP Statistics (A), Honors Sociology (A+, dual enrollment), AP English Language (A-), US History (A)",
+      activities: [
+        { 
+          name: "Community Research", 
+          notes: "Lead Researcher, 2 years, 8 hrs/week, Conducting demographic surveys and needs assessment for local neighborhood"
+        },
+        { 
+          name: "Social Justice Club", 
+          notes: "Co-Founder & President, 3 years, 5 hrs/week, Organizing awareness campaigns and community service projects"
+        },
+        { 
+          name: "Youth Advocacy", 
+          notes: "Program Coordinator, 2 years, 6 hrs/week, Developing mentorship programs for underserved youth"
+        }
+      ],
+      additionalInfo: "I conducted an ethnographic study of gentrification in my community that was published in a youth social science journal. I also participated in a summer sociology program at Northwestern University where I learned qualitative research methods and completed a field study on urban community organizing."
+    };
+    
+    const veterinaryMedicineTemplate: FormValues = {
+      studentName: "Harper Wilson",
+      highSchool: "Oakridge High School",
+      currentGrade: "11th" as "9th" | "10th" | "11th" | "12th",
+      intendedMajors: "Pre-Veterinary, Animal Science",
+      collegeList: "Cornell, UC Davis, University of Pennsylvania, Ohio State, Colorado State",
+      testScores: [
+        { testName: "SAT", score: "1470" },
+        { testName: "AP", score: "Biology: 5" },
+        { testName: "AP", score: "Chemistry: 4" },
+        { testName: "AP", score: "Statistics: 4" }
+      ],
+      courseHistory: "AP Biology (A+), AP Chemistry (A), AP Statistics (A-), Animal Science (A+, dual enrollment), AP Environmental Science (A), Spanish III (A-)",
+      activities: [
+        { 
+          name: "Veterinary Clinic", 
+          notes: "Volunteer Assistant, 3 years, 12 hrs/week, 500+ hours shadowing veterinarians and assisting with animal care"
+        },
+        { 
+          name: "Wildlife Rehabilitation", 
+          notes: "Intern, 2 years, 8 hrs/week, Caring for injured wildlife and assisting with medical treatments"
+        },
+        { 
+          name: "4-H Animal Science", 
+          notes: "Club President, 4 years, 10 hrs/week, Raising and showing livestock, winner of state competitions"
+        }
+      ],
+      additionalInfo: "I completed a summer pre-veterinary program at Cornell University where I participated in animal surgery observations and laboratory work. I also conducted research on canine nutrition that won a state science fair award in the animal science category."
+    };
+    
     // Select template based on category
     switch (category) {
+      case 'accounting':
+        templateData = accountingTemplate;
+        break;
+      case 'architecture':
+        templateData = architectureTemplate;
+        break;
+      case 'art':
+        templateData = artTemplate;
+        break;
+      case 'biochemistry':
+        templateData = biochemistryTemplate;
+        break;
+      case 'biology':
+        templateData = biologyTemplate;
+        break;
       case 'business':
         templateData = businessTemplate;
         break;
-      case 'science-math':
-        templateData = scienceMathTemplate;
+      case 'chemistry':
+        templateData = chemistryTemplate;
         break;
-      case 'engineering':
-        templateData = engineeringTemplate;
+      case 'communications':
+        templateData = communicationsTemplate;
         break;
-      case 'social-science':
-        templateData = socialScienceTemplate;
+      case 'computer-science':
+        templateData = computerScienceTemplate;
         break;
-      case 'humanities':
-        templateData = humanitiesTemplate;
+      case 'economics':
+        templateData = economicsTemplate;
         break;
-      case 'art-music':
-        templateData = artMusicTemplate;
+      case 'mechanical-engineering':
+        templateData = mechanicalEngineeringTemplate;
+        break;
+      case 'environmental-engineering':
+        templateData = environmentalEngineeringTemplate;
+        break;
+      case 'finance':
+        templateData = financeTemplate;
+        break;
+      case 'international-relations':
+        templateData = internationalRelationsTemplate;
+        break;
+      case 'linguistics':
+        templateData = linguisticsTemplate;
+        break;
+      case 'marketing':
+        templateData = marketingTemplate;
+        break;
+      case 'math':
+        templateData = mathTemplate;
+        break;
+      case 'philosophy':
+        templateData = philosophyTemplate;
+        break;
+      case 'physics':
+        templateData = physicsTemplate;
+        break;
+      case 'political-science':
+        templateData = politicalScienceTemplate;
+        break;
+      case 'psychology':
+        templateData = psychologyTemplate;
+        break;
+      case 'sociology':
+        templateData = sociologyTemplate;
+        break;
+      case 'veterinary-medicine':
+        templateData = veterinaryMedicineTemplate;
         break;
       default:
         // Show template selection dialog if no category is provided
@@ -1035,18 +1596,35 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
   // Template selection dialog
   const TemplateSelectionDialog = () => (
     <div className={`fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center ${showTemplateDialog ? 'block' : 'hidden'}`}>
-      <div className="bg-white rounded-lg p-6 max-w-md w-full">
-        <h3 className="text-xl font-bold mb-4 text-academic-navy">Choose a Student Profile</h3>
-        <p className="text-sm text-gray-600 mb-4">Select an academic interest to load a sample student profile:</p>
+      <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+        <h3 className="text-xl font-bold mb-4 text-academic-navy">Choose a Major Profile</h3>
+        <p className="text-sm text-gray-600 mb-4">Select a major to load a sample student profile:</p>
         
         <div className="space-y-2">
           {[
-            { id: 'business', label: 'Business Student' },
-            { id: 'science-math', label: 'Science/Math Student' },
-            { id: 'engineering', label: 'Engineering Student' },
-            { id: 'social-science', label: 'Social Science Student' },
-            { id: 'humanities', label: 'Humanities Student' },
-            { id: 'art-music', label: 'Art/Music Student' }
+            { id: 'accounting', label: 'Accounting' },
+            { id: 'architecture', label: 'Architecture' },
+            { id: 'art', label: 'Art' },
+            { id: 'biochemistry', label: 'Biochemistry' },
+            { id: 'biology', label: 'Biology' },
+            { id: 'business', label: 'Business' },
+            { id: 'chemistry', label: 'Chemistry' },
+            { id: 'communications', label: 'Communications' },
+            { id: 'computer-science', label: 'Computer Science' },
+            { id: 'economics', label: 'Economics' },
+            { id: 'mechanical-engineering', label: 'Mechanical Engineering' },
+            { id: 'environmental-engineering', label: 'Environmental Engineering' },
+            { id: 'finance', label: 'Finance' },
+            { id: 'international-relations', label: 'International Relations' },
+            { id: 'linguistics', label: 'Linguistics' },
+            { id: 'marketing', label: 'Marketing' },
+            { id: 'math', label: 'Mathematics' },
+            { id: 'philosophy', label: 'Philosophy' },
+            { id: 'physics', label: 'Physics' },
+            { id: 'political-science', label: 'Political Science' },
+            { id: 'psychology', label: 'Psychology' },
+            { id: 'sociology', label: 'Sociology' },
+            { id: 'veterinary-medicine', label: 'Veterinary Medicine' }
           ].map(template => (
             <button
               key={template.id}
@@ -1104,19 +1682,21 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
       
       {/* Hero Section */}
       <div className="mb-12 pt-8 text-center">
-        <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 bg-gradient-to-r from-academic-navy via-academic-burgundy to-academic-navy bg-clip-text text-transparent drop-shadow-sm leading-tight">
-          Your dream school<br />
-          is within reach.
+        <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 bg-gradient-to-r from-academic-navy via-academic-burgundy to-academic-navy bg-clip-text text-transparent drop-shadow-sm leading-relaxed pb-3">
+          From where you are<br />
+          to <em>where you want to be</em>.
         </h1>
-        <p className="text-xl text-academic-slate mb-8 max-w-3xl mx-auto">
-          A personalized, data-backed college planning tool — trusted by students admitted to top schools.
+        <p className="font-heading text-xl text-academic-navy mb-8 max-w-3xl mx-auto border-academic-gold/30 py-3 px-4 inline-block">
+          Get your college application plan in one simple, actionable timeline.
         </p>
         
         {/* School Logos Section */}
         <SchoolLogos />
         
         <p className="text-sm text-academic-slate mb-6 mt-4 max-w-2xl mx-auto">
-          Simply answer a few questions about your academic profile and goals to receive a personalized college application timeline and strategic recommendations. All your information is processed securely and never stored on our servers.
+          Answer a few questions about your academic profile and goals<br />
+          to receive a personalized college application timeline and strategic recommendations. <br />
+          All your information is processed securely and never stored on our servers.
         </p>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
@@ -1133,7 +1713,7 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
             onClick={() => loadTemplateData()}
             className="bg-white hover:bg-academic-cream text-academic-navy px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl border-2 border-academic-gold hover:border-academic-navy"
           >
-            Use Demo Profile
+            Try Demo Profile
           </Button>
         </div>
       </div>

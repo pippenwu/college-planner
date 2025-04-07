@@ -192,9 +192,9 @@ async function generateReportWithAI(studentData) {
     }
 
     // Create a formatted string for student details
-    const studentName = studentData.studentName || 'Student';
-    const currentGrade = studentData.currentGrade || 'High School Student';
-    const highSchool = studentData.highSchool || 'High School';
+    const studentName = studentData.studentName || 'Name Not Provided';
+    const currentGrade = studentData.currentGrade || 'Age Unknown';
+    const highSchool = studentData.highSchool || 'Unknown High School';
     
     // Format interests properly
     const interests = Array.isArray(studentData.academicInterests) 

@@ -7,8 +7,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        'heading': ['"Merriweather"', 'serif'],
-        'body': ['"Source Sans Pro"', 'sans-serif'],
+        'heading': ['"Lora"', 'serif'],
+        'body': ['"Roboto"', 'sans-serif'],
       },
       colors: {
         'academic': {
