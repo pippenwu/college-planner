@@ -486,7 +486,7 @@ async function generateReportWithAI(studentData) {
 
       {
         "overview": {
-          "text": "A concise (≤100 words) summary of the student's current academic position, strengths, and readiness. Focus on facts — avoid generic praise. Include test score and GPA context."
+          "text": "Quantitative assessment (≤100 words) comparing student's current profile against target schools' medians. Include: 1) Number of APs taken vs. typical admitted student (8-12 for top schools), 2) Test scores vs. school medians from Common Data Set, 3) Current academic trajectory and any gaps to address, 4) Specific areas needing immediate improvement. NO general praise or fluff. Focus on data and actionable gaps."
         },
         "timeline": [
           {
@@ -521,12 +521,19 @@ async function generateReportWithAI(studentData) {
 
       For the timeline:
       - Start with the current season of the current year
-      - Include at least 6 periods spanning approximately 2 years, or until the student graduates high school
+      - Include at least 6 periods spanning approximately 2 years
       - Use realistic academic seasons: Winter (Jan-Feb), Spring (Mar-May), Summer (Jun-Aug), and Fall (Sep-Dec)
       - Include the student's grade level in parentheses for each period:
         - Regular school terms: "Spring 2024 (sophomore)" - use the actual grade level
         - Summer periods: "Summer 2024 (rising junior)" - use "rising [next grade]"
       - Automatically calculate the changing grade levels as time progresses in the timeline
+      - IMPORTANT: Each period (Fall, Spring, Summer) MUST include at least 3-5 recommendations, with 5 being ideal
+      - CERTAIN RECOMMENDATIONS MUST APPEAR AT SPECIFIC TIMES:
+        - Course selection suggestions MUST appear before each grade level (e.g., before rising junior, rising senior)
+        - Summer program recommendations MUST appear in summer periods
+        - SAT/ACT prep MUST start sophomore year
+        - Essay brainstorming and writing MUST appear in junior year
+        - College application deadlines and requirements MUST appear in senior year
 
       For each timeline event, provide highly detailed descriptions with:
       - Specific data points and statistics: acceptance rates, success rates, average outcomes
@@ -635,10 +642,9 @@ function getLimitedReportData(reportData) {
   // Create a copy of the report data
   const limitedData = JSON.parse(JSON.stringify(reportData));
   
-  // For timeline, only show 60% of the periods
+  // For timeline, only show one year of periods (4 seasons)
   if (limitedData.timeline && Array.isArray(limitedData.timeline)) {
-    const visibleCount = Math.ceil(limitedData.timeline.length * 0.6);
-    limitedData.timeline = limitedData.timeline.slice(0, visibleCount);
+    limitedData.timeline = limitedData.timeline.slice(0, 4);
   }
   
   // Replace nextSteps with a premium content message
