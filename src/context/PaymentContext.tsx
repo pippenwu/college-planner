@@ -24,18 +24,10 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
   // Use the KryptoGO hook
   const {
     openPaymentModal,
-    closePaymentModal,
     data,
     txHash,
-    error,
-    isLoading,
-    isSuccess,
-    isModalOpen,
-    resetPayment
+    isLoading
   } = useRealPayment();
-
-  const [paymentAmount, setPaymentAmount] = useState('9.99');
-  const [paymentCurrency, setPaymentCurrency] = useState<'TWD' | 'USD'>('USD');
 
   // Check for successful payment and verify with backend
   useEffect(() => {
@@ -113,9 +105,6 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const initiatePayment = async (amount: string, currency: 'TWD' | 'USD') => {
     try {
-      setPaymentAmount(amount);
-      setPaymentCurrency(currency);
-      
       // Get the current report ID from localStorage
       const reportId = localStorage.getItem('current_report_id') || `report_${Date.now()}`;
       
@@ -144,17 +133,6 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
       }
     } catch (error) {
       console.error('Payment initialization error:', error);
-    }
-  };
-
-  // Handle payment modal close
-  const handleCloseModal = () => {
-    if (isSuccess) {
-      // If payment was successful, just reset the payment state
-      resetPayment();
-    } else {
-      // If payment was not successful, close the modal
-      closePaymentModal();
     }
   };
 

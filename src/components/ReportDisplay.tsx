@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Code, Download, Loader2, Lock, RotateCcw } from 'lucide-react';
@@ -209,26 +209,6 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         </div>
       </div>
     );
-  };
-
-  // Update the button text to show the discounted price if coupon is applied
-  const getPaymentButtonText = () => {
-    if (isProcessingPayment) {
-      return (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Processing...
-        </>
-      );
-    } else if (hasAppliedCoupon) {
-      return (
-        <>Unlock Full Report - $0.01 <span className="text-xs line-through ml-1">$9.99</span></>
-      );
-    } else {
-      return (
-        <>Unlock Full Report - $9.99</>
-      );
-    }
   };
 
   return (
