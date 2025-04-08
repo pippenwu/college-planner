@@ -10,6 +10,7 @@ dotenv.config();
 const authRoutes = require('./routes/auth');
 const paymentRoutes = require('./routes/payment');
 const reportRoutes = require('./routes/report');
+const lmsqyRoutes = require('./routes/lmsqy');
 
 // Create Express app
 const app = express();
@@ -29,6 +30,7 @@ if (process.env.NODE_ENV === 'production') {
 app.use('/api/auth', authRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/report', reportRoutes);
+app.use('/api', lmsqyRoutes);
 
 // Root route for API health check
 app.get('/api/health', (req, res) => {

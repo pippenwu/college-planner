@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
+import { LemonSqueezyButton } from './components/payment/LemonSqueezyButton';
 import KryptogoPaymentProvider from './components/payment/PaymentProvider';
 import { StudentProfileForm } from './components/StudentProfileForm';
 import { Navbar } from './components/ui/Navbar';
@@ -152,6 +153,11 @@ function App() {
 
             <main className="flex-grow w-full px-4 sm:px-6 overflow-x-hidden relative z-10">
               <div className="max-w-6xl mx-auto w-full">
+                {/* Add a div to display the payment buttons */}
+                <div className="flex justify-end items-center gap-4 mb-4">
+                  <div className="text-sm text-academic-navy font-medium">Test Payment:</div>
+                  <LemonSqueezyButton />
+                </div>
                 <StudentProfileForm onReportVisibilityChange={setIsReportVisible} />
               </div>
             </main>

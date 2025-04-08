@@ -174,8 +174,27 @@ export const reportApi = {
   }
 };
 
+// Lemon Squeezy API
+export const lemonSqueezyApi = {
+  // Create checkout
+  createCheckout: async (email: string, name: string, customData: any) => {
+    try {
+      const response = await apiClient.post('/create-checkout', {
+        email,
+        name,
+        customData
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Checkout creation error:', error);
+      throw error;
+    }
+  }
+};
+
 export default {
   auth: authApi,
   payment: paymentApi,
-  report: reportApi
+  report: reportApi,
+  lemonSqueezy: lemonSqueezyApi
 }; 
