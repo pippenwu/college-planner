@@ -48,6 +48,17 @@ export const authApi = {
     }
   },
   
+  // Verify coupon code
+  verifyCouponCode: async (couponCode: string) => {
+    try {
+      const response = await apiClient.post('/auth/verify-coupon', { couponCode });
+      return response.data;
+    } catch (error) {
+      console.error('Coupon code verification error:', error);
+      throw error;
+    }
+  },
+  
   // Validate token
   validateToken: async () => {
     try {

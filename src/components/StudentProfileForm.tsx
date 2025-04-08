@@ -600,7 +600,7 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
                   <FormControl>
                     <Textarea
                       id={`course-history-${field.name}`}
-                      placeholder="AP Calculus BC (A+), AP Computer Science A (A), AP Physics C (A-), Honors Chemistry (A), English Literature (A-), Spanish III (B+)"
+                      placeholder="AP Calculus BC (A+), AP Macroeconomics (A), AP Statistics (A-), Honors Precalculus (A), English 11 (B+), Spanish IV (B+)"
                       className="min-h-[150px]"
                       {...field}
                     />
@@ -834,28 +834,27 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
       highSchool: "Westview Academy",
       currentGrade: "10th" as "9th" | "10th" | "11th" | "12th",
       intendedMajors: "Architecture",
-      collegeList: "Cornell, Rhode Island School of Design, Cooper Union, Cal Poly, Pratt Institute",
+      collegeList: "University of Illinois, University of Oregon, University of Arizona, Ball State, University of Minnesota",
       testScores: [
-        { testName: "SAT", score: "1390" },
-        { testName: "AP", score: "Studio Art: 5" },
-        { testName: "AP", score: "Physics 1: 4" }
+        { testName: "SAT", score: "1160" },
+        { testName: "AP", score: "Studio Art: 3" }
       ],
-      courseHistory: "AP Studio Art (A+), AP Physics 1 (B+), Calculus (A-), Architecture Elective (A+), Digital Design (A), English 12 (A-)",
+      courseHistory: "Studio Art (A-), Physics (B-), Algebra II (B), Architecture Elective (A), Digital Design (B+), English 10 (B+)",
       activities: [
         { 
-          name: "Architecture Club", 
-          notes: "Founder & President, 2 years, 4 hrs/week, Organized architecture field trips and design workshops"
+          name: "Art Club", 
+          notes: "Member, 2 years, 2 hrs/week, Participated in drawing and design activities"
         },
         { 
-          name: "Habitat for Humanity", 
-          notes: "Volunteer Designer, 2 years, 5 hrs/week, Assisted with home design and construction projects"
+          name: "Yearbook Committee", 
+          notes: "Layout Designer, 1 year, 3 hrs/week, Helped design page layouts for school yearbook"
         },
         { 
-          name: "City Planning Internship", 
-          notes: "Summer Intern, 200 hours total, Shadowed architects and contributed to urban design projects"
+          name: "Community Service", 
+          notes: "Volunteer, 2 years, monthly, Helped with community garden design and maintenance"
         }
       ],
-      additionalInfo: "I've built a portfolio of architectural drawings and 3D models featuring sustainable housing designs. I won 2nd place in a state architecture competition for high school students with my design for an urban community center."
+      additionalInfo: "I've been interested in architecture since taking a design class in 9th grade. I enjoy sketching buildings and experimenting with 3D modeling software in my free time."
     };
     
     const artTemplate: FormValues = {
@@ -863,28 +862,27 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
       highSchool: "Westwood Arts Academy",
       currentGrade: "11th" as "9th" | "10th" | "11th" | "12th",
       intendedMajors: "Fine Arts, Studio Art",
-      collegeList: "Rhode Island School of Design, School of the Art Institute of Chicago, California Institute of the Arts, Pratt Institute, Maryland Institute College of Art",
+      collegeList: "University of Illinois, University of Washington, Arizona State, University of Oregon, Temple University",
       testScores: [
-        { testName: "SAT", score: "1320" },
-        { testName: "AP", score: "Studio Art: 5" },
-        { testName: "AP", score: "Art History: 5" }
+        { testName: "SAT", score: "1140" },
+        { testName: "AP", score: "Studio Art: 4" }
       ],
-      courseHistory: "AP Studio Art (A+), AP Art History (A+), Advanced Painting (A+), Digital Media (A), English 12 (A-), Precalculus (B+)",
+      courseHistory: "Art Studio (A), Art History (B+), Drawing & Painting (A-), Digital Media (B), English 11 (B-), Algebra II (C+)",
       activities: [
         { 
-          name: "Art Portfolio Club", 
-          notes: "President, 3 years, 6 hrs/week, Organized student exhibitions and portfolio workshops"
+          name: "Art Club", 
+          notes: "Member, 2 years, 3 hrs/week, Participated in after-school art projects and local exhibitions"
         },
         { 
-          name: "Local Gallery Internship", 
-          notes: "Intern, 1 year, 8 hrs/week, Assisted with exhibition setup and art curation"
+          name: "School Mural", 
+          notes: "Contributor, 1 semester, 3 hrs/week, Helped paint mural in school cafeteria"
         },
         { 
-          name: "Community Art Initiative", 
-          notes: "Founder, 2 years, 5 hrs/week, Led team creating murals for local businesses and schools"
+          name: "Community Art Classes", 
+          notes: "Student, 1 year, 2 hrs/week, Taking weekend ceramics classes at community center"
         }
       ],
-      additionalInfo: "My artwork has been exhibited in three local galleries, and I won the Youth Artist Award at our state's annual art competition. I've also completed courses in digital illustration and graphic design through a pre-college summer program."
+      additionalInfo: "I love expressing myself through different art mediums, especially painting and ceramics. I've participated in a few local art shows and am working on building a portfolio for college applications."
     };
     
     const biochemistryTemplate: FormValues = {
@@ -892,29 +890,28 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
       highSchool: "North Central High School",
       currentGrade: "10th" as "9th" | "10th" | "11th" | "12th",
       intendedMajors: "Biochemistry",
-      collegeList: "MIT, Caltech, UC Berkeley, University of Michigan, Johns Hopkins",
+      collegeList: "University of Michigan, University of Wisconsin, Ohio State, Purdue University, University of Minnesota",
       testScores: [
-        { testName: "SAT", score: "1550" },
-        { testName: "AP", score: "Biology: 5" },
-        { testName: "AP", score: "Chemistry: 5" },
-        { testName: "AP", score: "Calculus BC: 5" }
+        { testName: "SAT", score: "1280" },
+        { testName: "AP", score: "Biology: 4" },
+        { testName: "AP", score: "Chemistry: 3" }
       ],
-      courseHistory: "AP Biology (A+), AP Chemistry (A+), AP Calculus BC (A), AP Physics 1 (A), AP English Language (A-), Spanish IV (A)",
+      courseHistory: "AP Biology (B+), AP Chemistry (B), Honors Algebra II (B+), AP Physics 1 (B-), English 11 (B+), Spanish III (B)",
       activities: [
         { 
-          name: "Research Internship", 
-          notes: "Lab Assistant, 2 summers, 200+ hours total, Assisted with protein analysis research at university lab"
+          name: "Science Club", 
+          notes: "Member, 2 years, 3 hrs/week, Participated in science demonstrations and competitions"
         },
         { 
-          name: "Science Olympiad", 
-          notes: "Captain, 3 years, 8 hrs/week, 1st place in state biochemistry competition"
+          name: "Hospital Volunteer", 
+          notes: "Volunteer, 1 year, 4 hrs/week, Assisted at local hospital in administrative tasks"
         },
         { 
-          name: "Chemistry Club", 
-          notes: "President, 2 years, 3 hrs/week, Organized demonstrations and competitions"
+          name: "Biology Study Group", 
+          notes: "Participant, 1 year, 2 hrs/week, Weekly studying with peers for AP Biology"
         }
       ],
-      additionalInfo: "I co-authored a research paper on enzyme kinetics that was published in a youth science journal. I also attended a summer biochemistry program at the University of Pennsylvania where I conducted independent research on protein folding."
+      additionalInfo: "I'm interested in biochemistry and enjoy studying how chemical processes relate to living organisms. I volunteered at our local hospital last summer and am hoping to find a research opportunity next year."
     };
     
     const biologyTemplate: FormValues = {
@@ -983,28 +980,27 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
       highSchool: "Riverdale High School",
       currentGrade: "11th" as "9th" | "10th" | "11th" | "12th",
       intendedMajors: "Communications, Journalism",
-      collegeList: "Northwestern, Syracuse, University of Southern California, Boston University, University of Texas Austin",
+      collegeList: "University of Wisconsin, University of Minnesota, Arizona State, Ohio University, Michigan State",
       testScores: [
-        { testName: "SAT", score: "1380" },
-        { testName: "AP", score: "English Language: 5" },
-        { testName: "AP", score: "Psychology: 4" }
+        { testName: "SAT", score: "1180" },
+        { testName: "AP", score: "English Language: 3" }
       ],
-      courseHistory: "AP English Language (A+), AP Psychology (A), Honors World History (A), Journalism (A+), Public Speaking (A), Spanish IV (A-)",
+      courseHistory: "AP English Language (B+), Psychology (A-), World History (B), Journalism (A-), Public Speaking (B+), Spanish III (B-)",
       activities: [
         { 
           name: "School Newspaper", 
-          notes: "Editor-in-Chief, 3 years, 10 hrs/week, Led team of 15 student journalists, won state awards"
+          notes: "Staff Writer, 2 years, 3 hrs/week, Writing articles for the monthly school paper"
         },
         { 
-          name: "Podcast Production", 
-          notes: "Creator & Host, 2 years, 5 hrs/week, 1,500+ monthly listeners, interviews local leaders"
+          name: "Yearbook Committee", 
+          notes: "Member, 1 year, 2 hrs/week, Taking photos and writing captions for yearbook"
         },
         { 
-          name: "Debate Team", 
-          notes: "Captain, 3 years, 6 hrs/week, State finalist in Public Forum debate"
+          name: "Debate Club", 
+          notes: "Member, 1 year, 2 hrs/week, Participating in local debate competitions"
         }
       ],
-      additionalInfo: "I interned at our local NPR affiliate radio station where I helped produce segments for their youth program. I also attended a summer journalism workshop at Northwestern's Medill School of Journalism where I produced a multimedia feature story."
+      additionalInfo: "I discovered my interest in journalism while working on our school newspaper and enjoy interviewing people and writing stories. I'm considering studying communications or journalism in college."
     };
     
     // Define templates for different categories (keep old ones for backwards compatibility)
@@ -1013,28 +1009,28 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
       highSchool: "Westlake High School",
       currentGrade: "10th" as "9th" | "10th" | "11th" | "12th",
       intendedMajors: "Business Administration",
-      collegeList: "Wharton (UPenn), NYU Stern, University of Michigan Ross, UC Berkeley Haas, Georgetown McDonough",
+      collegeList: "Indiana University, Michigan State, University of Wisconsin, Ohio State, Penn State",
       testScores: [
-        { testName: "SAT", score: "1520" },
-        { testName: "AP", score: "Macroeconomics: 5" },
-        { testName: "AP", score: "Statistics: 4" }
+        { testName: "SAT", score: "1230" },
+        { testName: "AP", score: "Macroeconomics: 3" },
+        { testName: "AP", score: "Statistics: 3" }
       ],
-      courseHistory: "Honors Algebra II (A), AP Macroeconomics (A), AP Statistics (A-), Honors English 10 (A-), Spanish III (B+), World History (A)",
+      courseHistory: "Algebra II (B+), AP Macroeconomics (B), Statistics (B+), English 10 (B), Spanish II (B-), World History (B+)",
       activities: [
         { 
-          name: "DECA Business Club", 
-          notes: "Chapter President, 3 years, 5 hrs/week, Led team to national finals in entrepreneurship competition"
+          name: "Business Club", 
+          notes: "Member, 2 years, 3 hrs/week, Participated in local business competitions"
         },
         { 
-          name: "Student Investment Club", 
-          notes: "Founder & President, 2 years, 3 hrs/week, Manage virtual $100k portfolio with 20+ members"
+          name: "School Store", 
+          notes: "Volunteer, 1 year, 2 hrs/week, Helped manage inventory and sales during lunch periods"
         },
         { 
           name: "Junior Achievement", 
-          notes: "Student Company CFO, 1 year, 4 hrs/week, Managed finances for student-run business"
+          notes: "Participant, 1 year, 2 hrs/week, Worked on team project to create a small business"
         }
       ],
-      additionalInfo: "I started a small e-commerce business selling custom phone cases that generated $5,000 in revenue. I also completed a summer internship at a local financial advisory firm."
+      additionalInfo: "I became interested in business after taking an economics class and joining our school's Business Club. I enjoy learning about how companies operate and would like to explore different aspects of business in college."
     };
     
     const computerScienceTemplate: FormValues = {
@@ -1042,29 +1038,28 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
       highSchool: "Central Tech High School",
       currentGrade: "11th" as "9th" | "10th" | "11th" | "12th",
       intendedMajors: "Computer Science",
-      collegeList: "MIT, Stanford, Carnegie Mellon, UC Berkeley, Georgia Tech",
+      collegeList: "University of Washington, Purdue, University of Minnesota, Ohio State, Arizona State",
       testScores: [
-        { testName: "SAT", score: "1560" },
-        { testName: "AP", score: "Computer Science A: 5" },
-        { testName: "AP", score: "Calculus BC: 5" },
-        { testName: "AP", score: "Physics C: 5" }
+        { testName: "SAT", score: "1320" },
+        { testName: "AP", score: "Computer Science A: 4" },
+        { testName: "AP", score: "Calculus AB: 3" }
       ],
-      courseHistory: "AP Computer Science A (A+), AP Calculus BC (A+), AP Physics C (A), Data Structures (A+, dual enrollment), AP English Literature (A-), Spanish IV (B+)",
+      courseHistory: "AP Computer Science A (B+), AP Calculus AB (B), Physics (B+), English 11 (B), Spanish III (C+), US History (B-)",
       activities: [
         { 
-          name: "Robotics Team", 
-          notes: "Programming Lead, 3 years, 12 hrs/week, Designed AI algorithms for competition robot"
+          name: "Coding Club", 
+          notes: "Member, 2 years, 3 hrs/week, Worked on group coding projects and learned programming languages"
         },
         { 
-          name: "Hackathon Participant", 
-          notes: "Team Leader, 3 years, 10+ hackathons, Won Best Mobile App award at StateHacks"
+          name: "School Website", 
+          notes: "Contributor, 1 year, 2 hrs/week, Helped maintain and update school club website"
         },
         { 
-          name: "CS Tutor", 
-          notes: "Volunteer, 2 years, 4 hrs/week, Teaching coding to middle school students"
+          name: "Video Game Development", 
+          notes: "Hobbyist, 3 years, 4 hrs/week, Self-taught game development using Unity"
         }
       ],
-      additionalInfo: "I've developed three mobile apps that are published on the App Store with over 10,000 combined downloads. I also completed a summer internship at a tech startup where I worked on their backend systems using Node.js and MongoDB."
+      additionalInfo: "I've been interested in computers since I was young and have taught myself several programming languages. I enjoy solving problems with code and am particularly interested in game development and web applications."
     };
     
     const economicsTemplate: FormValues = {
@@ -1072,29 +1067,28 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
       highSchool: "Riverside Prep Academy",
       currentGrade: "10th" as "9th" | "10th" | "11th" | "12th",
       intendedMajors: "Economics",
-      collegeList: "Harvard, Princeton, Chicago, Northwestern, Duke",
+      collegeList: "University of Wisconsin, Michigan State, Purdue, Indiana University, University of Minnesota",
       testScores: [
-        { testName: "SAT", score: "1540" },
-        { testName: "AP", score: "Microeconomics: 5" },
-        { testName: "AP", score: "Macroeconomics: 5" },
-        { testName: "AP", score: "Calculus AB: 5" }
+        { testName: "SAT", score: "1210" },
+        { testName: "AP", score: "Microeconomics: 3" },
+        { testName: "AP", score: "Statistics: 3" }
       ],
-      courseHistory: "AP Microeconomics (A+), AP Macroeconomics (A+), AP Calculus AB (A), AP Statistics (A), AP English Language (A), World History (A-)",
+      courseHistory: "AP Microeconomics (B), Statistics (B+), Algebra II (B), AP English Language (B-), World History (B+), Spanish II (C+)",
       activities: [
         { 
-          name: "Economics Challenge", 
-          notes: "Team Captain, 2 years, 4 hrs/week, National finalists, specialized in economic policy"
+          name: "Economics Club", 
+          notes: "Member, 1 year, 2 hrs/week, Discussing economic concepts and current events"
         },
         { 
-          name: "Research Assistant", 
-          notes: "Volunteer, 1 year, 5 hrs/week, Helping economics professor with data analysis"
+          name: "Student Government", 
+          notes: "Class Representative, 1 year, 2 hrs/week, Helping organize school events and fundraisers"
         },
         { 
-          name: "Investment Club", 
-          notes: "Vice President, 2 years, 3 hrs/week, Analyzing economic trends and stock market patterns"
+          name: "Basketball Team", 
+          notes: "Team Member, 2 years, 8 hrs/week, Playing on JV basketball team"
         }
       ],
-      additionalInfo: "I wrote a research paper on the economic impact of climate change policies that was published in our state's high school economics journal. I also participated in the Economics for Leaders summer program at Yale University."
+      additionalInfo: "I became interested in economics after taking a class last year and enjoy understanding how financial systems work. I'm also interested in how economic principles apply to everyday decisions."
     };
     
     const mechanicalEngineeringTemplate: FormValues = {
@@ -1280,29 +1274,28 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
       highSchool: "Princeton High School",
       currentGrade: "11th" as "9th" | "10th" | "11th" | "12th",
       intendedMajors: "Mathematics",
-      collegeList: "MIT, Stanford, Princeton, Harvard, Harvey Mudd",
+      collegeList: "University of Illinois, Purdue, University of Washington, University of Minnesota, Ohio State",
       testScores: [
-        { testName: "SAT", score: "1580" },
-        { testName: "AP", score: "Calculus BC: 5" },
-        { testName: "AP", score: "Statistics: 5" },
-        { testName: "AP", score: "Physics C: 5" }
+        { testName: "SAT", score: "1310" },
+        { testName: "AP", score: "Calculus AB: 4" },
+        { testName: "AP", score: "Statistics: 3" }
       ],
-      courseHistory: "AP Calculus BC (A+), AP Statistics (A+), AP Physics C (A+), Multivariable Calculus (A+, dual enrollment), AP Computer Science A (A), AP English Literature (A-)",
+      courseHistory: "AP Calculus AB (B+), AP Statistics (B), AP Physics 1 (B-), Honors Pre-Calculus (A-), AP Computer Science A (B), English 11 (B)",
       activities: [
         { 
-          name: "Math Team", 
-          notes: "Captain, 4 years, 8 hrs/week, Multiple state champion, AIME qualifier for 3 years"
+          name: "Math Club", 
+          notes: "Member, 3 years, 2 hrs/week, Participated in math competitions and problem-solving sessions"
         },
         { 
-          name: "Math Research", 
-          notes: "Student Researcher, 2 years, 5 hrs/week, Working on number theory problems with university professor"
+          name: "Tutoring", 
+          notes: "Math Tutor, 1 year, 3 hrs/week, Helping younger students with algebra and geometry"
         },
         { 
-          name: "Math Circle", 
-          notes: "Instructor, 2 years, 3 hrs/week, Teaching advanced math concepts to middle school students"
+          name: "Chess Club", 
+          notes: "Member, 2 years, 2 hrs/week, Competed in local tournaments"
         }
       ],
-      additionalInfo: "I published a paper on prime number patterns in a youth mathematics journal. I've qualified for the USAMO (United States of America Mathematical Olympiad) and attended the Program in Mathematics for Young Scientists (PROMYS) at Boston University for two summers."
+      additionalInfo: "I've always enjoyed math classes and find satisfaction in solving complex problems. I'm interested in exploring applied mathematics and statistics in college and possibly pursuing a career in data analysis."
     };
     
     const philosophyTemplate: FormValues = {
@@ -1310,59 +1303,57 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
       highSchool: "Riverside High School",
       currentGrade: "10th" as "9th" | "10th" | "11th" | "12th",
       intendedMajors: "Philosophy",
-      collegeList: "Yale, Princeton, Williams, Swarthmore, Amherst",
+      collegeList: "University of Minnesota, Indiana University, Michigan State, Arizona State, Ohio State",
       testScores: [
-        { testName: "SAT", score: "1510" },
-        { testName: "AP", score: "English Literature: 5" },
-        { testName: "AP", score: "European History: 5" },
-        { testName: "AP", score: "Psychology: 5" }
+        { testName: "SAT", score: "1190" },
+        { testName: "AP", score: "English Literature: 4" },
+        { testName: "AP", score: "Psychology: 3" }
       ],
-      courseHistory: "AP English Literature (A+), AP European History (A+), AP Psychology (A+), AP US History (A), Ethics Elective (A+), Latin IV (A)",
+      courseHistory: "AP English Literature (B+), AP Psychology (B), World History (A-), Ethics Elective (A-), Algebra II (C+), Latin II (B)",
       activities: [
         { 
-          name: "Philosophy Club", 
-          notes: "Founder & President, 3 years, 4 hrs/week, Organizing weekly philosophical discussions and debates"
+          name: "Book Club", 
+          notes: "Member, 2 years, 2 hrs/week, Reading and discussing literature and philosophy"
         },
         { 
-          name: "Ethics Bowl", 
-          notes: "Team Captain, 2 years, 6 hrs/week, Regional champions, competed at national level"
+          name: "School Newspaper", 
+          notes: "Opinion Columnist, 1 year, 2 hrs/week, Writing monthly opinion pieces"
         },
         { 
-          name: "Literary Magazine", 
-          notes: "Editor-in-Chief, 2 years, 5 hrs/week, Publishing philosophical essays and literary criticism"
+          name: "Community Service", 
+          notes: "Volunteer, 1 year, 3 hrs/week, Assisting at local food bank"
         }
       ],
-      additionalInfo: "I've written a 40-page thesis on epistemology and skepticism that won a state philosophy essay contest. I also participated in a summer philosophy program at Yale where I studied contemporary moral theory and completed an independent research project."
+      additionalInfo: "I've always enjoyed thinking about big questions and discussing ideas. My favorite class was an ethics elective where we debated moral dilemmas, and I'm interested in studying philosophy to better understand different perspectives on life."
     };
     
     const physicsTemplate: FormValues = {
       studentName: "Nathan Chen",
       highSchool: "Oakwood Science Academy",
       currentGrade: "11th" as "9th" | "10th" | "11th" | "12th",
-      intendedMajors: "Physics, Astrophysics",
-      collegeList: "MIT, Caltech, Princeton, Stanford, UC Berkeley",
+      intendedMajors: "Physics",
+      collegeList: "University of Michigan, University of Illinois, Ohio State, University of Minnesota, Purdue",
       testScores: [
-        { testName: "SAT", score: "1570" },
-        { testName: "AP", score: "Physics C: Mechanics: 5" },
-        { testName: "AP", score: "Physics C: E&M: 5" },
-        { testName: "AP", score: "Calculus BC: 5" }
+        { testName: "SAT", score: "1350" },
+        { testName: "AP", score: "Physics 1: 4" },
+        { testName: "AP", score: "Calculus AB: 3" }
       ],
-      courseHistory: "AP Physics C: Mechanics (A+), AP Physics C: E&M (A+), AP Calculus BC (A+), Linear Algebra (A, dual enrollment), AP Computer Science A (A), AP Chemistry (A)",
+      courseHistory: "AP Physics 1 (B+), AP Calculus AB (B), Chemistry (A-), Honors Pre-Calculus (B+), AP Computer Science A (B-), English 11 (B)",
       activities: [
         { 
-          name: "Physics Olympiad", 
-          notes: "Participant, 3 years, 10 hrs/week, National semifinalist, specialized in mechanics and electromagnetism"
+          name: "Science Club", 
+          notes: "Member, 2 years, 3 hrs/week, Participated in physics experiments and discussions"
         },
         { 
-          name: "Astrophysics Research", 
-          notes: "Research Assistant, 2 years, 8 hrs/week, Analyzing stellar spectra data with university professor"
+          name: "Robotics Club", 
+          notes: "Team Member, 1 year, 4 hrs/week, Helped build and program competition robot"
         },
         { 
-          name: "Science Bowl", 
-          notes: "Team Captain, 3 years, 5 hrs/week, Regional champions, specialized in physics questions"
+          name: "Astronomy Club", 
+          notes: "Member, 2 years, 2 hrs/week, Participated in stargazing events and discussions"
         }
       ],
-      additionalInfo: "I developed a computational model for simulating galaxy formation that won first place at the International Science and Engineering Fair. I also attended the Summer Science Program in Astrophysics where I helped determine the orbit of a near-Earth asteroid using original observations."
+      additionalInfo: "I became interested in physics after an engaging class in high school and joining the Science Club. I enjoy understanding how things work and am curious about the fundamental laws of the universe."
     };
     
     const politicalScienceTemplate: FormValues = {

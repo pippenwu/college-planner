@@ -88,4 +88,41 @@ router.get('/validate-token', (req, res) => {
   }
 });
 
+/**
+ * Coupon code verification route
+ * POST /api/auth/verify-coupon
+ * 
+ * Request body: { couponCode: string }
+ * Response: success status and whether the coupon is valid
+ */
+router.post('/verify-coupon', (req, res) => {
+  const { couponCode } = req.body;
+  
+  if (!couponCode) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Coupon code is required' 
+    });
+  }
+  
+  // Get the valid coupon codes from environment variables
+  // Supports multiple coupon codes separated by commas
+  const validCouponCodes = (process.env.COUPON_CODES || '').split(',').map(code => code.trim());
+  
+  // Check if coupon code is valid
+  if (validCouponCodes.includes(couponCode)) {
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Coupon code is valid',
+      discountAmount: process.env.COUPON_DISCOUNT_AMOUNT || '0.01' // Default to $0.01 if not specified
+    });
+  }
+  
+  // Invalid coupon code
+  return res.status(400).json({ 
+    success: false, 
+    message: 'Invalid coupon code' 
+  });
+});
+
 module.exports = router; 

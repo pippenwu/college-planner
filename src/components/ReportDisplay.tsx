@@ -97,7 +97,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
 
   const handlePaymentClick = () => {
     // Use discounted price if coupon was applied
-    initiatePayment(hasAppliedCoupon ? '0.01' : '9.99', 'USD');
+    initiatePayment(hasAppliedCoupon ? '0.01' : '19.99', 'USD');
   };
 
   const handleVerifyBetaCode = async () => {
@@ -134,18 +134,20 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
     }
     
     try {
-      // For this implementation, we'll check if the code is 'DISCOUNT2024'
-      // In a real app, this would validate against the backend
-      if (couponCodeInput.trim() === 'DISCOUNT2024') {
+      const response = await authApi.verifyCouponCode(couponCodeInput);
+      
+      if (response.success) {
         // Close the dialog
         setShowCouponDialog(false);
         // Reset the input and error
         setCouponCodeInput('');
         setCouponError(null);
-        // Set the coupon as applied
+        // Set the coupon as applied and store the discount amount
         setHasAppliedCoupon(true);
+        // Store the discount amount in a state variable if needed
+        // For example, setDiscountAmount(response.discountAmount);
       } else {
-        setCouponError('Invalid coupon code');
+        setCouponError(response.message || 'Invalid coupon code');
       }
     } catch (error) {
       console.error('Error verifying coupon code:', error);
@@ -257,9 +259,9 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
                 </>
               ) : (
                 hasAppliedCoupon ? (
-                  <>Unlock Full Report - $0.01 <span className="text-xs line-through ml-1">$9.99</span></>
+                  <>Unlock Full Report - $0.01 <span className="text-xs line-through ml-1">$19.99</span></>
                 ) : (
-                  <>Unlock Full Report - $9.99</>
+                  <>Unlock Full Report - $19.99</>
                 )
               )}
             </Button>

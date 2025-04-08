@@ -38,7 +38,7 @@ export const usePaymentMock = () => {
             token_address: '0x' + Math.random().toString(16).substr(2, 40),
             symbol: 'ETH',
             decimals: 18,
-            crypto_amount: '9.99',
+            crypto_amount: '19.99',
             fiat_amount: params.fiat_amount,
             fiat_currency: params.fiat_currency,
             payment_deadline: Date.now() + 3600000, // 1 hour from now
