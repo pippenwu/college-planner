@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 // API base URL - can be updated based on environment
-const API_BASE_URL = 'https://college-planner-production.up.railway.app/api';
+const API_BASE_URL = import.meta.env.DEV 
+  ? 'http://localhost:3001/api' 
+  : 'https://college-planner-production.up.railway.app/api';
 
 // Create an axios instance with default config
 const apiClient = axios.create({

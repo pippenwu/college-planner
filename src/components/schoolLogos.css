@@ -1,17 +1,14 @@
 @keyframes slide {
   0% {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
   100% {
-    transform: translateX(-100%);
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
 .logos-slide-animation {
-  animation: slide 60s linear infinite;
-}
-
-/* Pause animation on hover */
-.logos-slide-animation:hover {
-  animation-play-state: paused;
+  animation: slide 20s linear infinite;
+  display: inline-flex;
+  width: max-content;
 } 

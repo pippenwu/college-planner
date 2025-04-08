@@ -54,43 +54,33 @@ const SCHOOL_LOGOS = [
 ];
 
 export const SchoolLogos: React.FC = () => {
+  // Create a single array with logos repeated exactly once
+  const allLogos = [...SCHOOL_LOGOS, ...SCHOOL_LOGOS];
+  
   return (
     <div className="w-full py-8 overflow-hidden">
       <div className="relative">
         {/* Gradient fade on left */}
         <div className="absolute left-0 top-0 h-full w-16 bg-gradient-to-r from-academic-cream/50 to-transparent z-10"></div>
         
-        {/* Logos container with continuous animation */}
-        <div className="flex logos-slide-animation">
-          {/* First set of logos */}
-          {SCHOOL_LOGOS.map((school, index) => (
-            <div 
-              key={`logo-1-${index}`} 
-              className="mx-6 flex-shrink-0 flex items-center justify-center" 
-              style={{ height: '100px', width: '180px' }}
-            >
-              <img 
-                src={school.logo} 
-                alt={`${school.name} logo`} 
-                className="max-h-[70px] max-w-[160px] object-contain grayscale hover:grayscale-0 transition-all opacity-90 hover:opacity-100 hover:scale-110 duration-300"
-              />
-            </div>
-          ))}
-          
-          {/* Duplicate set of logos for seamless looping */}
-          {SCHOOL_LOGOS.map((school, index) => (
-            <div 
-              key={`logo-2-${index}`} 
-              className="mx-6 flex-shrink-0 flex items-center justify-center" 
-              style={{ height: '100px', width: '180px' }}
-            >
-              <img 
-                src={school.logo} 
-                alt={`${school.name} logo`} 
-                className="max-h-[70px] max-w-[160px] object-contain grayscale hover:grayscale-0 transition-all opacity-90 hover:opacity-100 hover:scale-110 duration-300"
-              />
-            </div>
-          ))}
+        {/* Carousel container */}
+        <div className="overflow-hidden">
+          {/* Inner sliding container */}
+          <div className="logos-slide-animation">
+            {allLogos.map((school, index) => (
+              <div 
+                key={`logo-${index}`} 
+                className="inline-block mx-6" 
+                style={{ height: '100px', width: '180px' }}
+              >
+                <img 
+                  src={school.logo} 
+                  alt={`${school.name} logo`} 
+                  className="max-h-[70px] max-w-[160px] object-contain grayscale hover:grayscale-0 transition-all opacity-90 hover:opacity-100 hover:scale-110 duration-300"
+                />
+              </div>
+            ))}
+          </div>
         </div>
         
         {/* Gradient fade on right */}

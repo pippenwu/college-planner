@@ -1682,7 +1682,7 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
       
       {/* Hero Section */}
       <div className="mb-12 pt-8 text-center">
-        <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 bg-gradient-to-r from-academic-navy via-academic-burgundy to-academic-navy bg-clip-text text-transparent drop-shadow-sm leading-relaxed pb-3">
+        <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 bg-gradient-to-r from-academic-navy via-academic-burgundy to-academic-navy bg-clip-text text-transparent drop-shadow-sm leading-tight md:leading-relaxed pb-3">
           From where you are<br />
           to <em>where you want to be</em>.
         </h1>
