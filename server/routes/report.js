@@ -360,7 +360,7 @@ async function generateReportWithAI(studentData) {
           * Future Business Leaders of America
           * Harvard Undergraduate Economics Association Writing Contest
           * High School Fed Challenge
-          * International [School] Cyberfair (世界網界博覽會白金獎)
+          * International Cyberfair (世界網界博覽會白金獎)
           * Model Entrepreneur Competition (MEC)
           * NFTE World Series of Innovation
           * Otis ESG

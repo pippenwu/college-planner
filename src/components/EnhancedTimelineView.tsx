@@ -24,8 +24,18 @@ export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ time
     switch (category?.toLowerCase() || 'default') {
       case 'academics':
         return <Book {...iconProps} />;
+      case 'standardized testing':
+        return <FileText {...iconProps} />;
+      case 'extracurricular activities':
       case 'extracurriculars':
         return <Trophy {...iconProps} />;
+      case 'summer activities':
+        return <Calendar {...iconProps} />;
+      case 'essay brainstorming & application "theme"':
+      case 'essay brainstorming':
+        return <FileText {...iconProps} />;
+      case 'letters of recommendation':
+        return <FileText {...iconProps} />;
       case 'application':
         return <FileText {...iconProps} />;
       default:
@@ -37,8 +47,18 @@ export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ time
     switch (category?.toLowerCase() || 'default') {
       case 'academics':
         return 'bg-slate-50 text-academic-navy border-slate-200';
+      case 'standardized testing':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'extracurricular activities':
       case 'extracurriculars':
         return 'bg-stone-50 text-academic-slate border-stone-200';
+      case 'summer activities':
+        return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'essay brainstorming & application "theme"':
+      case 'essay brainstorming':
+        return 'bg-violet-50 text-violet-700 border-violet-200';
+      case 'letters of recommendation':
+        return 'bg-pink-50 text-pink-700 border-pink-200';
       case 'application':
         return 'bg-gray-50 text-academic-burgundy border-gray-200';
       default:
@@ -209,7 +229,7 @@ export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ time
       {/* Category Legend */}
       <div className="category-legend p-4 border-t border-gray-200 bg-gray-50">
         <div className="flex flex-wrap gap-4">
-          {['academics', 'extracurriculars', 'application'].map((category) => (
+          {['academics', 'standardized testing', 'extracurriculars', 'summer activities', 'essay brainstorming', 'letters of recommendation'].map((category) => (
             <div key={category} className="flex items-center">
               <div className={`w-6 h-6 rounded-full mr-2 flex items-center justify-center ${getCategoryColor(category)}`}>
                 {getCategoryIcon(category)}
