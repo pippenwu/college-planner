@@ -141,12 +141,25 @@ router.get('/:reportId/pdf', verifyToken, async (req, res) => {
   try {
     const { reportId } = req.params;
     
-    // Ensure user is paid and has access to this report
-    if (!req.user || !req.user.isPaid || req.user.reportId !== reportId) {
+    // Ensure user is paid
+    if (!req.user || !req.user.isPaid) {
       return res.status(403).json({
         success: false,
-        message: 'You do not have access to download this report'
+        message: 'You do not have access to download this report. Payment required.'
       });
+    }
+    
+    // Check if reportId matches - but allow for beta codes which might not have a specific reportId
+    if (req.user.reportId && req.user.reportId !== reportId) {
+      console.log(`Token reportId (${req.user.reportId}) doesn't match requested reportId (${reportId})`);
+      
+      // Only enforce this check for payment sources, not beta codes
+      if (req.user.source === 'payment') {
+        return res.status(403).json({
+          success: false,
+          message: 'You do not have access to this specific report.'
+        });
+      }
     }
     
     // Find the report
@@ -280,8 +293,8 @@ async function generateReportWithAI(studentData) {
       - The entire response must be directly parseable using JSON.parse() with no preprocessing.
 
       ### Overview Instructions:
-      - Provide a quantitative assessment (≤100 words) comparing the student’s current academic profile to the medians of their target colleges. Include:
-        - Number of APs or honors courses vs. what’s typical for admitted students
+      - Provide a quantitative assessment (≤100 words) comparing the student's current academic profile to the medians of their target colleges. Include:
+        - Number of APs or honors courses vs. what's typical for admitted students
         - Standardized test scores vs. CDS data — clearly state if SAT/ACT scores are within, below, or above target ranges
         - Academic trajectory — current rigor, trends, or notable gaps
         - Immediate areas for improvement, with specific, actionable focus
@@ -290,7 +303,7 @@ async function generateReportWithAI(studentData) {
       ### Timeline Instructions:
       - Begin the timeline with the current academic season of the current year.
       - The timeline should extend through high school graduation, ending with Fall of Grade 12 or the college decision window (typically December–April of senior year).
-      - Adjust the number of timeline periods based on the student’s current grade level.
+      - Adjust the number of timeline periods based on the student's current grade level.
       - Use standard academic seasons:
         - Spring: March–May
         - Summer: June–August
@@ -563,7 +576,7 @@ async function generateReportWithAI(studentData) {
           *  NIST Lab Placement (Colorado)
           * Navy STEM 
 
-      5. **Essay Brainstorming & Application “Theme”**  
+      5. **Essay Brainstorming & Application "Theme"**  
         - Begin in Spring or Summer of junior year:
         - Brainstorm 2–3 Common App essay themes with prompts
         - Explore personal narratives that align with academic/extracurricular identity
@@ -579,12 +592,12 @@ async function generateReportWithAI(studentData) {
         - Each period must prioritize seasonally appropriate actions:
           * E.g., summer = programs and projects; fall = club leadership and college visits; winter = test registration and deadlines.
           * Avoid duplicate suggestions across periods.
-        - Do not suggest tasks the student has already completed (e.g., don’t suggest starting SAT prep if SAT score is in profile).
+        - Do not suggest tasks the student has already completed (e.g., don't suggest starting SAT prep if SAT score is in profile).
 
 
       ### Next Steps Instructions:
       - Include exactly 5 high-priority, immediately actionable items for the next 30–60 days, derived from the timeline.
-      - Be specific and strategic — e.g., “Register for the August SAT,” “Email 2 potential research mentors,” or “Draft 3 essay topic outlines.” Begin each instruction with a verb.
+      - Be specific and strategic — e.g., "Register for the August SAT," "Email 2 potential research mentors," or "Draft 3 essay topic outlines." Begin each instruction with a verb.
       - For each step, include relevant data points, deadlines, or benchmarks to guide execution (e.g., score targets, word count limits, due dates).
 
       ### Style and Tone:

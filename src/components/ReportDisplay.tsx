@@ -1,25 +1,26 @@
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Code, Download, Loader2, Lock, RotateCcw } from 'lucide-react';
 import React, { useState } from 'react';
+import toast from "react-hot-toast";
 import { usePayment } from '../context/PaymentContext';
 import { authApi, reportApi } from '../services/apiClient';
 import { EnhancedTimelineView } from './EnhancedTimelineView';
@@ -67,18 +68,74 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
 
   const handlePDFDownload = async () => {
     try {
+      // First check if user is actually paid
+      if (!isPaid) {
+        toast.error('You must unlock the full report before downloading the PDF', {
+          icon: '🔒',
+          duration: 3000
+        });
+        return;
+      }
+
       // Get the current report ID from localStorage
       const reportId = localStorage.getItem('current_report_id');
       
       if (!reportId) {
         console.error('No report ID found for PDF download');
+        toast.error('No report ID found. Please try refreshing the page.', {
+          duration: 4000,
+          icon: '❌',
+        });
         return;
       }
       
-      // Call the backend API to generate and download the PDF
-      await reportApi.downloadReportPdf(reportId);
-    } catch (error) {
+      // Verify auth token exists
+      if (!localStorage.getItem('auth_token')) {
+        toast.error('Authentication required. Please try unlocking the report again.', {
+          duration: 4000,
+          icon: '🔑',
+        });
+        return;
+      }
+      
+      // Show loading toast
+      const loadingToast = toast.loading('Generating your PDF...', {
+        duration: 10000,
+      });
+      
+      try {
+        // Call the backend API to generate and download the PDF
+        await reportApi.downloadReportPdf(reportId);
+        
+        // Dismiss loading toast and show success
+        toast.dismiss(loadingToast);
+        toast.success('Your PDF has been downloaded!', {
+          duration: 4000,
+          icon: '✅',
+        });
+      } catch (error: any) {
+        // Dismiss loading toast and show error
+        toast.dismiss(loadingToast);
+        
+        // Display more specific error message if available
+        if (error.message) {
+          toast.error(error.message, {
+            duration: 4000,
+            icon: '❌',
+          });
+        } else {
+          toast.error('Failed to download PDF. Please try again.', {
+            duration: 4000,
+            icon: '❌',
+          });
+        }
+      }
+    } catch (error: any) {
       console.error('Error downloading PDF:', error);
+      toast.error(error.message || 'Failed to download PDF. Please try again.', {
+        duration: 4000,
+        icon: '❌',
+      });
     }
   };
 
@@ -106,8 +163,11 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
       return;
     }
     
+    // Get the current report ID from localStorage
+    const reportId = localStorage.getItem('current_report_id');
+    
     try {
-      const response = await authApi.verifyBetaCode(betaCodeInput);
+      const response = await authApi.verifyBetaCode(betaCodeInput, reportId || undefined);
       
       if (response.success) {
         // Close the dialog
@@ -435,12 +495,34 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         </div>
         
         {/* Only show download button for paid users */}
-        {isPaid && (
+        {isPaid ? (
           <Button 
             onClick={handlePDFDownload}
             className="flex items-center gap-2"
+            disabled={isProcessingPayment}
           >
-            <Download className="h-4 w-4" />
+            {isProcessingPayment ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4" />
+                Download Plan (PDF)
+              </>
+            )}
+          </Button>
+        ) : (
+          <Button 
+            variant="outline"
+            onClick={() => toast.error('Please unlock the full report to download the PDF', {
+              icon: '🔒',
+              duration: 3000
+            })}
+            className="flex items-center gap-2"
+          >
+            <Lock className="h-4 w-4" />
             Download Plan (PDF)
           </Button>
         )}

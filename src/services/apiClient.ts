@@ -34,9 +34,9 @@ apiClient.interceptors.request.use(
 // Auth API
 export const authApi = {
   // Verify beta code
-  verifyBetaCode: async (betaCode: string) => {
+  verifyBetaCode: async (betaCode: string, reportId?: string) => {
     try {
-      const response = await apiClient.post('/auth/verify-beta', { betaCode });
+      const response = await apiClient.post('/auth/verify-beta', { betaCode, reportId });
       // If successful, store the token in localStorage
       if (response.data.token) {
         localStorage.setItem('auth_token', response.data.token);
@@ -152,6 +152,12 @@ export const reportApi = {
   // Download report PDF
   downloadReportPdf: async (reportId: string) => {
     try {
+      // First check if we have a token, as this is required
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('Authentication required. Please unlock the full report first.');
+      }
+      
       const response = await apiClient.get(`/report/${reportId}/pdf`, {
         responseType: 'blob'
       });
@@ -164,11 +170,23 @@ export const reportApi = {
       link.setAttribute('download', `college-plan-${reportId}.pdf`);
       document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('PDF download error:', error);
+      
+      // Handle specific error types
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        if (error.response.status === 403) {
+          throw new Error('Access denied. Please make sure you\'ve unlocked the full report and try again.');
+        } else if (error.response.status === 404) {
+          throw new Error('Report not found. Please regenerate your report.');
+        }
+      }
+      
       throw error;
     }
   }

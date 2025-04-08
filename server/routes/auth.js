@@ -6,11 +6,11 @@ const router = express.Router();
  * Beta code verification route
  * POST /api/auth/verify-beta
  * 
- * Request body: { betaCode: string }
+ * Request body: { betaCode: string, reportId?: string }
  * Response: JWT token if beta code is valid
  */
 router.post('/verify-beta', (req, res) => {
-  const { betaCode } = req.body;
+  const { betaCode, reportId } = req.body;
   
   if (!betaCode) {
     return res.status(400).json({ 
@@ -26,6 +26,7 @@ router.post('/verify-beta', (req, res) => {
       { 
         isPaid: true,
         source: 'beta_code',
+        reportId: reportId || null, // Include reportId if provided
         issuedAt: new Date().toISOString()
       }, 
       process.env.JWT_SECRET, 
