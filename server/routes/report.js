@@ -214,23 +214,20 @@ async function generateReportWithAI(studentData) {
       ? studentData.collegeList.join(', ')
       : (studentData.collegeList || 'Not specified');
     
-    // Format test scores if available
-    const testScores = studentData.testScores 
-      ? Object.entries(studentData.testScores)
-          .map(([test, score]) => `${test}: ${score}`)
+    // Format test scores if available - testScores is an array of objects with testName and score properties
+    const testScores = Array.isArray(studentData.testScores) 
+      ? studentData.testScores
+          .filter(test => test.testName && test.score)
+          .map(test => `${test.testName}: ${test.score}`)
           .join('\n')
       : 'Not specified';
     
-    // Format course history if available
-    const courseHistory = Array.isArray(studentData.courseHistory)
-      ? studentData.courseHistory
-          .map(course => `${course.name || ''}: ${course.grade || ''}`)
-          .join('\n')
-      : (studentData.courseHistory || 'Not specified');
+    // Format course history properly - it's a string from the form, not an array
+    const courseHistory = studentData.courseHistory || 'Not specified';
 
     // Add safe handling for properties that might be undefined
     const prompt = `
-      You are a professional college counselor generating a personalized and strategic college planning report for a student based on the following profile.
+      You are a professional college counselor of over 20+ years experience generating a personalized and strategic college planning report for a student based on the following profile.
 
       Please follow these specific instructions carefully to create a structured JSON report with three sections:
       1. overview
@@ -249,316 +246,358 @@ async function generateReportWithAI(studentData) {
       Test Scores: ${testScores}
       Course History: ${courseHistory}
 
-      If any information is missing, make reasonable assumptions based on the high school and grade level.
-
-      ### Contextual Instructions:
-      - Today's date is ${new Date().toISOString().split('T')[0]}. Use this to ensure all recommendations are timely and relevant.
-      - The student is either from the U.S. or Taiwan. Base summer programs, extracurriculars, and opportunities on what is realistically available based on their high school location.
-      - For GPA and SAT benchmarks, reference actual data from Common Data Sets. Include 25th, 50th (mean), and 75th percentile scores for any recommended schools.
-      - Course selection advice should include specific AP courses, how many to take, and justifications. Include anecdotes or real case examples from successful applicants or forums when possible.
-      - The Common App allows 10 activities and 5 awards. Spread these throughout the timeline using real, named competitions, programs, and initiatives. Focus on key themes: leadership, community service, academic alignment, initiative, and competitiveness.
-      - Essay theme suggestions should reference real essay angles, case studies, or sample prompts.
-      - Here is a list of activities that you may want to suggest, based on the student's profile:
-          ArtEffect
-          Congressional Art Competition
-          From The Top Fellowship (Music)
-          International Youth Fellowship
-          Kaira Looro
-          National Association for Music Education Competitions
-          National High School Musical Theatre Awards
-          Superior Culture
-          YoungArts National Arts Competetion
-          Health Occupations Students of America (HOSA)
-          International Genetically Engineered Machine (iGEM)
-          Medic Mentor
-          Stockholm Junior Water Prize
-          British Biology Olympiad
-          Blue Ocean Entrepreneurship Competition
-          Conrad Spirit of Innovation
-          DECA
-          Diamond Challenge
-          Future Business Leaders of America
-          Harvard Undergraduate Economics Association Writing Contest
-          High School Fed Challenge
-          International [School] Cyberfair (世界網界博覽會白金獎)
-          Model Entrepreneur Competition (MEC)
-          NFTE World Series of Innovation
-          Otis ESG
-          Rice Business Plan Competition
-          The Stock Market Game
-          Wharton Investment Competition
-          AICrowd
-          BEST Robotics Competition
-          CERN's Beamline for Schools Competition
-          Clean Tech Competition
-          Congressional App Challenge
-          CyberPatriot
-          First Robotics Competition
-          ITEX WYIE (Young Inventors)
-          Kaggle
-          Microsoft Imagine Cup (Junior)
-          MIT THINK Scholars Program
-          National Scholastic Press Association (Pacemaker and Individual Awards)
-          Technology Student Association High School Competition
-          Toshiba/NSTA ExploraVision
-          Vex Robotics Competition
-          Young Turing Program
-          International Olympiad in Artificial Intelligence
-          Austin Film Festival Young Filmmaker's Competition
-          2023 ARML Local 美國高中數學聯賽
-          AMC
-          American Regions Mathematics League
-          Caribou Mathematics Competition
-          COMAP
-          Cybermath
-          Harvard MIT Mathematics Tournament
-          High School Mathematical Contest in Modeling (HiMCM)
-          IMMC (International Math Modeling Competition)
-          Math Without Borders Competition
-          Pi Math Contest
-          Academic Decathlon
-          National Academic League
-          National History Bowl
-          Non-Trivial
-          Odyssey of the Mind
-          Quiz Bowl Tournament of Champions
-          The Brain Bee
-          University Interscholastic League
-          Astronomy Olympiad
-          IAAC
-          Physics Bowl
-          Climate Science Olympiad
-          Astrophysics Olympiad
-          AFSA American Foreign Service Affairs
-          American Foreign Service National H.S. Essay Contest
-          High School Democrats of America
-          We The People (Constitutional Scholars)
-          Asian Debate League
-          National Speech and Debate
-          National Speech and Debate Association
-          WSDC Taiwan
-          Profile in Courage Essay Contest 
-          Adroit Prizes for Poetry and Prose
-          Bennington College Essay competition ( Young Writers Awards)
-          Betty L. Yu and Jin C. Yu Creative Writing Prize
-          DNA Day Essay Competition
-          Immerse Essay Competition
-          John Locke Essay Competition
-          Kuen Tai Writing Competition
-          "Lewis Center for the Arts
-          High School Contests"
-          National Scholastic Press Association (Pacemaker and Individual Awards)
-          NCTE Student Writing Awards
-          NYTimes Contest
-          Polyphony Lit Seasonal Essay Competitions
-          Scholastic Art & Writing Awards
-          The Concord Review
-          World Historian Student Essay Competition
-          AI Song Contest
-          Cambridge Re:Think
-          MIT Inspire (Arts, Humanities, & Social Sciences)
-          Project Paradigm
-          Regeneron STS
-          Shell Eco-marathon regional mileage competitions
-          Columbia Political Review's High School Essay Contest
-          Congressional Award
-
-          Publications such as JSR, JEI, IJRES, IJHSR, Stanford Intersect, Schola, Whitman Journal of Psych, Young Scientist Journal, TAAI, ACMM, NYT, The Concord Review, The Adroit Journal, Polyphony Lit, Cathartic Lit, Parallax, Apprentice Writer, Ember Journal, Teen Ink, Incandescent Review, Adroit Journal, The Scholarly Review
-          
-          Here are also some potential summer programs:
-          Aspire: Five-Week Music Performance Intensive
-          Berklee Summer Programs
-          Early College Program Summer Institute
-          High School Summer Live Courses
-          Pratt Institute Summer Precollege
-          Sotheby's Institute of Art Summer Institute
-          UAL Summer Courses
-          Manhattan School of Music Pre-college
-          Stevens Select Summer Scholars Program
-          LaunchX IN PERSON
-          Wharton Global Youth Programs (LBW)
-          Berkeley High School Entrepreneurship
-          LaunchX Online
-          Wharton Global Youth Programs (non LBW)
-          Penn State BOSS business program
-          UCLA Anderson High School Discovery
-          MathILy
-          Veritas AI
-          MIT RSI
-          PROMYS
-          Ross Math Program
-          USA/Canada Mathcamp
-          Honors Math Program
-          Wolfram High School Summer
-          Princeton AI4All
-          AI Scholars CMU
-          YSPA (Yale Summer Program in Astrophysics)
-          RAL Work Placement
-          Imperial Global Summer School
-          Inspirit AI
-          Kode With Klossy
-          NYU TISCH SUMMER HIGH SCHOOL DRAMATIC WRITING PROGRAM 
-          Chapman Summer Film Academy 
-          Socapa Screenwriting Camp
-          Iowa Young Writer's Studio
-          Kenyon Review Young Writers Workshop
-          Clinical Science, Technology and Medicine Summer Internships
-          BU Rise
-          Stanford Institutes of Medicine Summer Research Program
-          Summer Internship in Biomedical Research (SIP)
-          NTU Yau Lab
-          SSP
-          Garcia Polymers Center Summer Program
-          Salish Sea Sciences Pre-College Program
-          Penn Medicine Summer Program
-          Summer High School Internship Program (Fred Hutchinson Cancer Center)
-          Wake Forest Summer Immersion (business math science film law etc)
-          COSMOS
-          Notre Dame Leadership Seminars
-          UChicago Summer College
-          UCSB Research Mentorship Program
-          YYGS
-          Harvard: Pre-College & Secondary School Program
-          Boston College Six-Week Honors Program
-          UMass Amherst Research Intensives
-          Boston Leadership Institute
-          Boston University High School Honors
-          CMU pre-college
-          Cornell Summer Session
-          Emory Pre-College and Summer College
-          Math BioU and Bio Exlpor
-          Northwestern College Preparation Program
-          Purdue Summer College for High School Students
-          Stanford Summer Session
-          UC Berkeley Pre-College
-          UPenn Summer Academies.
-          Oxford Summer Courses
-          Barnard Pre-College Programs
-          Brown Pre-college program
-          Duke Pre-College
-          Johns Hopkins CTY
-          KCL Pre-U
-          LMU Pre-College
-          NSLC
-          Rice University Visiting Owls
-          RISD Summer
-          Sarah Lawrence Pre-college Summer Programs
-          Smith College Summer Precollege Programs
-          SOCAPA camps (general)
-          Syracuse University Summer College
-          Tufts Pre-College Programs
-          UBC Future Global Leaders
-          UCL Pre-U
-          University of Rochester Pre-College Online
-          UMass Amherst Precollege
-          Syracuse Summer College Research Immersion
-          Columbia University Pre-College Programs
-          Adventures in Veterinary Medicine (Tufts Pre-college)
-          Bank of America Student Leaders
-          Simons Summer Research Program
-          Telluride Association Summer Seminar
-          Clark Young Scholars
-          Northwestern Medill Summer Journalism
-          Summer Journalism Program
-          Stanford Clinic Neuroscience Immersion Program (CNI-X)
-          NYU Middle/High School
-          UCLA Pre-college summer institute
-          Summer Business Programs
-          Walter Reed GEM
-          Georgetown Summer Academies
-          NYT Summer School
-          Rice Summer Camps
-          Vanderbilt Summer Academy
-          MSM Summer 
-          NTU Plus Academy
-          MSU Engineering
-          JHU EI
-          Middlebury Summer Language Immersion
-          Georgetown Global Academy
-          Stanford National Forensics Institute
-          NIST Lab Placement (Colorado)
-          Navy STEM 
-
-      ---
-
       ### Output Format:
-      You must return valid, parseable JSON with the following structure:
+      You must return valid, parseable JSON using the following structure:
 
       {
         "overview": {
-          "text": "Quantitative assessment (≤100 words) comparing student's current profile against target schools' medians. Include: 1) Number of APs taken vs. typical admitted student (8-12 for top schools), 2) Test scores vs. school medians from Common Data Set, 3) Current academic trajectory and any gaps to address, 4) Specific areas needing immediate improvement. NO general praise or fluff. Focus on data and actionable gaps."
+          "text": "..."
         },
         "timeline": [
           {
-            "period": "Spring 2023 (sophomore)",
+            "period": "...",
             "events": [
               {
-                "title": "Apply to Veritas AI Scholars Program",
-                "category": "academics",
-                "description": "This selective AI program (12% acceptance rate) provides hands-on mentorship with industry professionals. Past participants have published papers in IEEE conferences. Program runs June 15-August 10 with 3 tracks: Computer Vision, NLP, and Reinforcement Learning. Average participants report 85 hours of coding practice. Application requires: transcript, 500-word statement, coding sample, and one recommendation letter."
-              }
-            ]
-          },
-          {
-            "period": "Summer 2023 (rising junior)",
-            "events": [
-              {
-                "title": "Attend Stanford Summer Session",
-                "category": "academics",
-                "description": "Application success rate: 65% for high-achieving students. Choose from 25+ STEM courses that align with your interests. 68% of participants report the experience was 'extremely valuable' on college applications. Program cost: $7,800-9,500 for 8-week session, with financial aid available (avg. award: $3,200). Alumni report 92% satisfaction with knowledge gained. Courses feature real-world projects evaluated by Stanford faculty. Admission requires: 3.7+ GPA, transcript, and one recommendation letter."
+                "title": "...",
+                "category": "...",
+                "description": "..."
               }
             ]
           }
         ],
         "nextSteps": [
           {
-            "title": "Register for the December SAT",
-            "description": "Registration deadline is November 3. Focus on improving your math score from 680 to 730+ by using Khan Academy's official SAT practice. Statistics show students who practice 20+ hours on Khan Academy gain an average of 115 points. Target schools require: Harvard (mid-50%: 1460-1580), Stanford (1420-1570), UC Berkeley (1330-1530).",
-            "priority": 1
+            "title": "...",
+            "description": "...",
           }
         ]
       }
 
-      For the timeline:
-      - Start with the current season of the current year
-      - Include at least 6 periods spanning approximately 2 years
-      - Use realistic academic seasons: Winter (Jan-Feb), Spring (Mar-May), Summer (Jun-Aug), and Fall (Sep-Dec)
-      - Include the student's grade level in parentheses for each period:
-        - Regular school terms: "Spring 2024 (sophomore)" - use the actual grade level
-        - Summer periods: "Summer 2024 (rising junior)" - use "rising [next grade]"
-      - Automatically calculate the changing grade levels as time progresses in the timeline
-      - IMPORTANT: Each period (Fall, Spring, Summer) MUST include at least 3-5 recommendations, with 5 being ideal
-      - CERTAIN RECOMMENDATIONS MUST APPEAR AT SPECIFIC TIMES:
-        - Course selection suggestions MUST appear before each grade level (e.g., before rising junior, rising senior)
-        - Summer program recommendations MUST appear in summer periods
-        - SAT/ACT prep MUST start sophomore year
-        - Essay brainstorming and writing MUST appear in junior year
-        - College application deadlines and requirements MUST appear in senior year
+      ### Formatting Rules:
+      - Return **only** valid JSON — no extra comments, text, or markdown formatting.
+      - Do **not** wrap the output in triple backticks.
+      - Ensure all text values are enclosed in double quotes and escape any special characters properly.
+      - The entire response must be directly parseable using JSON.parse() with no preprocessing.
 
-      For each timeline event, provide highly detailed descriptions with:
-      - Specific data points and statistics: acceptance rates, success rates, average outcomes
-      - Concrete requirements: prerequisites, materials needed, time commitments
-      - Real program dates when applicable
-      - Quantifiable benefits: percentage of participants reporting success, average score improvements
-      - Specific application components, word counts, and competition details
-      - Relevant contextual information like costs, awards, and recognition value
-      - Make all recommendations highly actionable with clear next steps
+      ### Overview Instructions:
+      - Provide a quantitative assessment (≤100 words) comparing the student’s current academic profile to the medians of their target colleges. Include:
+        - Number of APs or honors courses vs. what’s typical for admitted students
+        - Standardized test scores vs. CDS data — clearly state if SAT/ACT scores are within, below, or above target ranges
+        - Academic trajectory — current rigor, trends, or notable gaps
+        - Immediate areas for improvement, with specific, actionable focus
+      - Avoid praise, generalizations, or vague descriptions and encouragement. This section must be objective, data-based, and focused on admissions-relevant gaps.
 
-      For nextSteps:
-      - Include exactly 5 high-priority, immediately actionable items for the next 30-60 days
-      - Be specific and strategic (e.g., register for SAT, contact research mentor, etc.)
-      - Order them by priority (1 = highest priority)
-      - Include relevant data points, statistics, and concrete benchmarks for each step
+      ### Timeline Instructions:
+      - Begin the timeline with the current academic season of the current year.
+      - The timeline should extend through high school graduation, ending with Fall of Grade 12 or the college decision window (typically December–April of senior year).
+      - Adjust the number of timeline periods based on the student’s current grade level.
+      - Use standard academic seasons:
+        - Spring: March–May
+        - Summer: June–August
+        - Fall: September–December
+        - Winter (optional): January–February, used only for time-sensitive tasks such as test registration, summer program deadlines, or final SAT prep (especially for Grade 11–12 students).
+      - Label each period with both season and grade level:
+        - Example (during the school year): "Spring 2024 (sophomore)"
+        - Example (summer): "Summer 2024 (rising junior)"
 
-      Style & Tone:
+      ### Timeline Event Requirements:
+      - Each season must include 5 specific and actionable recommendations (minimum of 3 if absolutely necessary; 5 is ideal).
+      - For each event, provide a highly detailed description, including:
+        - Specific data and statistics (e.g., acceptance rates, score outcomes, cost)
+        - Application requirements (e.g., deadlines, documents, time commitment)
+        - Quantifiable outcomes (e.g., score improvement averages, publication success)
+        - Real program names and dates (when applicable)
+        - Clear next steps (e.g., registration links, documents to prepare)
+      
+      ### Required Timeline Categories:
+      - All timeline events should draw from the following categories. Each category should appear in appropriate seasons.
+
+      1. **Academics (GPA, APs, Honors Courses)**  
+        - Recommend specific AP/honors courses aligned to major interests and target school expectations.
+        - Course selection recommendations must appear in the Spring before each new school year begins (e.g., junior-year course planning in Spring of sophomore year).
+        - Include GPA-boosting suggestions (e.g., tutoring, study groups, summer remediation if GPA is low).
+        - 8 to 12 APs are recommended for top schools.
+
+      2. **Standardized Testing (SAT, ACT, TOEFL if applicable)**  
+        - Suggest appropriate test prep and retake timelines using national and CDS benchmarks.
+        - If the student has existing test scores:
+          * Do not recommend diagnostic tests or initial prep.
+          * Instead, suggest score improvement strategies or additional attempts if needed.
+        - Include TOEFL/IELTS if required for international students or non-native speakers.
+        - Follow this general schedule unless otherwise informed:
+          * Sophomore Year: PSAT, light SAT prep    
+          * Junior Spring: First SAT/ACT administration
+          * Senior Fall: Retake if needed before early deadlines
+
+      3. **Extracurricular Activities**  
+        - Ensure variety and alignment to competitive applications. Include activities under the following types:
+          * **Leadership** (e.g., club president, leading a team, initiating a program)
+          * **Community Service** (volunteering, mentorship, advocacy)
+          * **Major-Related or Academic Exploration** (research, competitions, summer courses)
+          * **Competitiveness** (national/international programs, contests)
+          * **Initiative** (self-driven projects, independent learning, entrepreneurship)
+        - Students should aim to develop a **portfolio of 10–15 meaningful activities** that can be used to fill the **10 activity slots** and **5 award slots** in the Common App. Distribute these across multiple seasons to show consistency, depth, and leadership over time.
+        - When recommending activities or programs, reference **real student case studies**, anecdotal examples from past applicants, or success stories shared in college admissions forums or articles. This adds authenticity and strategic value to each suggestion.
+        - Here is a list of activities for reference:
+          * ArtEffect
+          * Congressional Art Competition
+          * From The Top Fellowship (Music)
+          * International Youth Fellowship
+          * Kaira Looro
+          * National Association for Music Education Competitions
+          * National High School Musical Theatre Awards
+          * Superior Culture
+          * YoungArts National Arts Competetion
+          * Health Occupations Students of America (HOSA)
+          * International Genetically Engineered Machine (iGEM)
+          * Medic Mentor
+          * Stockholm Junior Water Prize
+          * British Biology Olympiad
+          * Blue Ocean Entrepreneurship Competition
+          * Conrad Spirit of Innovation
+          * DECA
+          * Diamond Challenge
+          * Future Business Leaders of America
+          * Harvard Undergraduate Economics Association Writing Contest
+          * High School Fed Challenge
+          * International [School] Cyberfair (世界網界博覽會白金獎)
+          * Model Entrepreneur Competition (MEC)
+          * NFTE World Series of Innovation
+          * Otis ESG
+          * Rice Business Plan Competition
+          * The Stock Market Game
+          * Wharton Investment Competition
+          * AICrowd
+          * BEST Robotics Competition
+          * CERN's Beamline for Schools Competition
+          * Clean Tech Competition
+          * Congressional App Challenge
+          * CyberPatriot
+          * First Robotics Competition
+          * ITEX WYIE (Young Inventors)
+          * Kaggle
+          * Microsoft Imagine Cup (Junior)
+          * MIT THINK Scholars Program
+          * National Scholastic Press Association (Pacemaker and Individual Awards)
+          * Technology Student Association High School Competition
+          * Toshiba/NSTA ExploraVision
+          * Vex Robotics Competition
+          * Young Turing Program
+          * International Olympiad in Artificial Intelligence
+          * Austin Film Festival Young Filmmaker's Competition
+          * 2023 ARML Local 美國高中數學聯賽
+          * AMC
+          * American Regions Mathematics League
+          * Caribou Mathematics Competition
+          * COMAP
+          * Cybermath
+          * Harvard MIT Mathematics Tournament
+          * High School Mathematical Contest in Modeling (HiMCM)
+          * IMMC (International Math Modeling Competition)
+          * Math Without Borders Competition
+          * Pi Math Contest
+          * Academic Decathlon
+          * National Academic League
+          * National History Bowl
+          * Non-Trivial
+          * Odyssey of the Mind
+          * Quiz Bowl Tournament of Champions
+          * The Brain Bee
+          * University Interscholastic League
+          * Astronomy Olympiad
+          * IAAC
+          * Physics Bowl
+          * Climate Science Olympiad
+          * Astrophysics Olympiad
+          * AFSA American Foreign Service Affairs
+          * American Foreign Service National H.S. Essay Contest
+          * High School Democrats of America
+          * We The People (Constitutional Scholars)
+          * Asian Debate League
+          * National Speech and Debate
+          * National Speech and Debate Association
+          * WSDC Taiwan
+          * Profile in Courage Essay Contest 
+          * Adroit Prizes for Poetry and Prose
+          * Bennington College Essay competition ( Young Writers Awards)
+          * Betty L. Yu and Jin C. Yu Creative Writing Prize
+          * DNA Day Essay Competition
+          * Immerse Essay Competition
+          * John Locke Essay Competition
+          * Kuen Tai Writing Competition
+          * Lewis Center for the Arts
+          * High School Contests"
+          * National Scholastic Press Association (Pacemaker and Individual Awards)
+          * NCTE Student Writing Awards
+          * NYTimes Contest
+          * Polyphony Lit Seasonal Essay Competitions
+          * Scholastic Art & Writing Awards
+          * The Concord Review
+          * World Historian Student Essay Competition
+          * AI Song Contest
+          * Cambridge Re:Think
+          * MIT Inspire (Arts, Humanities, & Social Sciences)
+          * Project Paradigm
+          * Regeneron STS
+          * Shell Eco-marathon regional mileage competitions
+          * Columbia Political Review's High School Essay Contest
+          * Congressional Award
+
+      4. **Summer Activities**  
+        - Recommend 1–2 summer programs per year with:
+          * Application deadlines
+          * Eligibility criteria
+          * Program costs and aid
+          * Outcomes and selectivity (e.g., publication, college credit)
+        - Here is a list of summer programs for reference:
+          * Aspire: Five-Week Music Performance Intensive
+          * Berklee Summer Programs
+          * Early College Program Summer Institute
+          * High School Summer Live Courses
+          * Pratt Institute Summer Precollege
+          * Sotheby's Institute of Art Summer Institute
+          * UAL Summer Courses
+          * Manhattan School of Music Pre-college
+          * Stevens Select Summer Scholars Program
+          * LaunchX IN PERSON
+          * Wharton Global Youth Programs (LBW)
+          * Berkeley High School Entrepreneurship
+          * LaunchX Online
+          * Wharton Global Youth Programs (non LBW)
+          * Penn State BOSS business program
+          * UCLA Anderson High School Discovery
+          * MathILy
+          * Veritas AI
+          * MIT RSI
+          * PROMYS
+          * Ross Math Program
+          * USA/Canada Mathcamp
+          * Honors Math Program
+          * Wolfram High School Summer
+          * Princeton AI4All
+          * AI Scholars CMU
+          * YSPA (Yale Summer Program in Astrophysics)
+          * RAL Work Placement
+          * Imperial Global Summer School
+          * Inspirit AI
+          * Kode With Klossy
+          * NYU TISCH SUMMER HIGH SCHOOL DRAMATIC WRITING PROGRAM 
+          * Chapman Summer Film Academy 
+          * Socapa Screenwriting Camp
+          * Iowa Young Writer's Studio
+          * Kenyon Review Young Writers Workshop
+          * Clinical Science, Technology and Medicine Summer Internships
+          * BU Rise
+          * Stanford Institutes of Medicine Summer Research Program
+          * Summer Internship in Biomedical Research (SIP)
+          * NTU Yau Lab
+          * SSP
+          * Garcia Polymers Center Summer Program
+          * Salish Sea Sciences Pre-College Program
+          * Penn Medicine Summer Program
+          * Summer High School Internship Program (Fred Hutchinson Cancer Center)
+          * Wake Forest Summer Immersion (business math science film law etc)
+          * COSMOS
+          * Notre Dame Leadership Seminars
+          * UChicago Summer College
+          * UCSB Research Mentorship Program
+          * YYGS
+          * Harvard: Pre-College & Secondary School Program
+          * Boston College Six-Week Honors Program
+          * UMass Amherst Research Intensives
+          * Boston Leadership Institute
+          * Boston University High School Honors
+          * CMU pre-college
+          * Cornell Summer Session
+          * Emory Pre-College and Summer College
+          * Math BioU and Bio Exlpor
+          * Northwestern College Preparation Program
+          * Purdue Summer College for High School Students
+          * Stanford Summer Session
+          * UC Berkeley Pre-College
+          * UPenn Summer Academies.
+          * Oxford Summer Courses
+          * Barnard Pre-College Programs
+          * Brown Pre-college program
+          * Duke Pre-College program
+          * Johns Hopkins CTY
+          * KCL Pre-U
+          * LMU Pre-College
+          * NSLC
+          * Rice University Visiting Owls
+          * RISD Summer
+          * Sarah Lawrence Pre-college Summer Programs
+          * Smith College Summer Precollege Programs
+          * SOCAPA camps (general)
+          * Syracuse University Summer College
+          * Tufts Pre-College Programs
+          * UBC Future Global Leaders
+          * UCL Pre-U
+          * University of Rochester Pre-College Online
+          * UMass Amherst Precollege
+          * Syracuse Summer College Research Immersion
+          * Columbia University Pre-College Programs
+          * Adventures in Veterinary Medicine (Tufts Pre-college)
+          * Bank of America Student Leaders
+          * Simons Summer Research Program
+          * Telluride Association Summer Seminar
+          * Clark Young Scholars
+          * Northwestern Medill Summer Journalism
+          * Summer Journalism Program
+          * Stanford Clinic Neuroscience Immersion Program (CNI-X)
+          * NYU Middle/High School
+          * UCLA Pre-college summer institute
+          * Summer Business Programs
+          * Walter Reed GEM
+          * Georgetown Summer Academies
+          * NYT Summer School
+          * Rice Summer Camps
+          * Vanderbilt Summer Academy
+          * MSM Summer 
+          * NTU Plus Academy
+          * MSU Engineering
+          * JHU EI
+          * Middlebury Summer Language Immersion
+          * Georgetown Global Academy
+          * Stanford National Forensics Institute
+          *  NIST Lab Placement (Colorado)
+          * Navy STEM 
+
+      5. **Essay Brainstorming & Application “Theme”**  
+        - Begin in Spring or Summer of junior year:
+        - Brainstorm 2–3 Common App essay themes with prompts
+        - Explore personal narratives that align with academic/extracurricular identity
+        - Ensure themes connect to activity list and intended majors
+
+      6. **Letters of Recommendation**  
+        - Include tasks such as:
+          * Identifying potential recommenders by Spring of junior year
+          * Building relationships through engagement and participation
+          * Preparing and submitting brag sheets or draft bullet points for recommenders
+
+      Notes:
+        - Each period must prioritize seasonally appropriate actions:
+          * E.g., summer = programs and projects; fall = club leadership and college visits; winter = test registration and deadlines.
+          * Avoid duplicate suggestions across periods.
+        - Do not suggest tasks the student has already completed (e.g., don’t suggest starting SAT prep if SAT score is in profile).
+
+
+      ### Next Steps Instructions:
+      - Include exactly 5 high-priority, immediately actionable items for the next 30–60 days, derived from the timeline.
+      - Be specific and strategic — e.g., “Register for the August SAT,” “Email 2 potential research mentors,” or “Draft 3 essay topic outlines.” Begin each instruction with a verb.
+      - For each step, include relevant data points, deadlines, or benchmarks to guide execution (e.g., score targets, word count limits, due dates).
+
+      ### Style and Tone:
       - Use clear, professional language
       - Be honest but supportive. If a student's current profile does not align with Ivy League admissions, state that clearly and recommend better-fit options
       - Ensure each section offers new value — do not repeat the same points across sections
       - Be data-driven and specific rather than generic
 
-      Return ONLY valid JSON with no additional text, comments, or explanations. The response must be parseable by JSON.parse().
-      DO NOT wrap the JSON in markdown code blocks (do not use triple backtick tags).
-      DO NOT include any extra whitespace, newlines, or formatting that would break JSON parsing.
+      ### Contextual Instructions:
+      - Today's date is ${new Date().toISOString().split('T')[0]}. Use this to ensure all recommendations are timely and relevant.
+      - Assume the student is either from the U.S. or Taiwan. Base summer programs, extracurriculars, and opportunities on what is realistically available based on their high school location.
+      - If any information is missing, make reasonable assumptions based on available information.
+      - The Common App allows 10 activities and 5 awards. Spread these throughout the timeline using real, named competitions, programs, and initiatives. Focus on key themes: leadership, community service, academic alignment, initiative, and competitiveness.
     `;
 
     try {
