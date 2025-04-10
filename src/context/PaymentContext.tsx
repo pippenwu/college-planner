@@ -9,6 +9,8 @@ interface PaymentContextType {
   initiatePayment: (amount: string, currency: 'TWD' | 'USD') => void;
   isProcessingPayment: boolean;
   resetPaymentState: () => void;
+  verifyPaymentStatus: () => Promise<boolean>;
+  paidReportId: string | null;
 }
 
 // Create the context with a default value
@@ -20,6 +22,7 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [isPaid, setIsPaid] = useState<boolean>(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [currentPaymentId, setCurrentPaymentId] = useState<string | null>(null);
+  const [paidReportId, setPaidReportId] = useState<string | null>(null);
   
   // Use the KryptoGO hook
   const {
@@ -32,21 +35,21 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
   // Check for successful payment and verify with backend
   useEffect(() => {
     const verifyPayment = async () => {
-      console.log('Payment status effect: data=', data, 'txHash=', txHash);
       if (data && data.status === 'success' && txHash && currentPaymentId) {
         try {
           setIsVerifying(true);
-          console.log('Verifying payment with backend...');
           
           // Call our backend API to verify the payment
           const response = await paymentApi.verifyPayment(currentPaymentId, txHash);
           
           if (response.success && response.token) {
-            console.log('Payment verified successfully:', response);
             // Payment was verified successfully
             setIsPaid(true);
-          } else {
-            console.error('Payment verification failed:', response);
+            
+            // Save the report ID that was paid for
+            if (response.reportId) {
+              setPaidReportId(response.reportId);
+            }
           }
         } catch (error) {
           console.error('Payment verification error:', error);
@@ -63,49 +66,94 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const resetPaymentState = () => {
     setIsPaid(false);
     setCurrentPaymentId(null);
+    setPaidReportId(null);
     // Clear any applied coupon
     localStorage.removeItem('applied_coupon_price');
-    console.log("Payment state has been manually reset");
   };
 
-  // This effect ensures isPaid state is reset whenever the component remounts
-  // (which happens when navigating between reports)
+  // This effect ensures payment verification happens on component mount
   useEffect(() => {
-    console.log("PaymentProvider mounted - payment state reset");
-    setIsPaid(false);
-    
-    // Check if we have a token in localStorage
-    const validateToken = async () => {
+    // Check payment status using server-side verification
+    const checkPaymentStatus = async () => {
       try {
+        // Only proceed if we have a token
         if (localStorage.getItem('auth_token')) {
-          // Attempt to validate the token
-          const response = await fetch('/api/auth/validate-token', {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-            }
-          });
+          setIsVerifying(true);
+          // Use our verification endpoint
+          const response = await paymentApi.verifyPaymentStatus();
           
-          if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.data?.isPaid) {
-              console.log('Valid payment token found:', data);
-              setIsPaid(true);
+          if (response.success && response.isPaid) {
+            setIsPaid(true);
+            // Store the report ID that was paid for
+            if (response.tokenReportId) {
+              setPaidReportId(response.tokenReportId);
+            }
+          } else {
+            setIsPaid(false);
+            // If we have a token but the verification failed, it might be for a different report
+            if (response.tokenReportId && response.currentReportId && response.tokenReportId !== response.currentReportId) {
+              console.warn(`Token is for a different report: paid for ${response.tokenReportId} but viewing ${response.currentReportId}`);
+              setPaidReportId(response.tokenReportId);
             }
           }
+        } else {
+          // No token means not paid
+          setIsPaid(false);
         }
       } catch (error) {
-        console.error('Token validation error:', error);
+        console.error('Payment status verification error:', error);
+        setIsPaid(false);
+      } finally {
+        setIsVerifying(false);
       }
     };
     
-    validateToken();
+    checkPaymentStatus();
     
     return () => {
-      console.log("PaymentProvider unmounting");
       // Clear any applied coupon when unmounting
       localStorage.removeItem('applied_coupon_price');
     };
   }, []);
+
+  // Function to verify payment status on demand (for components to call)
+  const verifyPaymentStatus = async (): Promise<boolean> => {
+    try {
+      setIsVerifying(true);
+      
+      // Only proceed if we have a token
+      if (!localStorage.getItem('auth_token')) {
+        setIsPaid(false);
+        return false;
+      }
+      
+      // Use our verification endpoint
+      const response = await paymentApi.verifyPaymentStatus();
+      
+      if (response.success && response.isPaid) {
+        setIsPaid(true);
+        // Store the report ID that was paid for
+        if (response.tokenReportId) {
+          setPaidReportId(response.tokenReportId);
+        }
+        return true;
+      } else {
+        setIsPaid(false);
+        // If we have a token but the verification failed, it might be for a different report
+        if (response.tokenReportId && response.currentReportId && response.tokenReportId !== response.currentReportId) {
+          console.warn(`Token is for a different report: paid for ${response.tokenReportId} but viewing ${response.currentReportId}`);
+          setPaidReportId(response.tokenReportId);
+        }
+        return false;
+      }
+    } catch (error) {
+      console.error('On-demand payment verification error:', error);
+      setIsPaid(false);
+      return false;
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   const initiatePayment = async (amount: string, currency: 'TWD' | 'USD') => {
     try {
@@ -146,7 +194,9 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
       setIsPaid,
       initiatePayment,
       isProcessingPayment: isLoading || isVerifying,
-      resetPaymentState
+      resetPaymentState,
+      verifyPaymentStatus,
+      paidReportId
     }}>
       {children}
     </PaymentContext.Provider>

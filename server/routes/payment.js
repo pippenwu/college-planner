@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 const { createPaymentIntent, verifyPayment, validateWebhookSignature } = require('../utils/kryptogoUtils');
+const { verifyToken } = require('../middleware/authMiddleware');
 
 // In-memory storage for payment records (replace with DB in production)
 const paymentRecords = [];
@@ -128,7 +129,8 @@ router.post('/verify', async (req, res) => {
     return res.status(200).json({
       success: true,
       message: 'Payment verified successfully',
-      token
+      token,
+      reportId: paymentRecord.reportId
     });
   } catch (error) {
     console.error('Payment verification error:', error);
@@ -185,6 +187,45 @@ router.post('/webhook', (req, res) => {
     console.error('Webhook processing error:', error);
     // Still return 200 to acknowledge receipt
     return res.status(200).end();
+  }
+});
+
+/**
+ * Verify Payment Status
+ * GET /api/payment/verify-status
+ * 
+ * Verifies if the user has a valid payment token for the specified report
+ * Requires authorization header with bearer token
+ * Query param: reportId - The current report ID to check against
+ */
+router.get('/verify-status', verifyToken, (req, res) => {
+  try {
+    // If we got here, the token is valid (verified by middleware)
+    
+    // Get the current report ID from query params
+    const currentReportId = req.query.reportId;
+    
+    // Check if the user has paid
+    const isPaid = req.user && req.user.isPaid === true;
+    
+    // Check if the report ID in the token matches the current report ID
+    // Only consider the user paid if they paid for this specific report
+    const isReportPaid = isPaid && req.user.reportId && currentReportId && 
+                        req.user.reportId === currentReportId;
+    
+    return res.status(200).json({
+      success: true,
+      isPaid: isReportPaid,
+      tokenReportId: req.user ? req.user.reportId : null,
+      currentReportId: currentReportId || null
+    });
+  } catch (error) {
+    console.error('Payment status verification error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to verify payment status',
+      error: error.message
+    });
   }
 });
 

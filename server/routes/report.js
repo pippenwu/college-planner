@@ -138,32 +138,23 @@ router.get('/:reportId', async (req, res) => {
  * Generates and downloads a PDF of the report. Requires payment verification.
  */
 router.get('/:reportId/pdf', verifyToken, async (req, res) => {
+  const { reportId } = req.params;
+  
   try {
-    const { reportId } = req.params;
     console.log(`PDF download requested for reportId: ${reportId}`);
-    console.log(`Current report store size: ${reportStore.length}`);
-    console.log(`Available report IDs: ${reportStore.map(r => r.id).join(', ')}`);
     
     // Ensure user is paid
-    if (!req.user || !req.user.isPaid) {
-      console.log('PDF download denied: User is not paid');
-      return res.status(403).json({
-        success: false,
-        message: 'You do not have access to download this report. Payment required.'
-      });
-    }
+    const isPaid = req.user && req.user.isPaid === true;
     
-    // Check if reportId matches - but allow for beta codes which might not have a specific reportId
-    if (req.user.reportId && req.user.reportId !== reportId) {
-      console.log(`Token reportId (${req.user.reportId}) doesn't match requested reportId (${reportId})`);
-      
-      // Only enforce this check for payment sources, not beta codes
-      if (req.user.source === 'payment') {
-        return res.status(403).json({
-          success: false,
-          message: 'You do not have access to this specific report.'
-        });
-      }
+    // Verify the user has paid for THIS specific report
+    const hasAccessToThisReport = isPaid && req.user.reportId === reportId;
+    
+    if (!hasAccessToThisReport) {
+      console.log(`Access denied: Token reportId (${req.user.reportId}) doesn't match requested reportId (${reportId})`);
+      return res.status(403).json({ 
+        success: false, 
+        message: 'You do not have access to download this report. Payment required.' 
+      });
     }
     
     // Find the report

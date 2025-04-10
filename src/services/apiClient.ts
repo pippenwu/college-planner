@@ -122,6 +122,27 @@ export const paymentApi = {
       console.error('Payment status error:', error);
       throw error;
     }
+  },
+
+  // Verify payment status using JWT token
+  verifyPaymentStatus: async () => {
+    try {
+      // Get the current report ID
+      const currentReportId = localStorage.getItem('current_report_id');
+      
+      // Add current report ID as query parameter
+      const response = await apiClient.get(`/payment/verify-status?reportId=${currentReportId || ''}`);
+      return response.data;
+    } catch (error) {
+      console.error('Payment verification status error:', error);
+      // Return a default response if the verification fails
+      return {
+        success: false,
+        isPaid: false,
+        currentReportId: localStorage.getItem('current_report_id') || null,
+        tokenReportId: null
+      };
+    }
   }
 };
 

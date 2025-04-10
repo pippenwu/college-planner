@@ -30,32 +30,36 @@ import { Textarea } from "./ui/textarea";
 
 // Define form schema using Zod
 const formSchema = z.object({
-  // Student Information
+  // Basic student info
   studentName: z.string().optional(),
-  highSchool: z.string().min(1, "High school is required"),
-  currentGrade: z.enum(["9th", "10th", "11th", "12th"], {
-    required_error: "Current grade is required",
-  }),
-
-  // Intended Major and College List
-  intendedMajors: z.string().min(1, "Please enter at least one major or 'Undecided'"),
+  highSchool: z.string()
+    .refine(val => val.trim().length > 0, {
+      message: "High school is required"
+    }),
+  currentGrade: z.string()
+    .refine(val => val.trim().length > 0, {
+      message: "Current grade is required"
+    }),
+  
+  // Academic interests and college preferences
+  intendedMajors: z.string()
+    .refine(val => val.trim().length > 0, {
+      message: "Please enter at least one intended major"
+    }),
   collegeList: z.string().optional(),
-
-  // Academics & Testing
+  
+  // Academic background
   testScores: z.array(z.object({
     testName: z.string().optional(),
-    score: z.string().optional(),
-  })).default([{ testName: "SAT", score: "" }]),
+    score: z.string().optional()
+  })).optional().default([{ testName: "SAT", score: "" }]),
   courseHistory: z.string().optional(),
-
+  
   // Extracurricular Activities
   activities: z.array(z.object({
     name: z.string().optional(),
     notes: z.string().optional()
   })).optional().default([{ name: "", notes: "" }]),
-
-  // Additional Information
-  additionalInfo: z.string().optional(),
 });
 
 // Define the form values type based on the schema
@@ -112,7 +116,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
       testScores: [{ testName: "SAT", score: "" }],
       courseHistory: "",
       activities: [{ name: "", notes: "" }],
-      additionalInfo: "",
     },
     mode: "onChange",
   });
@@ -807,31 +810,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           </div>
         );
 
-      case "additionalInfo":
-        return (
-          <FormField
-            control={form.control}
-            name="additionalInfo"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor={`additional-info-${field.name}`}>Additional Information</FormLabel>
-                <FormDescription className="text-gray-500 text-sm mb-2">
-                  Is there anything else you'd like to share that wasn't covered in the earlier sections?
-                </FormDescription>
-                <FormControl>
-                  <Textarea
-                    id={`additional-info-${field.name}`}
-                    placeholder="Share any additional information that might be relevant to your college applications and planning."
-                    className="min-h-[150px]"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        );
-
       default:
         return null;
     }
@@ -937,7 +915,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Volunteer, 1 year, seasonal 6 hrs/week, Assisted low-income families with tax filing"
         }
       ],
-      additionalInfo: "I completed a summer internship at a local accounting firm where I helped with bookkeeping and financial statement preparation. I've also been developing a budget tracking app as a personal project."
     };
     
     const architectureTemplate: FormValues = {
@@ -965,7 +942,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Volunteer, 2 years, monthly, Helped with community garden design and maintenance"
         }
       ],
-      additionalInfo: "I've been interested in architecture since taking a design class in 9th grade. I enjoy sketching buildings and experimenting with 3D modeling software in my free time."
     };
     
     const artTemplate: FormValues = {
@@ -993,7 +969,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Student, 1 year, 2 hrs/week, Taking weekend ceramics classes at community center"
         }
       ],
-      additionalInfo: "I love expressing myself through different art mediums, especially painting and ceramics. I've participated in a few local art shows and am working on building a portfolio for college applications."
     };
     
     const biochemistryTemplate: FormValues = {
@@ -1022,7 +997,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Participant, 1 year, 2 hrs/week, Weekly studying with peers for AP Biology"
         }
       ],
-      additionalInfo: "I'm interested in biochemistry and enjoy studying how chemical processes relate to living organisms. I volunteered at our local hospital last summer and am hoping to find a research opportunity next year."
     };
     
     const biologyTemplate: FormValues = {
@@ -1051,7 +1025,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Student Researcher, 1 year, 6 hrs/week, Conducting independent research on plant cellular responses"
         }
       ],
-      additionalInfo: "I'm passionate about cellular biology and have been shadowing doctors at the local children's hospital. I also participated in a summer research program focused on microbiology where I studied antibiotic resistance in bacteria."
     };
     
     // Business template is already defined
@@ -1083,7 +1056,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Vice President, 2 years, 3 hrs/week, Led water quality testing initiative for local waterways"
         }
       ],
-      additionalInfo: "I developed a method for detecting heavy metal contaminants in water samples that won first place at our state science fair. I also completed a summer research program in analytical chemistry at the University of Wisconsin."
     };
     
     const communicationsTemplate: FormValues = {
@@ -1111,7 +1083,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Member, 1 year, 2 hrs/week, Participating in local debate competitions"
         }
       ],
-      additionalInfo: "I discovered my interest in journalism while working on our school newspaper and enjoy interviewing people and writing stories. I'm considering studying communications or journalism in college."
     };
     
     // Define templates for different categories (keep old ones for backwards compatibility)
@@ -1141,7 +1112,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Participant, 1 year, 2 hrs/week, Worked on team project to create a small business"
         }
       ],
-      additionalInfo: "I became interested in business after taking an economics class and joining our school's Business Club. I enjoy learning about how companies operate and would like to explore different aspects of business in college."
     };
     
     const computerScienceTemplate: FormValues = {
@@ -1170,7 +1140,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Hobbyist, 3 years, 4 hrs/week, Self-taught game development using Unity"
         }
       ],
-      additionalInfo: "I've been interested in computers since I was young and have taught myself several programming languages. I enjoy solving problems with code and am particularly interested in game development and web applications."
     };
     
     const economicsTemplate: FormValues = {
@@ -1199,7 +1168,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Team Member, 2 years, 8 hrs/week, Playing on JV basketball team"
         }
       ],
-      additionalInfo: "I became interested in economics after taking a class last year and enjoy understanding how financial systems work. I'm also interested in how economic principles apply to everyday decisions."
     };
     
     const mechanicalEngineeringTemplate: FormValues = {
@@ -1228,7 +1196,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Intern, 1 summer, 160 hours total, Assisted with product design at local manufacturing company"
         }
       ],
-      additionalInfo: "I designed and built a working drone with custom 3D printed parts that can be controlled through smartphone gestures. I also completed an online course in Computational Fluid Dynamics through Coursera."
     };
     
     const environmentalEngineeringTemplate: FormValues = {
@@ -1258,7 +1225,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Student Member, 1 year, 4 hrs/week, Working on rainwater collection system design"
         }
       ],
-      additionalInfo: "I developed a low-cost solar-powered water filtration system that won first place at our state science fair. I also attended a summer program in sustainable engineering at Stanford University where I worked on a team project focused on urban water management."
     };
     
     const financeTemplate: FormValues = {
@@ -1288,7 +1254,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Founder, 2 years, 3 hrs/week, Teaching personal finance to 100+ high school students"
         }
       ],
-      additionalInfo: "I completed a summer internship at Morgan Stanley where I shadowed financial analysts. I've also passed Level 1 of the CFA Institute Investment Foundations Program and created a personal finance YouTube channel with over 5,000 subscribers."
     };
     
     const internationalRelationsTemplate: FormValues = {
@@ -1318,7 +1283,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Summer Intern, 160 hours total, Assisted with cultural affairs programming at Spanish Consulate"
         }
       ],
-      additionalInfo: "I'm fluent in Spanish and Portuguese and spent a summer studying international politics in Brazil. I also launched a podcast interviewing immigrants about their stories and experiences, which has listeners in over 15 countries."
     };
     
     const linguisticsTemplate: FormValues = {
@@ -1348,7 +1312,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Volunteer, 2 years, 3 hrs/week, Providing translation for community events and documents"
         }
       ],
-      additionalInfo: "I speak five languages fluently (English, Mandarin, Spanish, French, and conversational Arabic). I created a computational algorithm to analyze phonological patterns across languages that won honorable mention at our state science fair. I also participated in a summer linguistics research program at Stanford."
     };
         
     const marketingTemplate: FormValues = {
@@ -1377,7 +1340,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Marketing Director, 2 years, 4 hrs/week, Created promotional campaigns for school events"
         }
       ],
-      additionalInfo: "I completed Google's Digital Marketing certification and ran successful Instagram campaigns for our school's fundraising events, raising over $5,000. I also interned with a local marketing agency where I helped develop content strategies for small businesses."
     };
     
     const mathTemplate: FormValues = {
@@ -1406,7 +1368,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Member, 2 years, 2 hrs/week, Competed in local tournaments"
         }
       ],
-      additionalInfo: "I've always enjoyed math classes and find satisfaction in solving complex problems. I'm interested in exploring applied mathematics and statistics in college and possibly pursuing a career in data analysis."
     };
     
     const philosophyTemplate: FormValues = {
@@ -1435,7 +1396,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Volunteer, 1 year, 3 hrs/week, Assisting at local food bank"
         }
       ],
-      additionalInfo: "I've always enjoyed thinking about big questions and discussing ideas. My favorite class was an ethics elective where we debated moral dilemmas, and I'm interested in studying philosophy to better understand different perspectives on life."
     };
     
     const physicsTemplate: FormValues = {
@@ -1464,7 +1424,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Member, 2 years, 2 hrs/week, Participated in stargazing events and discussions"
         }
       ],
-      additionalInfo: "I became interested in physics after an engaging class in high school and joining the Science Club. I enjoy understanding how things work and am curious about the fundamental laws of the universe."
     };
     
     const politicalScienceTemplate: FormValues = {
@@ -1494,7 +1453,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Intern, 1 year, 15 hrs/week seasonal, Managed youth outreach and voter registration drives"
         }
       ],
-      additionalInfo: "I founded a non-partisan voter education initiative that registered 500+ first-time voters. I also attended the Junior State of America summer program at Georgetown University where I specialized in constitutional law and participated in moot court competitions."
     };
     
     const psychologyTemplate: FormValues = {
@@ -1524,7 +1482,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Lead Counselor, 2 years, 4 hrs/week, Providing support services to fellow students after specialized training"
         }
       ],
-      additionalInfo: "I designed and conducted an original research study on social media's effects on teen anxiety that won our state psychology competition. I also completed a summer internship at a clinical psychology practice where I observed therapy sessions and helped with administrative tasks."
     };
     
     const sociologyTemplate: FormValues = {
@@ -1554,7 +1511,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Program Coordinator, 2 years, 6 hrs/week, Developing mentorship programs for underserved youth"
         }
       ],
-      additionalInfo: "I conducted an ethnographic study of gentrification in my community that was published in a youth social science journal. I also participated in a summer sociology program at Northwestern University where I learned qualitative research methods and completed a field study on urban community organizing."
     };
     
     const veterinaryMedicineTemplate: FormValues = {
@@ -1584,7 +1540,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           notes: "Club President, 4 years, 10 hrs/week, Raising and showing livestock, winner of state competitions"
         }
       ],
-      additionalInfo: "I completed a summer pre-veterinary program at Cornell University where I participated in animal surgery observations and laboratory work. I also conducted research on canine nutrition that won a state science fair award in the animal science category."
     };
     
     // Select template based on category

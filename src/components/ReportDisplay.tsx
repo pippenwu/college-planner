@@ -18,7 +18,7 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Code, Download, Loader2, Lock, RotateCcw } from 'lucide-react';
+import { Code, Download, Info, Loader2, Lock, RotateCcw } from 'lucide-react';
 import React, { useState } from 'react';
 import toast from "react-hot-toast";
 import { usePayment } from '../context/PaymentContext';
@@ -51,22 +51,24 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   report, 
   onStartOver 
 }) => {
-  const [betaCodeInput, setBetaCodeInput] = useState('');
-  const [showBetaDialog, setShowBetaDialog] = useState(false);
-  const [betaError, setBetaError] = useState<string | null>(null);
-  
-  // Add coupon code state
-  const [couponCodeInput, setCouponCodeInput] = useState('');
+  // Local state for payment processing UI
+  const [isLoadingPayment, setIsLoadingPayment] = useState(false);
   const [showCouponDialog, setShowCouponDialog] = useState(false);
+  const [couponCodeInput, setCouponCodeInput] = useState('');
   const [couponError, setCouponError] = useState<string | null>(null);
   const [hasAppliedCoupon, setHasAppliedCoupon] = useState(false);
+  const [showBetaDialog, setShowBetaDialog] = useState(false);
+  const [betaCodeInput, setBetaCodeInput] = useState('');
+  const [betaError, setBetaError] = useState<string | null>(null);
+  const [showStartOverDialog, setShowStartOverDialog] = useState(false);
   
   // Get payment state from context
-  const { isPaid, setIsPaid, isProcessingPayment } = usePayment();
-
-  // Add state for the confirmation dialog
-  const [showStartOverDialog, setShowStartOverDialog] = useState(false);
-
+  const { isPaid, isProcessingPayment, resetPaymentState, verifyPaymentStatus, paidReportId } = usePayment();
+  
+  // Get the current report ID
+  const currentReportId = localStorage.getItem('current_report_id') || '';
+  const hasPaidForDifferentReport = !isPaid && paidReportId && paidReportId !== currentReportId;
+  
   const handlePDFDownload = async () => {
     try {
       // First check if user is actually paid
@@ -104,6 +106,9 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         duration: 10000,
       });
       
+      // Set local loading state just for download
+      setIsLoadingPayment(true);
+      
       try {
         // Call the backend API to generate and download the PDF
         await reportApi.downloadReportPdf(reportId);
@@ -130,6 +135,8 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
             icon: '❌',
           });
         }
+      } finally {
+        setIsLoadingPayment(false);
       }
     } catch (error: any) {
       console.error('Error downloading PDF:', error);
@@ -137,6 +144,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         duration: 4000,
         icon: '❌',
       });
+      setIsLoadingPayment(false);
     }
   };
 
@@ -152,9 +160,6 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
       return count;
     }, 0);
     
-    console.log(`Total timeline events received by client: ${totalEvents}`);
-    console.log(`User is ${isPaid ? 'paid' : 'free'}`);
-    
     // For paid users, show all timeline data
     if (isPaid) {
       return report.timeline;
@@ -163,16 +168,12 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
       // Calculate how many periods to keep - half of total, rounded down
       const maxPeriodsForFree = Math.floor(report.timeline.length / 2);
       
-      console.log(`Client limiting to ${maxPeriodsForFree} periods out of ${report.timeline.length}`);
-      
       // Create a copy of the timeline data and slice to keep only half the periods
       const limitedPeriods = JSON.parse(JSON.stringify(report.timeline)).slice(0, maxPeriodsForFree);
       
       // Log the number of events in the limited timeline
       const limitedEvents = limitedPeriods.reduce((count: number, period: TimelinePeriod) => 
         count + (Array.isArray(period.events) ? period.events.length : 0), 0);
-      
-      console.log(`Client-side limited to ${limitedPeriods.length} periods with ${limitedEvents} total events`);
       
       return limitedPeriods;
     }
@@ -196,8 +197,8 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         // Reset the input and error
         setBetaCodeInput('');
         setBetaError(null);
-        // Set the user as paid
-        setIsPaid(true);
+        // Refresh payment status
+        await verifyPaymentStatus();
       } else {
         setBetaError(response.message || 'Invalid beta code');
       }
@@ -308,11 +309,17 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   // Render the unlock section
   const renderUnlockSection = () => {
     if (!isPaid) {
-      // Get the current report ID from localStorage
-      const reportId = localStorage.getItem('current_report_id');
-      
       return (
         <div className="bg-academic-cream/80 rounded-lg p-6 border border-academic-gold/50 shadow-md">
+          {hasPaidForDifferentReport && (
+            <div className="mb-4 p-3 bg-academic-navy/10 rounded-md border border-academic-navy/20">
+              <p className="text-sm text-academic-navy">
+                <Info className="h-4 w-4 inline-block mr-1" />
+                You've previously paid for a different report (ID: {paidReportId?.substring(0, 8)}...), but each report requires a separate payment.
+              </p>
+            </div>
+          )}
+          
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex-1">
               <h3 className="text-xl font-bold text-academic-navy mb-2">
@@ -340,8 +347,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
             
             {/* Replace the old button with the LemonSqueezyButton */}
             <div className="min-w-44">
-              <PaymentButtons reportId={reportId || undefined} />
-            
+              <PaymentButtons reportId={currentReportId || undefined} />
             </div>
           </div>
         </div>
@@ -523,9 +529,9 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
           <Button 
             onClick={handlePDFDownload}
             className="flex items-center gap-2"
-            disabled={isProcessingPayment}
+            disabled={isLoadingPayment}
           >
-            {isProcessingPayment ? (
+            {isLoadingPayment ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Processing...
