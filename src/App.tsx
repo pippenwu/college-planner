@@ -3,7 +3,6 @@ import { Toaster } from 'react-hot-toast';
 import { FakeReportButton } from './components/dev/FakeReportButton';
 import KryptogoPaymentProvider from './components/payment/PaymentProvider';
 import { StudentProfileForm } from './components/StudentProfileForm';
-import { Navbar } from './components/ui/Navbar';
 import { PaymentProvider } from './context/PaymentContext';
 
 // Success stories showing students who got admitted to top universities
@@ -114,25 +113,11 @@ function App() {
       <KryptogoPaymentProvider>
         <PaymentProvider>
           <div className="min-h-screen bg-academic-cream flex flex-col overflow-hidden">
-            <Navbar />
-            <Toaster 
-              position="top-center"
-              toastOptions={{
-                duration: 3000,
-                style: {
-                  background: '#FFFFFF',
-                  color: '#1e293b',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                  borderRadius: '0.5rem',
-                  padding: '0.75rem 1rem',
-                },
-              }}
-            />
-            <header className="w-full py-6 px-4 sm:px-6 relative z-10">
+            <header className="w-full py-2 px-4 sm:px-6 relative z-10">
               <div className="max-w-6xl mx-auto w-full">
                 {/* Only show success stories when no report is visible */}
                 {!isReportVisible && (
-                  <div className="h-14 mb-4 relative overflow-hidden">
+                  <div className="h-14 mb-0 relative overflow-hidden">
                     <div 
                       className={`absolute inset-0 p-3 rounded-lg bg-gradient-to-r from-academic-navy/20 to-academic-burgundy/20 text-academic-navy flex items-center justify-center transition-all duration-500 ease-in-out ${
                         isAnimating 
@@ -150,14 +135,28 @@ function App() {
                 )}
               </div>
             </header>
-
+            {/* <Navbar /> */}
+            <Toaster 
+              position="top-center"
+              toastOptions={{
+                duration: 3000,
+                style: {
+                  background: '#FFFFFF',
+                  color: '#1e293b',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                  borderRadius: '0.5rem',
+                  padding: '0.75rem 1rem',
+                },
+              }}
+            />
+            
             <main className="flex-grow w-full px-4 sm:px-6 overflow-x-hidden relative z-10">
               <div className="max-w-6xl mx-auto w-full">
                 <StudentProfileForm onReportVisibilityChange={setIsReportVisible} />
               </div>
             </main>
 
-            <footer className="w-full py-4 px-4 sm:px-6 text-academic-slate border-t border-academic-light relative z-10 mt-12">
+            <footer className="w-full py-4 px-4 sm:px-6 text-academic-slate relative z-10 mt-12">
               <div className="max-w-6xl mx-auto w-full text-center text-xs">
                 © {new Date().getFullYear()} CAT – Helping students reach their dream schools, one timeline at a time. All rights reserved.
               </div>

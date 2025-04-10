@@ -1609,12 +1609,18 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
 
   // Template selection dialog
   const TemplateSelectionDialog = () => (
-    <div className={`fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center ${showTemplateDialog ? 'block' : 'hidden'}`}>
-      <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+    <div 
+      className={`fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center ${showTemplateDialog ? 'block' : 'hidden'}`}
+      onClick={() => setShowTemplateDialog(false)}
+    >
+      <div 
+        className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()} // Prevent clicks inside the dialog from closing it
+      >
         <h3 className="text-xl font-bold mb-4 text-academic-navy">Choose a Major Profile</h3>
         <p className="text-sm text-gray-600 mb-4">Select a major to load a sample student profile:</p>
         
-        <div className="space-y-2">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           {[
             { id: 'accounting', label: 'Accounting' },
             { id: 'architecture', label: 'Architecture' },
@@ -1646,7 +1652,7 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
                 setShowTemplateDialog(false);
                 loadTemplateData(template.id);
               }}
-              className="w-full text-left px-4 py-3 border rounded-md hover:bg-academic-cream hover:border-academic-gold transition-colors"
+              className="text-center px-2 py-2 border rounded-md hover:bg-academic-cream hover:border-academic-gold transition-colors text-sm"
             >
               {template.label}
             </button>
@@ -1659,7 +1665,7 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
             variant="outline"
             onClick={() => setShowTemplateDialog(false)}
           >
-            Cancel
+            Close
           </Button>
         </div>
       </div>
@@ -1696,23 +1702,20 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
       
       {/* Hero Section */}
       <div className="mb-12 pt-8 text-center">
+        <div className="mb-6">
+          <img src="/cat-icon.png" alt="CAT Logo" className="w-64 h-64 mx-auto" />
+        </div>
         <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 bg-gradient-to-r from-academic-navy via-academic-burgundy to-academic-navy bg-clip-text text-transparent drop-shadow-sm leading-tight md:leading-relaxed pb-3">
           From where you are<br />
           to <em>where you want to be</em>.
         </h1>
-        <p className="font-heading text-xl text-academic-navy mb-8 max-w-3xl mx-auto border-academic-gold/30 py-3 px-4 inline-block">
+        <p className="font-heading font-light text-xl text-academic-navy mb-8 max-w-3xl mx-auto border-academic-gold/30 py-3 px-4 inline-block">
           Get your college application plan in one simple, actionable timeline.
         </p>
-        
-        {/* School Logos Section */}
+
         <SchoolLogos />
         
-        <p className="text-sm text-academic-slate mb-6 mt-4 max-w-2xl mx-auto">
-          Answer a few quick questions about your academic background and goals to receive a personalized college application timeline and strategic recommendations.
-          Don’t worry, we don’t store any of your info. Ever.
-        </p>
-        
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
           <Button 
             onClick={scrollToForm}
             className="bg-academic-burgundy hover:bg-academic-navy text-white px-8 py-6 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl border-2 border-academic-burgundy hover:border-academic-navy"
@@ -1729,6 +1732,12 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
             Try Demo Profile
           </Button>
         </div>
+
+        <p className="text-sm text-academic-slate mb-6 mt-4 max-w-2xl mx-auto">
+          Answer a few quick questions about your academic background and goals to receive a personalized college application timeline and strategic recommendations.
+          Don't worry, we don't store any of your info. Ever.
+        </p>
+
       </div>
 
       {result && !isLoading ? (
