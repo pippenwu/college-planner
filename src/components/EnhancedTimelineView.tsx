@@ -1,22 +1,42 @@
-import { Book, Calendar, ChevronRight, FileText, Trophy, X } from 'lucide-react';
+import { Book, Calendar, ChevronRight, FileText, Lock, Trophy } from 'lucide-react';
 import React, { useState } from 'react';
 import { TimelinePeriod } from './TimelineView';
 
 interface EnhancedTimelineViewProps {
   timelineData: TimelinePeriod[];
+  fullTimelineData?: TimelinePeriod[];
+  isPaid?: boolean;
+  legendPrefix?: React.ReactNode;
 }
 
-export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ timelineData }) => {
+export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ 
+  timelineData, 
+  fullTimelineData, 
+  isPaid = false,
+  legendPrefix
+}) => {
   const [selectedEvent, setSelectedEvent] = useState<{period: number, event: number} | null>(null);
+  
+  // Determine which timeline data to use for display
+  const displayData = timelineData;
+  
+  // Use fullTimelineData for the timeline track if provided, otherwise fall back to timelineData
+  const trackData = fullTimelineData && !isPaid ? fullTimelineData : timelineData;
 
-  // Ensure timelineData is an array and not empty
-  if (!timelineData || !Array.isArray(timelineData) || timelineData.length === 0) {
+  // Ensure displayData is an array and not empty
+  if (!displayData || !Array.isArray(displayData) || displayData.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-md p-6 text-center text-gray-500">
         <p>No timeline data available.</p>
       </div>
     );
   }
+
+  // Determine if a period is unlocked (available in the free version)
+  const isPeriodUnlocked = (periodIndex: number) => {
+    if (isPaid) return true;
+    return periodIndex < displayData.length;
+  };
 
   const getCategoryIcon = (category: string) => {
     const iconProps = { className: "h-5 w-5", "aria-hidden": true };
@@ -110,7 +130,8 @@ export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ time
     });
   };
 
-  const processedTimelineData = processTimelineData(timelineData);
+  const processedDisplayData = processTimelineData(displayData);
+  const processedTrackData = processTimelineData(trackData);
 
   return (
     <div className="enhanced-timeline bg-white rounded-lg shadow-md overflow-hidden">
@@ -118,26 +139,31 @@ export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ time
       <div className="p-4 border-b border-gray-100 bg-gray-50">
         <div className="timeline-track relative flex items-center">
           <div className="h-2 bg-gray-200 rounded-full flex-1 z-0">
-            {processedTimelineData.map((_, index) => (
+            {processedTrackData.map((_, index) => (
               <div 
                 key={index}
                 className="absolute h-2 bg-blue-600 rounded-full" 
                 style={{ 
-                  left: `${(index / processedTimelineData.length) * 100}%`,
-                  width: `${(1 / processedTimelineData.length) * 100}%`,
-                  opacity: 0.4 + (index / processedTimelineData.length) * 0.6
+                  left: `${(index / processedTrackData.length) * 100}%`,
+                  width: `${(1 / processedTrackData.length) * 100}%`,
+                  opacity: 0.4 + (index / processedTrackData.length) * 0.6
                 }}
               />
             ))}
           </div>
           
           <div className="absolute inset-x-0 flex justify-between">
-            {processedTimelineData.map((_, index) => (
+            {processedTrackData.map((period, index) => (
               <div key={index} className="flex flex-col items-center z-10" style={{ 
-                left: `calc(${(index / (processedTimelineData.length - 1)) * 100}% - 15px)`
+                left: `calc(${(index / (processedTrackData.length - 1)) * 100}% - 15px)`
               }}>
-                <div className="w-5 h-5 rounded-full bg-white border-2 border-blue-600 flex items-center justify-center text-xs">
-                  {index + 1}
+                <div className={`w-5 h-5 rounded-full bg-white border-2 flex items-center justify-center text-xs
+                  ${isPeriodUnlocked(index) ? 'border-blue-600' : 'border-gray-400'}`}>
+                  {isPeriodUnlocked(index) ? (
+                    index + 1
+                  ) : (
+                    <Lock className="h-3 w-3 text-gray-500" />
+                  )}
                 </div>
               </div>
             ))}
@@ -146,17 +172,19 @@ export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ time
         
         {/* Period labels */}
         <div className="flex justify-between mt-2 text-xs text-gray-600">
-          {processedTimelineData.map((period, index) => (
-            <div key={index} className="text-center" style={{ width: `${100 / processedTimelineData.length}%` }}>
-              <span className="block font-medium">{period.period}</span>
+          {processedTrackData.map((period, index) => (
+            <div key={index} className="text-center" style={{ width: `${100 / processedTrackData.length}%` }}>
+              <span className={`block font-medium ${!isPeriodUnlocked(index) ? 'text-gray-400' : ''}`}>
+                {period.period}
+              </span>
             </div>
           ))}
         </div>
       </div>
       
-      {/* Timeline Content - All periods with their events */}
+      {/* Timeline Content - Only show unlocked periods with their events */}
       <div className="timeline-content p-4">
-        {processedTimelineData.map((period, periodIndex) => (
+        {processedDisplayData.map((period, periodIndex) => (
           <div key={periodIndex} className="period-section mb-8 last:mb-0">
             <h3 className="text-lg font-semibold mb-3">{period.period}</h3>
             
@@ -201,30 +229,21 @@ export const EnhancedTimelineView: React.FC<EnhancedTimelineViewProps> = ({ time
                           </div>
                         )}
                       </div>
-                      
-                      {isEventSelected(periodIndex, eventIndex) && (
-                        <button 
-                          className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedEvent(null);
-                          }}
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      )}
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-6 text-gray-500 bg-gray-50 rounded-lg">
-                  <p>No events scheduled for this period.</p>
+                <div className="p-4 text-center text-gray-500 border border-dashed border-gray-200 rounded-lg">
+                  No events scheduled for this period.
                 </div>
               )}
             </div>
           </div>
         ))}
       </div>
+      
+      {/* Render the legend prefix content if provided */}
+      {legendPrefix}
       
       {/* Category Legend */}
       <div className="category-legend p-4 border-t border-gray-200 bg-gray-50">

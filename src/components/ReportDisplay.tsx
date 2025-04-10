@@ -144,12 +144,37 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   const getLimitedTimelineData = () => {
     if (!report.timeline) return null;
     
-    // Show 60% of the timeline data for free users
+    // Count total events across all periods for debugging
+    const totalEvents = report.timeline.reduce((count, period) => {
+      if (Array.isArray(period.events)) {
+        return count + period.events.length;
+      }
+      return count;
+    }, 0);
+    
+    console.log(`Total timeline events received by client: ${totalEvents}`);
+    console.log(`User is ${isPaid ? 'paid' : 'free'}`);
+    
+    // For paid users, show all timeline data
     if (isPaid) {
       return report.timeline;
     } else {
-      const visibleCount = Math.ceil(report.timeline.length * 0.6);
-      return report.timeline.slice(0, visibleCount);
+      // For free users, only show half the sections (rounded down)
+      // Calculate how many periods to keep - half of total, rounded down
+      const maxPeriodsForFree = Math.floor(report.timeline.length / 2);
+      
+      console.log(`Client limiting to ${maxPeriodsForFree} periods out of ${report.timeline.length}`);
+      
+      // Create a copy of the timeline data and slice to keep only half the periods
+      const limitedPeriods = JSON.parse(JSON.stringify(report.timeline)).slice(0, maxPeriodsForFree);
+      
+      // Log the number of events in the limited timeline
+      const limitedEvents = limitedPeriods.reduce((count: number, period: TimelinePeriod) => 
+        count + (Array.isArray(period.events) ? period.events.length : 0), 0);
+      
+      console.log(`Client-side limited to ${limitedPeriods.length} periods with ${limitedEvents} total events`);
+      
+      return limitedPeriods;
     }
   };
 
@@ -340,20 +365,26 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         <h2 className="text-xl font-bold text-academic-navy mb-2">Application Timeline</h2>
         
         {!isPaid && (
-          <div className="flex justify-between items-center mb-4">
-            <div className="p-2 bg-academic-cream/50 border border-academic-gold/30 rounded-md text-sm text-academic-slate">
+          <div className="flex justify-end items-center mb-4">
+            <div className="text-xs text-academic-slate bg-gray-100 px-2 py-1 rounded">
+              Showing {Math.floor(report.timeline.length / 2)} sections out of {report.timeline.length} sections
+            </div>
+          </div>
+        )}
+        
+        <EnhancedTimelineView 
+          timelineData={getLimitedTimelineData() || []} 
+          fullTimelineData={report.timeline}
+          isPaid={isPaid}
+          legendPrefix={!isPaid && (
+            <div className="p-3 mb-0 bg-academic-cream/50 border-t border-b border-academic-gold/30 text-sm text-academic-slate">
               <p className="flex items-center">
                 <Lock className="h-4 w-4 mr-2 text-academic-gold" />
                 <span>This is a partial timeline. Unlock the full report to see all recommended steps.</span>
               </p>
             </div>
-            <div className="text-xs text-academic-slate bg-gray-100 px-2 py-1 rounded">
-              {getLimitedTimelineData()?.length || 0} out of {report.timeline.length} sections shown
-            </div>
-          </div>
-        )}
-        
-        <EnhancedTimelineView timelineData={getLimitedTimelineData() || []} />
+          )}
+        />
       </div>
       
       {/* Next Steps Section */}

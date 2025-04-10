@@ -140,9 +140,13 @@ router.get('/:reportId', async (req, res) => {
 router.get('/:reportId/pdf', verifyToken, async (req, res) => {
   try {
     const { reportId } = req.params;
+    console.log(`PDF download requested for reportId: ${reportId}`);
+    console.log(`Current report store size: ${reportStore.length}`);
+    console.log(`Available report IDs: ${reportStore.map(r => r.id).join(', ')}`);
     
     // Ensure user is paid
     if (!req.user || !req.user.isPaid) {
+      console.log('PDF download denied: User is not paid');
       return res.status(403).json({
         success: false,
         message: 'You do not have access to download this report. Payment required.'
@@ -166,11 +170,14 @@ router.get('/:reportId/pdf', verifyToken, async (req, res) => {
     const report = reportStore.find(r => r.id === reportId);
     
     if (!report) {
+      console.log(`Report not found with ID: ${reportId}`);
       return res.status(404).json({
         success: false,
-        message: 'Report not found'
+        message: 'Report not found. This may be because the server was restarted. Please regenerate your report.'
       });
     }
+    
+    console.log(`Report found, generating PDF for: ${reportId}`);
     
     // Generate PDF
     const pdfBuffer = await generateReportPDF(report);
@@ -180,6 +187,7 @@ router.get('/:reportId/pdf', verifyToken, async (req, res) => {
     res.setHeader('Content-Disposition', `attachment; filename="college-plan-${reportId}.pdf"`);
     
     // Send the PDF
+    console.log('PDF generated successfully, sending to client');
     return res.send(pdfBuffer);
   } catch (error) {
     console.error('PDF generation error:', error);
@@ -302,7 +310,7 @@ async function generateReportWithAI(studentData) {
 
       ### Timeline Instructions:
       - Begin the timeline with the current academic season of the current year.
-      - The timeline should extend through high school graduation, ending with Fall of Grade 12 or the college decision window (typically December–April of senior year).
+      - The timeline should always extend through high school graduation, up until college matriculation.
       - Adjust the number of timeline periods based on the student's current grade level.
       - Use standard academic seasons:
         - Spring: March–May
@@ -329,7 +337,7 @@ async function generateReportWithAI(studentData) {
         - Recommend specific AP/honors courses aligned to major interests and target school expectations.
         - Course selection recommendations must appear in the Spring before each new school year begins (e.g., junior-year course planning in Spring of sophomore year).
         - Include GPA-boosting suggestions (e.g., tutoring, study groups, summer remediation if GPA is low).
-        - 8 to 12 APs are recommended for top schools.
+        - If the student is aiming for top schools, be strict. Top students often have 8 to 12 APs, and 4.5+ GPAs.
 
       2. **Standardized Testing (SAT, ACT, TOEFL if applicable)**  
         - Suggest appropriate test prep and retake timelines using national and CDS benchmarks.
@@ -694,9 +702,29 @@ function getLimitedReportData(reportData) {
   // Create a copy of the report data
   const limitedData = JSON.parse(JSON.stringify(reportData));
   
-  // For timeline, only show one year of periods (4 seasons)
+  // For free users, show half the sections (rounded down) with all events in those sections
   if (limitedData.timeline && Array.isArray(limitedData.timeline)) {
-    limitedData.timeline = limitedData.timeline.slice(0, 4);
+    // Log original period count
+    console.log(`Original period count: ${limitedData.timeline.length}`);
+    
+    // Calculate how many periods to keep - half of total, rounded down
+    const periodsToKeep = Math.floor(limitedData.timeline.length / 2);
+    console.log(`Keeping ${periodsToKeep} periods out of ${limitedData.timeline.length}`);
+    
+    // Keep only the first N periods (half of total)
+    limitedData.timeline = limitedData.timeline.slice(0, periodsToKeep);
+    
+    console.log(`After slicing, keeping ${limitedData.timeline.length} periods`);
+    
+    // Count total events in the limited timeline
+    const limitedEventCount = limitedData.timeline.reduce((count, period) => {
+      if (Array.isArray(period.events)) {
+        return count + period.events.length;
+      }
+      return count;
+    }, 0);
+    
+    console.log(`Total events in limited timeline: ${limitedEventCount}`);
   }
   
   // Replace nextSteps with a premium content message
