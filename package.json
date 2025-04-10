@@ -23,6 +23,7 @@
     "axios": "^1.6.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "esbuild": "^0.25.2",
     "esbuild-wasm": "^0.25.2",
     "html2pdf.js": "^0.10.3",
     "jspdf": "^3.0.1",
