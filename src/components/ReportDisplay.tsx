@@ -209,8 +209,10 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         setHasAppliedCoupon(true);
         // Store the discounted price in localStorage so KryptoGoButton can use it
         localStorage.setItem('applied_coupon_price', response.discountAmount || '0.01');
+        // Dispatch a custom event to notify other components
+        window.dispatchEvent(new Event('coupon-applied'));
         // Show success message
-        toast.success('Coupon applied successfully! Your price is now $0.01', {
+        toast.success('Coupon applied successfully! Your price is now $0.01 for crypto payments.', {
           duration: 5000,
         });
       } else {
@@ -321,13 +323,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
             {/* Replace the old button with the LemonSqueezyButton */}
             <div className="min-w-44">
               <PaymentButtons reportId={reportId || undefined} />
-              
-              {/* Show discount note if coupon applied */}
-              {hasAppliedCoupon && (
-                <p className="text-xs text-center mt-2 text-academic-slate">
-                  Discount applied: <span className="line-through">$19.99</span> $0.01
-                </p>
-              )}
+            
             </div>
           </div>
         </div>

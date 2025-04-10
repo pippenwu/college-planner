@@ -37,18 +37,13 @@ export function PaymentButtons({ reportId }: PaymentButtonsProps) {
     <div className="flex flex-col gap-3 w-full">
       <LemonSqueezyButton reportId={reportId} />
       <div className="text-center">
-        <KryptoGoButton reportId={reportId} amount={hasCoupon ? discountPrice : '0.01'} />
+        <KryptoGoButton reportId={reportId} amount={hasCoupon ? discountPrice : '19.99'} />
       </div>
       
       {/* Show discount note if coupon applied */}
       {hasCoupon && (
         <p className="text-xs text-center mt-2 text-academic-slate">
           Discount applied: <span className="line-through">$19.99</span> ${discountPrice}
-        </p>
-      )}
-      {!hasCoupon && (
-        <p className="text-xs text-center mt-2 text-academic-slate">
-          Testing price: <span className="line-through">$19.99</span> $0.01
         </p>
       )}
     </div>

@@ -9,7 +9,7 @@ interface KryptoGoButtonProps {
 
 export function KryptoGoButton({ 
   reportId, 
-  amount = '0.01', 
+  amount = '19.99', 
   currency = 'USD' 
 }: KryptoGoButtonProps) {
   const { initiatePayment, isProcessingPayment } = usePayment();
@@ -17,12 +17,28 @@ export function KryptoGoButton({
   
   // Check for applied coupon on mount and when localStorage changes
   useEffect(() => {
-    const appliedCouponPrice = localStorage.getItem('applied_coupon_price');
-    if (appliedCouponPrice) {
-      setPaymentAmount(appliedCouponPrice);
-    } else {
-      setPaymentAmount(amount);
-    }
+    const checkCoupon = () => {
+      const appliedCouponPrice = localStorage.getItem('applied_coupon_price');
+      if (appliedCouponPrice) {
+        setPaymentAmount(appliedCouponPrice);
+      } else {
+        setPaymentAmount(amount);
+      }
+    };
+    
+    // Check immediately
+    checkCoupon();
+    
+    // Listen for storage events (fires when localStorage changes in other tabs)
+    window.addEventListener('storage', checkCoupon);
+    
+    // Listen for our custom coupon-applied event (fired when coupon applied in this tab)
+    window.addEventListener('coupon-applied', checkCoupon);
+    
+    return () => {
+      window.removeEventListener('storage', checkCoupon);
+      window.removeEventListener('coupon-applied', checkCoupon);
+    };
   }, [amount]);
   
   const handleOpenPayment = () => {

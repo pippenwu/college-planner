@@ -33,8 +33,11 @@ interface PaymentProviderProps {
 export const KryptogoPaymentProvider: React.FC<PaymentProviderProps> = ({ children }) => {
   const queryClient = new QueryClient();
   
-  // Your organization's KryptoGO clientId - replace with your actual clientId
-  const clientId = "3e0dbb46bc51698b";
+  // // Debug environment variable loading
+  console.log("[ENV DEBUG] VITE_KRYPTOGO_CLIENT_ID value:", import.meta.env.VITE_KRYPTOGO_CLIENT_ID);
+  
+  // Your organization's KryptoGO clientId
+  const clientId = import.meta.env.VITE_KRYPTOGO_CLIENT_ID;
 
   const connectors = connectorsForWallets(
     [
