@@ -25,6 +25,7 @@ import { usePayment } from '../context/PaymentContext';
 import { authApi, reportApi } from '../services/apiClient';
 import { EnhancedTimelineView } from './EnhancedTimelineView';
 import { TimelinePeriod } from './TimelineView';
+import { LemonSqueezyButton } from './payment/LemonSqueezyButton';
 
 // Define types for the JSON report structure
 export interface ReportData {
@@ -152,9 +153,11 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
     }
   };
 
+  // Lemon Squeezy button is now handled by the LemonSqueezyButton component
+  // Keep this function for backward compatibility with the UI
   const handlePaymentClick = () => {
-    // Use discounted price if coupon was applied
-    initiatePayment(hasAppliedCoupon ? '0.01' : '19.99', 'USD');
+    // This function is now a no-op as the LemonSqueezyButton handles the payment flow
+    console.log('Payment button clicked - using LemonSqueezy component instead');
   };
 
   const handleVerifyBetaCode = async () => {
@@ -281,6 +284,9 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   // Render the unlock section
   const renderUnlockSection = () => {
     if (!isPaid) {
+      // Get the current report ID from localStorage
+      const reportId = localStorage.getItem('current_report_id');
+      
       return (
         <div className="bg-academic-cream/80 rounded-lg p-6 border border-academic-gold/50 shadow-md">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -307,24 +313,18 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
                 </li>
               </ul>
             </div>
-            <Button
-              onClick={handlePaymentClick}
-              disabled={isProcessingPayment}
-              className="bg-academic-burgundy hover:bg-academic-navy text-white px-6 py-3 text-lg rounded-lg shadow-lg transition-all hover:shadow-xl min-w-44"
-            >
-              {isProcessingPayment ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                hasAppliedCoupon ? (
-                  <>Unlock Full Report - $0.01 <span className="text-xs line-through ml-1">$19.99</span></>
-                ) : (
-                  <>Unlock Full Report - $19.99</>
-                )
+            
+            {/* Replace the old button with the LemonSqueezyButton */}
+            <div className="min-w-44">
+              <LemonSqueezyButton reportId={reportId || undefined} />
+              
+              {/* Show discount note if coupon applied */}
+              {hasAppliedCoupon && (
+                <p className="text-xs text-center mt-2 text-academic-slate">
+                  Discount applied: <span className="line-through">$19.99</span> $0.01
+                </p>
               )}
-            </Button>
+            </div>
           </div>
         </div>
       );

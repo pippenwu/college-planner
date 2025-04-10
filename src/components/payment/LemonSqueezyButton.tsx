@@ -1,79 +1,94 @@
-import { useState } from 'react';
-import apiClient from '../../services/apiClient';
+import { Key } from 'lucide-react';
+import { useEffect } from 'react';
+import toast from 'react-hot-toast';
+import { usePayment } from '../../context/PaymentContext';
 
-export function LemonSqueezyButton() {
-  const [isLoading, setIsLoading] = useState(false);
+interface LemonSqueezyButtonProps {
+  reportId?: string;
+}
 
-  const handleCheckout = async () => {
-    try {
-      setIsLoading(true);
+export function LemonSqueezyButton({ reportId }: LemonSqueezyButtonProps) {
+  const { setIsPaid } = usePayment();
+
+  // Initialize Lemon Squeezy SDK
+  useEffect(() => {
+    // Make sure we're in the browser and Lemon Squeezy SDK is available
+    if (typeof window === 'undefined' || !window.LemonSqueezy) {
+      return;
+    }
+
+    // Configure the SDK
+    window.LemonSqueezy.Setup({
+      eventHandler: (data) => {
+        console.log('Lemon Squeezy event:', data);
+        
+        // Handle successful checkout
+        if (data.event === 'Checkout.Success') {
+          console.log('Payment successful!');
+          
+          // Set the user as paid
+          setIsPaid(true);
+          
+          // Store payment status and report ID
+          if (reportId) {
+            localStorage.setItem('paid_report_id', reportId);
+          }
+          
+          // Close the checkout overlay programmatically
+          if (window.LemonSqueezy && window.LemonSqueezy.Url) {
+            window.LemonSqueezy.Url.Close();
+          }
+          
+          // Show success message after closing the overlay
+          setTimeout(() => {
+            toast.success('Payment successful! Your full report is now available', {
+              duration: 5000,
+              icon: '✅',
+            });
+          }, 500);
+        }
+      }
+    });
+
+    return () => {
+      // No cleanup needed
+    };
+  }, [setIsPaid, reportId]);
+
+  const handleOpenCheckout = () => {
+    // Check if Lemon Squeezy SDK is available
+    if (typeof window !== 'undefined' && window.LemonSqueezy) {
+      // Get the current report ID if not provided
+      const currentReportId = reportId || localStorage.getItem('current_report_id');
       
-      // Call the lemonSqueezyApi from apiClient
-      const response = await apiClient.lemonSqueezy.createCheckout(
-        'test@example.com',
-        'Test User',
-        { userId: '123' }
-      );
+      if (!currentReportId) {
+        toast.error('No report found. Please try again.', {
+          duration: 3000,
+          icon: '❌',
+        });
+        return;
+      }
       
-      // Redirect to checkout URL
-      window.location.href = response.checkoutUrl;
-    } catch (error) {
-      console.error('Checkout error:', error);
-      alert('Something went wrong. Please try again.');
-    } finally {
-      setIsLoading(false);
+      // Build checkout URL with only essential parameters
+      const checkoutUrl = `https://dweam.lemonsqueezy.com/buy/bbee9910-43a7-488b-b1de-28323fbc0c75?embed=1&checkout[custom][reportId]=${encodeURIComponent(currentReportId)}`;
+      
+      // Open the checkout using the SDK
+      window.LemonSqueezy.Url.Open(checkoutUrl);
+    } else {
+      toast.error('Payment system is not available. Please try again later.', {
+        duration: 3000,
+        icon: '❌',
+      });
     }
   };
 
   return (
     <button 
-      onClick={handleCheckout}
-      disabled={isLoading}
-      className="px-4 py-2 bg-academic-burgundy text-white rounded-lg hover:bg-academic-burgundy/90 transition-colors duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+      onClick={handleOpenCheckout}
+      className="px-4 py-2 bg-academic-burgundy text-white rounded-lg hover:bg-academic-navy transition-colors duration-200 flex items-center gap-2"
     >
-      {isLoading ? (
-        <>
-          <svg
-            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
-          <span>Processing...</span>
-        </>
-      ) : (
-        <>
-          <span>Pay with Card</span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-            <line x1="1" y1="10" x2="23" y2="10" />
-          </svg>
-        </>
-      )}
+      <span>Unlock Full Report</span>
+      <Key className="h-4 w-4" />
     </button>
   );
 } 

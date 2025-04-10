@@ -10,21 +10,21 @@ import ReportDisplay, { ReportData } from "./ReportDisplay";
 import SchoolLogos from "./SchoolLogos";
 import { Button } from "./ui/button";
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage
 } from "./ui/form";
 import { Input } from "./ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
 } from "./ui/select";
 import { Textarea } from "./ui/textarea";
 
@@ -102,6 +102,29 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
   
   // Track completed sections
   const [completedSections, setCompletedSections] = useState<number[]>([]);
+  
+  // Listen for test-report-generated events and check the global test state
+  useEffect(() => {
+    const handleTestReportGenerated = () => {
+      if (typeof window !== 'undefined' && window.__TEST_STATE__) {
+        if (window.__TEST_STATE__.showReport && window.__TEST_STATE__.testReport) {
+          setResult(window.__TEST_STATE__.testReport);
+        } else {
+          setResult(null);
+        }
+      }
+    };
+    
+    // Initial check
+    handleTestReportGenerated();
+    
+    // Add event listener
+    window.addEventListener('test-report-generated', handleTestReportGenerated);
+    
+    return () => {
+      window.removeEventListener('test-report-generated', handleTestReportGenerated);
+    };
+  }, []);
   
   // Update the parent component when a report is shown or hidden
   useEffect(() => {

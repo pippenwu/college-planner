@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 const { createCheckout, lemonSqueezySetup } = require('@lemonsqueezy/lemonsqueezy.js');
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 // Initialize Lemon Squeezy with API key
 lemonSqueezySetup({
@@ -84,6 +86,72 @@ router.post('/create-checkout', async (req, res) => {
     console.error('Checkout error:', error);
     res.status(500).json({ 
       error: 'Failed to create checkout',
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
+// Webhook endpoint for Lemon Squeezy
+router.post('/webhook', async (req, res) => {
+  try {
+    // Verify webhook signature
+    const signature = req.headers['x-signature'];
+    if (!signature && process.env.NODE_ENV === 'production') {
+      console.error('Missing webhook signature');
+      return res.status(401).json({ error: 'Missing signature' });
+    }
+
+    // Verify the webhook signature in production
+    if (process.env.NODE_ENV === 'production') {
+      const hmac = crypto.createHmac('sha256', process.env.LEMON_SQUEEZY_WEBHOOK_SECRET);
+      const digest = hmac.update(JSON.stringify(req.body)).digest('hex');
+      
+      if (signature !== digest) {
+        console.error('Invalid webhook signature');
+        return res.status(401).json({ error: 'Invalid signature' });
+      }
+    }
+
+    const { meta, data } = req.body;
+    console.log('Webhook received:', meta.event_name);
+
+    // Handle different events
+    if (meta.event_name === 'order_created') {
+      // Extract data from the webhook
+      const { custom_data } = data.attributes;
+      const reportId = custom_data?.reportId;
+
+      if (reportId) {
+        // Generate a JWT token that marks this report as paid
+        const token = jwt.sign(
+          {
+            isPaid: true,
+            reportId,
+            source: 'lemon_squeezy',
+            paymentId: data.id
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: '1y' } // Token valid for 1 year
+        );
+
+        // In a real application, you might store this information in a database
+        console.log(`Payment successful for report: ${reportId}`);
+        
+        // You could return the token in the response, but typically
+        // webhooks should return 200 OK without much data
+      }
+    }
+
+    // Acknowledge the webhook with 200 OK
+    return res.status(200).json({ 
+      received: true,
+      event: meta.event_name
+    });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).json({ 
+      error: 'Failed to process webhook',
       message: error.message,
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
