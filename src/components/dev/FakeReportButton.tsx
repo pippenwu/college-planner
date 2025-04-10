@@ -111,22 +111,6 @@ export function FakeReportButton() {
     // Force a re-render of the application
     window.dispatchEvent(new Event('test-report-generated'));
   };
-  
-  const toggleFormReport = () => {
-    const currentlyShowingReport = window.__TEST_STATE__.showReport;
-    
-    // Toggle the show state
-    window.__TEST_STATE__.showReport = !currentlyShowingReport;
-    
-    // Show appropriate toast
-    toast.success(currentlyShowingReport ? 'Switched to form view' : 'Switched to report view', {
-      duration: 2000,
-      icon: currentlyShowingReport ? '📝' : '📊',
-    });
-    
-    // Force a re-render
-    window.dispatchEvent(new Event('test-report-generated'));
-  };
 
   if (process.env.NODE_ENV === 'production') {
     return null;
@@ -138,14 +122,7 @@ export function FakeReportButton() {
         onClick={generateFakeReport}
         className="bg-purple-600 hover:bg-purple-700 text-white"
       >
-        Generate Test Report
-      </Button>
-      
-      <Button
-        onClick={toggleFormReport}
-        className="bg-blue-600 hover:bg-blue-700 text-white"
-      >
-        {window.__TEST_STATE__.showReport ? 'Show Form' : 'Show Report'}
+        (Test) Use Mock Report
       </Button>
     </div>
   );

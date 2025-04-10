@@ -25,7 +25,7 @@ import { usePayment } from '../context/PaymentContext';
 import { authApi, reportApi } from '../services/apiClient';
 import { EnhancedTimelineView } from './EnhancedTimelineView';
 import { TimelinePeriod } from './TimelineView';
-import { LemonSqueezyButton } from './payment/LemonSqueezyButton';
+import { PaymentButtons } from './payment/PaymentButtons';
 
 // Define types for the JSON report structure
 export interface ReportData {
@@ -316,7 +316,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
             
             {/* Replace the old button with the LemonSqueezyButton */}
             <div className="min-w-44">
-              <LemonSqueezyButton reportId={reportId || undefined} />
+              <PaymentButtons reportId={reportId || undefined} />
               
               {/* Show discount note if coupon applied */}
               {hasAppliedCoupon && (

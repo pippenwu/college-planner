@@ -10,21 +10,21 @@ import ReportDisplay, { ReportData } from "./ReportDisplay";
 import SchoolLogos from "./SchoolLogos";
 import { Button } from "./ui/button";
 import {
-    Form,
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
 } from "./ui/form";
 import { Input } from "./ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "./ui/select";
 import { Textarea } from "./ui/textarea";
 
@@ -1708,9 +1708,8 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
         <SchoolLogos />
         
         <p className="text-sm text-academic-slate mb-6 mt-4 max-w-2xl mx-auto">
-          Answer a few questions about your academic profile and goals<br />
-          to receive a personalized college application timeline and strategic recommendations. <br />
-          All your information is processed securely and never stored on our servers.
+          Answer a few quick questions about your academic background and goals to receive a personalized college application timeline and strategic recommendations.
+          Don’t worry, we don’t store any of your info. Ever.
         </p>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">

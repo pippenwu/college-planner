@@ -159,12 +159,12 @@ function App() {
 
             <footer className="w-full py-4 px-4 sm:px-6 text-academic-slate border-t border-academic-light relative z-10 mt-12">
               <div className="max-w-6xl mx-auto w-full text-center text-xs">
-                © {new Date().getFullYear()} CAT - College Application Timeline. All rights reserved.
+                © {new Date().getFullYear()} CAT – Helping students reach their dream schools, one timeline at a time. All rights reserved.
               </div>
             </footer>
 
-            {/* Add the FakeReportButton for development testing */}
-            {process.env.NODE_ENV !== 'production' && <FakeReportButton />}
+            {/* Add the FakeReportButton for development testing - only when not in report view */}
+            {process.env.NODE_ENV !== 'production' && !isReportVisible && <FakeReportButton />}
           </div>
         </PaymentProvider>
       </KryptogoPaymentProvider>
