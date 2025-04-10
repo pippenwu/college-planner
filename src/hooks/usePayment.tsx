@@ -44,14 +44,13 @@ export const useRealPayment = () => {
     isError
   } = useKryptogoPayment();
 
-  // Clear ALL storage on component mount to prevent any persistence
+  // Clear payment-related storage on component mount
   useEffect(() => {
     try {
-      console.log("Clearing all storage to prevent persistence");
+      console.log("Clearing payment-related storage");
       
-      // Safer way to clear localStorage without causing errors
+      // Clear payment-related localStorage items
       try {
-        // Only clear payment-related items instead of everything
         const paymentKeys = Object.keys(localStorage).filter(
           key => key.includes('payment') || key.includes('kryptogo')
         );
@@ -60,9 +59,8 @@ export const useRealPayment = () => {
         console.warn('Error clearing localStorage:', err);
       }
       
-      // Safer way to clear sessionStorage without causing errors
+      // Clear payment-related sessionStorage items
       try {
-        // Only clear payment-related items instead of everything
         const paymentKeys = Object.keys(sessionStorage).filter(
           key => key.includes('payment') || key.includes('kryptogo')
         );
@@ -70,8 +68,6 @@ export const useRealPayment = () => {
       } catch (err) {
         console.warn('Error clearing sessionStorage:', err);
       }
-      
-      // Don't attempt to clear all cookies, just payment ones if needed
       
       console.log("Payment storage items cleared");
     } catch (e) {
@@ -106,7 +102,7 @@ export const useRealPayment = () => {
   };
 
   // For compatibility with our existing interface
-  const isModalOpen = false; // Always return false to prevent our own modal from showing
+  const isModalOpen = false;
   const resetPayment = enhancedCloseModal;
 
   return {

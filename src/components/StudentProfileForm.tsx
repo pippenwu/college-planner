@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import { usePayment } from '../context/PaymentContext';
+import { usePayment } from "../context/PaymentContext";
 import { reportApi } from "../services/apiClient";
 import ReportDisplay, { ReportData } from "./ReportDisplay";
 import SchoolLogos from "./SchoolLogos";
@@ -93,15 +93,59 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<ReportData | null>(null);
   const [pendingReportData, setPendingReportData] = useState<FormValues | null>(null);
+  const [currentSection, setCurrentSection] = useState(0);
+  const [completedSections, setCompletedSections] = useState<number[]>([]);
+  // Add flag to track if using demo data
+  const [isUsingDemoData, setIsUsingDemoData] = useState(false);
   
   // Get payment state from context
   const { isPaid, isProcessingPayment, resetPaymentState } = usePayment();
   
-  // Track the current section/step
-  const [currentSection, setCurrentSection] = useState(0);
-  
-  // Track completed sections
-  const [completedSections, setCompletedSections] = useState<number[]>([]);
+  // Form context using react-hook-form
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      studentName: "",
+      highSchool: "",
+      intendedMajors: "",
+      collegeList: "",
+      testScores: [{ testName: "SAT", score: "" }],
+      courseHistory: "",
+      activities: [{ name: "", notes: "" }],
+      additionalInfo: "",
+    },
+    mode: "onChange",
+  });
+
+  // Load saved form data from localStorage on initial render
+  useEffect(() => {
+    const savedData = localStorage.getItem('collegePlannerFormData');
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        form.reset(parsedData);
+        
+        // If we have saved data, figure out which sections are complete
+        const completedSectionIds: number[] = [];
+        if (parsedData.studentName && parsedData.highSchool && parsedData.currentGrade) {
+          completedSectionIds.push(0);
+        }
+        if (parsedData.intendedMajors && parsedData.collegeList) {
+          completedSectionIds.push(1);
+        }
+        if (parsedData.testScores?.length || parsedData.courseHistory || parsedData.activities?.length) {
+          completedSectionIds.push(2);
+        }
+        
+        setCompletedSections(completedSectionIds);
+        // Set current section to the next incomplete section, or the last one if all are complete
+        const nextSection = completedSectionIds.length < FORM_SECTIONS.length ? completedSectionIds.length : FORM_SECTIONS.length - 1;
+        setCurrentSection(nextSection);
+      } catch (error) {
+        console.error('Error loading saved form data:', error);
+      }
+    }
+  }, []);
   
   // Listen for test-report-generated events and check the global test state
   useEffect(() => {
@@ -132,20 +176,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
       onReportVisibilityChange(result !== null);
     }
   }, [result, onReportVisibilityChange]);
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      studentName: "",
-      highSchool: "",
-      intendedMajors: "",
-      collegeList: "",
-      testScores: [{ testName: "SAT", score: "" }],
-      courseHistory: "",
-      activities: [{ name: "", notes: "" }],
-      additionalInfo: "",
-    },
-  });
 
   // Use useEffect to generate the report when payment is successful
   useEffect(() => {
@@ -185,8 +215,28 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
 
   // Function to move to the next section
   const goToNextSection = () => {
-    // Mark current section as completed
-    if (!completedSections.includes(currentSection)) {
+    // Validate current section fields before marking complete
+    const currentSectionId = FORM_SECTIONS[currentSection].id;
+    const formValues = form.getValues();
+    let isSectionValid = true;
+    
+    // Check required fields based on section
+    switch (currentSectionId) {
+      case "student-info":
+        // Required: highSchool, currentGrade
+        isSectionValid = !!formValues.highSchool && !!formValues.currentGrade;
+        break;
+      case "majors-colleges":
+        // Required: intendedMajors
+        isSectionValid = !!formValues.intendedMajors;
+        break;
+      // academics and activities sections don't have required fields
+      default:
+        isSectionValid = true;
+    }
+    
+    // Only mark as complete if all required fields are filled
+    if (isSectionValid && !completedSections.includes(currentSection)) {
       setCompletedSections(prev => [...prev, currentSection]);
     }
     
@@ -197,6 +247,13 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
       setCurrentSection(prevSection => {
         const nextSection = prevSection + 1;
         console.log(`Setting section from ${prevSection} to ${nextSection}`);
+        
+        // Save form data to localStorage if not using demo data
+        if (!isUsingDemoData) {
+          const formData = form.getValues();
+          localStorage.setItem('collegePlannerFormData', JSON.stringify(formData));
+        }
+        
         return nextSection;
       });
     } else {
@@ -204,21 +261,43 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
     }
   };
 
-  // Function to move to the previous section
+  // Function to go to the previous section
   const goToPreviousSection = () => {
     if (currentSection > 0) {
-      setCurrentSection(currentSection - 1);
+      setCurrentSection(prevSection => {
+        const newSection = prevSection - 1;
+        
+        // Save form data to localStorage if not using demo data
+        if (!isUsingDemoData) {
+          const formData = form.getValues();
+          localStorage.setItem('collegePlannerFormData', JSON.stringify(formData));
+        }
+        
+        return newSection;
+      });
     }
   };
 
   // Function to jump to a specific section
   const jumpToSection = (sectionId: number) => {
-    setCurrentSection(sectionId);
+    // Only allow jumping to completed sections or the next section
+    if (completedSections.includes(sectionId) || sectionId <= Math.max(...completedSections, 0) + 1) {
+      setCurrentSection(sectionId);
+      
+      // Save form data to localStorage if not using demo data
+      if (!isUsingDemoData) {
+        const formData = form.getValues();
+        localStorage.setItem('collegePlannerFormData', JSON.stringify(formData));
+      }
+    }
   };
 
   const onSubmit = async (data: FormValues) => {
     console.log("Form submitted with data:", data);
     console.log("Current section at submission:", currentSection);
+    
+    // Clear saved form data from localStorage on successful submission
+    localStorage.removeItem('collegePlannerFormData');
     
     // Only proceed with submission if we're actually on the last section
     const lastSectionIndex = FORM_SECTIONS.length - 1;
@@ -767,28 +846,34 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
     return (
       <div className="space-y-6">
         <div className="flex justify-between">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={goToPreviousSection}
-            disabled={isFirstSection}
-            className="border-academic-navy text-academic-navy hover:bg-academic-cream disabled:opacity-50"
-          >
-            Previous
-          </Button>
+          {!isFirstSection ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={goToPreviousSection}
+              className="border-academic-navy text-academic-navy hover:bg-academic-cream"
+            >
+              Previous
+            </Button>
+          ) : (
+            <div></div> /* Empty div to maintain spacing */
+          )}
           
-          <Button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              console.log(`Next button clicked, moving from section ${currentSection} to ${currentSection + 1}`);
-              goToNextSection();
-            }}
-            disabled={isLastSection}
-            className="bg-academic-navy hover:bg-academic-slate text-white disabled:opacity-50"
-          >
-            Next
-          </Button>
+          {!isLastSection ? (
+            <Button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                console.log(`Next button clicked, moving from section ${currentSection} to ${currentSection + 1}`);
+                goToNextSection();
+              }}
+              className="bg-academic-navy hover:bg-academic-slate text-white"
+            >
+              Next
+            </Button>
+          ) : (
+            <div></div> /* Empty div to maintain spacing */
+          )}
         </div>
         
         {isLastSection && (
@@ -820,6 +905,9 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
 
   // Fill form with sample data and go to last section
   const loadTemplateData = (category?: string) => {
+    // Set flag that we're using demo data to prevent saving to localStorage
+    setIsUsingDemoData(true);
+    
     let templateData: FormValues;
     
     // Define templates for different majors
@@ -1681,6 +1769,10 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
     // Reset all form state
     setCompletedSections([]);
     setCurrentSection(0);
+    // Reset demo data flag
+    setIsUsingDemoData(false);
+    // Clear localStorage
+    localStorage.removeItem('collegePlannerFormData');
     // Scroll back to the form
     scrollToForm();
   };

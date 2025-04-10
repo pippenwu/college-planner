@@ -1,21 +1,21 @@
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Code, Download, Loader2, Lock, RotateCcw } from 'lucide-react';
@@ -207,8 +207,12 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         setCouponError(null);
         // Set the coupon as applied and store the discount amount
         setHasAppliedCoupon(true);
-        // Store the discount amount in a state variable if needed
-        // For example, setDiscountAmount(response.discountAmount);
+        // Store the discounted price in localStorage so KryptoGoButton can use it
+        localStorage.setItem('applied_coupon_price', response.discountAmount || '0.01');
+        // Show success message
+        toast.success('Coupon applied successfully! Your price is now $0.01', {
+          duration: 5000,
+        });
       } else {
         setCouponError(response.message || 'Invalid coupon code');
       }
@@ -410,7 +414,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
           <DialogHeader>
             <DialogTitle>Enter Coupon Code</DialogTitle>
             <DialogDescription>
-              If you have a coupon code, enter it below to get a discount.
+              If you have a coupon code, enter it below to apply a discount for crypto payment.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -448,7 +452,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Start Over?</AlertDialogTitle>
             <AlertDialogDescription>
-              Please make sure to save or download your report before starting over. Your report will not be stored on our servers.
+              Please make sure to save or download your report before starting over. To keep your data private, your report will not be stored on our servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -516,7 +520,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
         ) : (
           <Button 
             variant="outline"
-            onClick={() => toast.error('Please unlock the full report to download the PDF', {
+            onClick={() => toast.error('You must unlock the full report before downloading the PDF.', {
               icon: '🔒',
               duration: 3000
             })}

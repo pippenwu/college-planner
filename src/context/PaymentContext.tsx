@@ -63,6 +63,8 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
   const resetPaymentState = () => {
     setIsPaid(false);
     setCurrentPaymentId(null);
+    // Clear any applied coupon
+    localStorage.removeItem('applied_coupon_price');
     console.log("Payment state has been manually reset");
   };
 
@@ -100,6 +102,8 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
     
     return () => {
       console.log("PaymentProvider unmounting");
+      // Clear any applied coupon when unmounting
+      localStorage.removeItem('applied_coupon_price');
     };
   }, []);
 

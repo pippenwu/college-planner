@@ -18,23 +18,28 @@ const axios = require('axios');
  */
 async function createPaymentIntent(paymentData) {
   try {
-    // This is a mock implementation - in production, make actual API calls to KryptoGO
-    // const response = await axios.post('https://api.kryptogo.com/payment/intent', {
-    //   client_id: process.env.KRYPTOGO_CLIENT_ID,
-    //   client_secret: process.env.KRYPTOGO_API_SECRET,
-    //   amount: paymentData.amount,
-    //   currency: paymentData.currency,
-    //   metadata: { 
-    //     paymentId: paymentData.paymentId,
-    //     reportId: paymentData.reportId 
-    //   }
-    // });
+    // Using a mock implementation until KryptoGO API integration is fully configured
+    // In production, uncomment the following code to make actual API calls
+    /*
+    const response = await axios.post('https://api.kryptogo.com/payment/intent', {
+      client_id: process.env.KRYPTOGO_CLIENT_ID,
+      client_secret: process.env.KRYPTOGO_API_SECRET,
+      amount: paymentData.amount,
+      currency: paymentData.currency,
+      metadata: { 
+        paymentId: paymentData.paymentId,
+        reportId: paymentData.reportId 
+      }
+    });
     
-    // For now, return a mock response
+    return response.data;
+    */
+    
+    // Mock response for development
     return {
       success: true,
       paymentIntentId: paymentData.paymentId,
-      paymentUrl: `https://pay.kryptogo.com/${process.env.KRYPTOGO_CLIENT_ID}/${paymentData.paymentId}`
+      paymentUrl: `https://pay.kryptogo.com/${process.env.KRYPTOGO_CLIENT_ID || 'dev-client'}/${paymentData.paymentId}`
     };
   } catch (error) {
     console.error('Error creating KryptoGO payment intent:', error);
@@ -52,19 +57,24 @@ async function createPaymentIntent(paymentData) {
  */
 async function verifyPayment(verificationData) {
   try {
-    // This is a mock implementation - in production, make actual API calls to KryptoGO
-    // const response = await axios.post('https://api.kryptogo.com/payment/verify', {
-    //   client_id: process.env.KRYPTOGO_CLIENT_ID,
-    //   client_secret: process.env.KRYPTOGO_API_SECRET,
-    //   payment_intent_id: verificationData.paymentId,
-    //   tx_hash: verificationData.txHash
-    // });
+    // Using a mock implementation until KryptoGO API integration is fully configured
+    // In production, uncomment the following code to make actual API calls
+    /*
+    const response = await axios.post('https://api.kryptogo.com/payment/verify', {
+      client_id: process.env.KRYPTOGO_CLIENT_ID,
+      client_secret: process.env.KRYPTOGO_API_SECRET,
+      payment_intent_id: verificationData.paymentId,
+      tx_hash: verificationData.txHash
+    });
     
-    // For now, return a mock response
+    return response.data;
+    */
+    
+    // Mock response for development
     return {
       success: true,
       status: 'success',
-      amount: '10.00',
+      amount: verificationData.amount || '10.00',
       currency: 'USDT',
       txHash: verificationData.txHash,
       verifiedAt: new Date().toISOString()
@@ -84,8 +94,8 @@ async function verifyPayment(verificationData) {
  */
 function validateWebhookSignature(webhookData, signature) {
   try {
-    // This would implement real signature validation logic
-    // For now, always return true in development
+    // Mock implementation for development
+    // In production, this should be replaced with actual validation
     return true;
   } catch (error) {
     console.error('Error validating webhook signature:', error);
