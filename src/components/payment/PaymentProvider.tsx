@@ -34,7 +34,7 @@ export const KryptogoPaymentProvider: React.FC<PaymentProviderProps> = ({ childr
   const queryClient = new QueryClient();
   
   // // Debug environment variable loading
-  console.log("[ENV DEBUG] VITE_KRYPTOGO_CLIENT_ID value:", import.meta.env.VITE_KRYPTOGO_CLIENT_ID);
+  // console.log("[ENV DEBUG] VITE_KRYPTOGO_CLIENT_ID value:", import.meta.env.VITE_KRYPTOGO_CLIENT_ID);
   
   // Your organization's KryptoGO clientId
   const clientId = import.meta.env.VITE_KRYPTOGO_CLIENT_ID;
