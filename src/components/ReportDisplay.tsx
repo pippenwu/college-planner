@@ -62,7 +62,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   const [hasAppliedCoupon, setHasAppliedCoupon] = useState(false);
   
   // Get payment state from context
-  const { isPaid, setIsPaid, initiatePayment, isProcessingPayment } = usePayment();
+  const { isPaid, setIsPaid, isProcessingPayment } = usePayment();
 
   // Add state for the confirmation dialog
   const [showStartOverDialog, setShowStartOverDialog] = useState(false);
@@ -151,13 +151,6 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
       const visibleCount = Math.ceil(report.timeline.length * 0.6);
       return report.timeline.slice(0, visibleCount);
     }
-  };
-
-  // Lemon Squeezy button is now handled by the LemonSqueezyButton component
-  // Keep this function for backward compatibility with the UI
-  const handlePaymentClick = () => {
-    // This function is now a no-op as the LemonSqueezyButton handles the payment flow
-    console.log('Payment button clicked - using LemonSqueezy component instead');
   };
 
   const handleVerifyBetaCode = async () => {
