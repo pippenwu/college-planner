@@ -63,7 +63,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   const [showStartOverDialog, setShowStartOverDialog] = useState(false);
   
   // Get payment state from context
-  const { isPaid, isProcessingPayment, resetPaymentState, verifyPaymentStatus, paidReportId } = usePayment();
+  const { isPaid, verifyPaymentStatus, paidReportId } = usePayment();
   
   // Get the current report ID
   const currentReportId = localStorage.getItem('current_report_id') || '';
@@ -152,14 +152,6 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
   const getLimitedTimelineData = () => {
     if (!report.timeline) return null;
     
-    // Count total events across all periods for debugging
-    const totalEvents = report.timeline.reduce((count, period) => {
-      if (Array.isArray(period.events)) {
-        return count + period.events.length;
-      }
-      return count;
-    }, 0);
-    
     // For paid users, show all timeline data
     if (isPaid) {
       return report.timeline;
@@ -170,10 +162,6 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({
       
       // Create a copy of the timeline data and slice to keep only half the periods
       const limitedPeriods = JSON.parse(JSON.stringify(report.timeline)).slice(0, maxPeriodsForFree);
-      
-      // Log the number of events in the limited timeline
-      const limitedEvents = limitedPeriods.reduce((count: number, period: TimelinePeriod) => 
-        count + (Array.isArray(period.events) ? period.events.length : 0), 0);
       
       return limitedPeriods;
     }
