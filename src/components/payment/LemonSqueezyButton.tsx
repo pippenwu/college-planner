@@ -8,7 +8,7 @@ interface LemonSqueezyButtonProps {
 }
 
 export function LemonSqueezyButton({ reportId }: LemonSqueezyButtonProps) {
-  const { verifyPaymentStatus, verifyLemonSqueezyPayment } = usePayment();
+  const { verifyLemonSqueezyPayment } = usePayment();
 
   // Initialize Lemon Squeezy SDK
   useEffect(() => {

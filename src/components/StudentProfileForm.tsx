@@ -320,20 +320,6 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
     }
   };
 
-  // Function to jump to a specific section
-  const jumpToSection = (sectionId: number) => {
-    // Only allow jumping to completed sections or the next section
-    if (completedSections.includes(sectionId) || sectionId <= Math.max(...completedSections, 0) + 1) {
-      setCurrentSection(sectionId);
-      
-      // Save form data to localStorage if not using demo data
-      if (!isUsingDemoData) {
-        const formData = form.getValues();
-        localStorage.setItem('collegePlannerFormData', JSON.stringify(formData));
-      }
-    }
-  };
-
   const onSubmit = async (data: FormValues) => {
     console.log("Form submitted with data:", data);
     console.log("Current section at submission:", currentSection);
