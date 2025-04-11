@@ -156,6 +156,17 @@ export const reportApi = {
     } catch (error: any) {
       console.error('Report generation error:', error);
       
+      // Handle rate limiting errors (HTTP 429)
+      if (error.response && error.response.status === 429) {
+        const errorData = error.response.data;
+        
+        // Use toast or your preferred notification system
+        throw new Error(
+          errorData?.message || 
+          'You have reached your daily limit of free reports. Please try again tomorrow or purchase a premium report.'
+        );
+      }
+      
       // If the error has a response, pass it through
       if (error.response) {
         // Pass through the error with status code intact

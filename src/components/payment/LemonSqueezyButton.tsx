@@ -8,7 +8,7 @@ interface LemonSqueezyButtonProps {
 }
 
 export function LemonSqueezyButton({ reportId }: LemonSqueezyButtonProps) {
-  const { setIsPaid } = usePayment();
+  const { verifyPaymentStatus, verifyLemonSqueezyPayment } = usePayment();
 
   // Initialize Lemon Squeezy SDK
   useEffect(() => {
@@ -19,33 +19,36 @@ export function LemonSqueezyButton({ reportId }: LemonSqueezyButtonProps) {
 
     // Configure the SDK
     window.LemonSqueezy.Setup({
-      eventHandler: (data) => {
+      eventHandler: async (data) => {
         console.log('Lemon Squeezy event:', data);
         
         // Handle successful checkout
         if (data.event === 'Checkout.Success') {
           console.log('Payment successful!');
           
-          // Set the user as paid
-          setIsPaid(true);
-          
-          // Store payment status and report ID
-          if (reportId) {
-            localStorage.setItem('paid_report_id', reportId);
-          }
-          
-          // Close the checkout overlay programmatically
-          if (window.LemonSqueezy && window.LemonSqueezy.Url) {
-            window.LemonSqueezy.Url.Close();
-          }
-          
-          // Show success message after closing the overlay
-          setTimeout(() => {
-            toast.success('Payment successful! Your full report is now available', {
+          try {
+            // Verify the payment using the context function
+            await verifyLemonSqueezyPayment(data);
+            
+            // Close the checkout overlay programmatically
+            if (window.LemonSqueezy && window.LemonSqueezy.Url) {
+              window.LemonSqueezy.Url.Close();
+            }
+            
+            // Show success message after closing the overlay
+            setTimeout(() => {
+              toast.success('Payment successful! Your full report is now available', {
+                duration: 5000,
+                icon: '✅',
+              });
+            }, 500);
+          } catch (error) {
+            console.error('Error verifying payment:', error);
+            toast.error('Error processing payment. Please try again.', {
               duration: 5000,
-              icon: '✅',
+              icon: '❌',
             });
-          }, 500);
+          }
         }
       }
     });
@@ -53,7 +56,7 @@ export function LemonSqueezyButton({ reportId }: LemonSqueezyButtonProps) {
     return () => {
       // No cleanup needed
     };
-  }, [setIsPaid, reportId]);
+  }, [verifyLemonSqueezyPayment, reportId]);
 
   const handleOpenCheckout = () => {
     // Check if Lemon Squeezy SDK is available
@@ -70,7 +73,7 @@ export function LemonSqueezyButton({ reportId }: LemonSqueezyButtonProps) {
       }
       
       // Build checkout URL with only essential parameters
-      const checkoutUrl = `https://dweam.lemonsqueezy.com/buy/bbee9910-43a7-488b-b1de-28323fbc0c75?embed=1&checkout[custom][reportId]=${encodeURIComponent(currentReportId)}`;
+      const checkoutUrl = `https://dweam.lemonsqueezy.com/buy/bbee9910-43a7-488b-b1de-28323fbc0c75?embed=1&logo=0&discount=0&checkout[custom][reportId]=${encodeURIComponent(currentReportId)}`;
       
       // Open the checkout using the SDK
       window.LemonSqueezy.Url.Open(checkoutUrl);

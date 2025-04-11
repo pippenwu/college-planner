@@ -11,6 +11,7 @@ interface PaymentContextType {
   resetPaymentState: () => void;
   verifyPaymentStatus: () => Promise<boolean>;
   paidReportId: string | null;
+  verifyLemonSqueezyPayment: (checkoutData: any) => Promise<void>;
 }
 
 // Create the context with a default value
@@ -188,6 +189,37 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
+  // Function to handle Lemon Squeezy payment verification
+  const verifyLemonSqueezyPayment = async (checkoutData: any) => {
+    try {
+      if (!checkoutData || !checkoutData.data) return;
+      
+      const orderData = checkoutData.data;
+      const currentReportId = localStorage.getItem('current_report_id');
+      
+      // Call an API endpoint to validate the payment
+      const response = await fetch('/api/lemon-squeezy/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          order_id: orderData.id,
+          reportId: currentReportId
+        })
+      });
+      
+      // Get the token from the server
+      const { token } = await response.json();
+      
+      // Store the token and verify payment status
+      if (token) {
+        localStorage.setItem('auth_token', token);
+        await verifyPaymentStatus();
+      }
+    } catch (error) {
+      console.error('Lemon Squeezy verification error:', error);
+    }
+  };
+
   return (
     <PaymentContext.Provider value={{ 
       isPaid, 
@@ -196,7 +228,8 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
       isProcessingPayment: isLoading || isVerifying,
       resetPaymentState,
       verifyPaymentStatus,
-      paidReportId
+      paidReportId,
+      verifyLemonSqueezyPayment
     }}>
       {children}
     </PaymentContext.Provider>

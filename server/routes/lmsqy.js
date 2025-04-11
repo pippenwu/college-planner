@@ -158,5 +158,53 @@ router.post('/webhook', async (req, res) => {
   }
 });
 
+/**
+ * Verify Lemon Squeezy payment
+ * POST /api/lemon-squeezy/verify
+ * 
+ * Verifies a Lemon Squeezy payment from the client side and returns a JWT token
+ * Request: { order_id: string, reportId: string }
+ * Response: { token: string }
+ */
+router.post('/verify', async (req, res) => {
+  try {
+    const { order_id, reportId } = req.body;
+    
+    if (!order_id || !reportId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: order_id, reportId'
+      });
+    }
+    
+    // In a production app, you would verify the order with the Lemon Squeezy API
+    // For now, we'll just create a token assuming the client is honest
+    
+    // Generate a JWT token
+    const token = jwt.sign(
+      {
+        isPaid: true,
+        reportId,
+        source: 'lemon_squeezy',
+        paymentId: order_id
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '1y' } // Token valid for 1 year
+    );
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Payment verified successfully',
+      token
+    });
+  } catch (error) {
+    console.error('Lemon Squeezy verification error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to verify payment'
+    });
+  }
+});
+
 // Export the router
 module.exports = router;

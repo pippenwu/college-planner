@@ -1,5 +1,7 @@
 import { Button } from '@/components/ui/button';
+import axios from 'axios';
 import toast from 'react-hot-toast';
+import { v4 as uuidv4 } from 'uuid';
 import { ReportData } from '../ReportDisplay';
 
 // Create a global state object to hold the test report without using localStorage
@@ -7,6 +9,7 @@ import { ReportData } from '../ReportDisplay';
 type GlobalTestState = {
   testReport: ReportData | null;
   showReport: boolean;
+  testReportId: string | null;
 };
 
 // Create a global object that will be accessible across components
@@ -20,12 +23,42 @@ declare global {
 if (typeof window !== 'undefined') {
   window.__TEST_STATE__ = window.__TEST_STATE__ || {
     testReport: null,
-    showReport: false
+    showReport: false,
+    testReportId: null
   };
 }
 
+// The API endpoint for registering a mock report
+const API_BASE_URL = import.meta.env.DEV 
+  ? 'http://localhost:3001/api' 
+  : 'https://college-planner-production.up.railway.app/api';
+
 export function FakeReportButton() {
-  const generateFakeReport = () => {
+  // Function to register the mock report with the server
+  const registerMockReport = async (reportData: ReportData): Promise<string> => {
+    try {
+      // Generate a unique reportId
+      const reportId = `mock_${uuidv4()}`;
+      
+      // Call the server API to register the mock report
+      await axios.post(`${API_BASE_URL}/report/register-mock`, {
+        reportId,
+        reportData
+      });
+      
+      // Store the report ID and return it
+      return reportId;
+    } catch (error) {
+      console.error('Failed to register mock report:', error);
+      toast.error('Failed to register mock report with server', {
+        duration: 3000,
+        icon: '❌',
+      });
+      return 'mock_report';
+    }
+  };
+
+  const generateFakeReport = async () => {
     // Generate a fake report with dummy data
     const fakeReport: ReportData = {
       overview: {
@@ -98,18 +131,33 @@ export function FakeReportButton() {
       ]
     };
 
-    // Store in the global test state
-    window.__TEST_STATE__.testReport = fakeReport;
-    window.__TEST_STATE__.showReport = true;
-
-    // Show success message
-    toast.success('Fake report generated for testing!', {
-      duration: 3000,
-      icon: '🧪',
-    });
-
-    // Force a re-render of the application
-    window.dispatchEvent(new Event('test-report-generated'));
+    try {
+      // Register the mock report with the server to get a reportId
+      const reportId = await registerMockReport(fakeReport);
+      
+      // Store in the global test state
+      window.__TEST_STATE__.testReport = fakeReport;
+      window.__TEST_STATE__.showReport = true;
+      window.__TEST_STATE__.testReportId = reportId;
+      
+      // Store the reportId in localStorage for future reference (for API calls)
+      localStorage.setItem('current_report_id', reportId);
+      
+      // Show success message
+      toast.success('Fake report generated for testing!', {
+        duration: 3000,
+        icon: '🧪',
+      });
+      
+      // Force a re-render of the application
+      window.dispatchEvent(new Event('test-report-generated'));
+    } catch (error) {
+      console.error('Error generating fake report:', error);
+      toast.error('Error generating fake report', {
+        duration: 3000,
+        icon: '❌',
+      });
+    }
   };
 
   if (process.env.NODE_ENV === 'production') {

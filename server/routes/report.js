@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { verifyToken } = require('../middleware/authMiddleware');
 const PDFDocument = require('pdfkit');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const path = require('path');
 const router = express.Router();
 
 // Initialize Gemini API with specific endpoint
@@ -151,20 +152,6 @@ router.get('/:reportId/pdf', verifyToken, async (req, res) => {
   try {
     console.log(`PDF download requested for reportId: ${reportId}`);
     
-    // Ensure user is paid
-    const isPaid = req.user && req.user.isPaid === true;
-    
-    // Verify the user has paid for THIS specific report
-    const hasAccessToThisReport = isPaid && req.user.reportId === reportId;
-    
-    if (!hasAccessToThisReport) {
-      console.log(`Access denied: Token reportId (${req.user.reportId}) doesn't match requested reportId (${reportId})`);
-      return res.status(403).json({ 
-        success: false, 
-        message: 'You do not have access to download this report. Payment required.' 
-      });
-    }
-    
     // Find the report
     const report = reportStore.find(r => r.id === reportId);
     
@@ -176,23 +163,125 @@ router.get('/:reportId/pdf', verifyToken, async (req, res) => {
       });
     }
     
+    // Check if this is a mock report (for testing)
+    const isMockReport = report.isMock === true || reportId.startsWith('mock_');
+    
+    // For non-mock reports, verify payment
+    if (!isMockReport) {
+      // Ensure user is paid
+      const isPaid = req.user && req.user.isPaid === true;
+      
+      // Verify the user has paid for THIS specific report
+      const hasAccessToThisReport = isPaid && req.user.reportId === reportId;
+      
+      if (!hasAccessToThisReport) {
+        console.log(`Access denied: Token reportId (${req.user.reportId}) doesn't match requested reportId (${reportId})`);
+        return res.status(403).json({ 
+          success: false, 
+          message: 'You do not have access to download this report. Payment required.' 
+        });
+      }
+    } else {
+      console.log(`Mock report detected (${reportId}), bypassing payment verification`);
+    }
+    
     console.log(`Report found, generating PDF for: ${reportId}`);
     
-    // Generate PDF
-    const pdfBuffer = await generateReportPDF(report);
-    
-    // Set response headers for PDF download
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="college-plan-${reportId}.pdf"`);
-    
-    // Send the PDF
-    console.log('PDF generated successfully, sending to client');
-    return res.send(pdfBuffer);
+    try {
+      // Generate PDF
+      const pdfBuffer = await generateReportPDF(report);
+      
+      // Set response headers for PDF download
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="college-plan-${reportId}.pdf"`);
+      
+      // Send the PDF
+      console.log('PDF generated successfully, sending to client');
+      return res.send(pdfBuffer);
+    } catch (pdfError) {
+      console.error('PDF generation failed:', pdfError);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to generate PDF. Please try again later.',
+        error: pdfError.message || 'PDF generation error'
+      });
+    }
   } catch (error) {
-    console.error('PDF generation error:', error);
+    console.error('PDF download error:', error);
     return res.status(500).json({
       success: false,
       message: 'Failed to generate PDF',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * Register a mock report
+ * POST /api/report/register-mock
+ * 
+ * Registers a mock report for testing purposes, including PDF download capabilities.
+ * This is only available in development mode.
+ */
+router.post('/register-mock', async (req, res) => {
+  try {
+    // Only allow in development environment
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(403).json({
+        success: false,
+        message: 'Mock reports are only available in development mode'
+      });
+    }
+    
+    const { reportId, reportData } = req.body;
+    
+    if (!reportId || !reportData) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: reportId, reportData'
+      });
+    }
+    
+    // Create mock student data
+    const studentData = {
+      studentName: 'Mock Student',
+      currentGrade: '11th',
+      highSchool: 'Mock High School',
+      intendedMajors: 'Mock Major',
+      collegeList: 'Mock College'
+    };
+    
+    // Create a new report record with the provided data
+    const mockReport = {
+      id: reportId,
+      studentData,
+      reportData,
+      createdAt: new Date().toISOString(),
+      isMock: true
+    };
+    
+    // Check if a report with this ID already exists
+    const existingReportIndex = reportStore.findIndex(r => r.id === reportId);
+    if (existingReportIndex !== -1) {
+      // Replace the existing report
+      reportStore[existingReportIndex] = mockReport;
+    } else {
+      // Add to report store
+      reportStore.push(mockReport);
+    }
+    
+    console.log(`Mock report registered with ID: ${reportId}`);
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Mock report registered successfully',
+      reportId
+    });
+  } catch (error) {
+    console.error('Mock report registration error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to register mock report',
       error: error.message
     });
   }
@@ -753,79 +842,168 @@ function getLimitedReportData(reportData) {
 async function generateReportPDF(report) {
   return new Promise((resolve, reject) => {
     try {
-      // Create a PDF document
+      console.log('Starting PDF generation');
+      
+      // Create a basic PDF document first
       const doc = new PDFDocument({ margin: 50 });
+      
+      // Track if custom fonts are available and loaded
+      let customFontsAvailable = false;
+      
+      // Try to register Merriweather font
+      try {
+        const fontRegularPath = path.join(__dirname, '../fonts/Merriweather-Regular.ttf');
+        const fontBoldPath = path.join(__dirname, '../fonts/Merriweather-Bold.ttf');
+        
+        // Check if font files exist
+        const fs = require('fs');
+        if (fs.existsSync(fontRegularPath) && fs.existsSync(fontBoldPath)) {
+          console.log('Merriweather font files found, registering...');
+          
+          // Register the fonts
+          doc.registerFont('Merriweather', fontRegularPath);
+          doc.registerFont('Merriweather-Bold', fontBoldPath);
+          
+          // Test using the fonts to ensure they're valid
+          try {
+            doc.font('Merriweather');
+            doc.font('Merriweather-Bold');
+            
+            // If we get here, fonts are working
+            customFontsAvailable = true;
+            console.log('Merriweather fonts registered and working');
+          } catch (fontTestError) {
+            console.error('Font test failed:', fontTestError);
+            // Continue with default fonts
+          }
+        } else {
+          console.log('Merriweather font files not found, using default fonts');
+        }
+      } catch (fontError) {
+        console.error('Font registration error:', fontError);
+        // Continue with default fonts
+      }
+      
       const chunks = [];
       
       // Collect PDF data chunks
       doc.on('data', chunk => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
-      doc.on('error', err => reject(err));
+      doc.on('error', err => {
+        console.error('PDFDocument error event:', err);
+        reject(err);
+      });
       
-      // Add content to PDF
-      const { reportData, studentData } = report;
-      
-      // Title
-      doc.fontSize(25).text('College Application Plan', { align: 'center' });
-      doc.moveDown();
-      
-      // Student Info
-      doc.fontSize(16).text('Student Profile', { underline: true });
-      doc.fontSize(12);
-      doc.text(`Name: ${studentData.studentName || 'Student'}`);
-      doc.text(`Grade: ${studentData.currentGrade || 'High School Student'}`);
-      doc.text(`High School: ${studentData.highSchool || 'Not specified'}`);
-      
-      // Safely handle academicInterests which might be undefined or not an array
-      const interests = Array.isArray(studentData.academicInterests) 
-        ? studentData.academicInterests.join(', ') 
-        : (studentData.intendedMajors || 'Not specified');
-      
-      doc.text(`Academic Interests: ${interests}`);
-      doc.moveDown();
-      
-      // Overview
-      doc.fontSize(16).text('Overview', { underline: true });
-      doc.fontSize(12).text(reportData.overview.text);
-      doc.moveDown();
-      
-      // Timeline
-      doc.fontSize(16).text('Application Timeline', { underline: true });
-      doc.fontSize(12);
-      
-      reportData.timeline.forEach((period, i) => {
-        doc.text(`${period.period}:`, { bold: true });
-        period.events.forEach((event, j) => {
-          doc.text(`   • ${event.title} (${event.category})`, { bold: true });
-          doc.text(`     ${event.description}`);
-          if (j < period.events.length - 1) doc.moveDown(0.5);
+      try {
+        // Add content to PDF
+        const { reportData, studentData } = report;
+        
+        // Helper to use Merriweather fonts if available
+        const setFont = (isBold = false) => {
+          if (customFontsAvailable) {
+            try {
+              doc.font(isBold ? 'Merriweather-Bold' : 'Merriweather');
+            } catch (e) {
+              // Silently fall back to default font
+            }
+          }
+          return doc;
+        };
+        
+        // Title
+        setFont(true).fontSize(25).text('Your College Application Timeline', { align: 'center' });
+        doc.moveDown();
+        
+        // Student Info
+        setFont(true).fontSize(16).text('Student Profile', { underline: true });
+        setFont().fontSize(12);
+        doc.text(`Name: ${studentData.studentName || 'Student'}`);
+        doc.text(`Grade: ${studentData.currentGrade || 'High School Student'}`);
+        doc.text(`High School: ${studentData.highSchool || 'Not specified'}`);
+        
+        // Safely handle academicInterests which might be undefined or not an array
+        const interests = Array.isArray(studentData.academicInterests) 
+          ? studentData.academicInterests.join(', ') 
+          : (studentData.intendedMajors || 'Not specified');
+        
+        doc.text(`Academic Interests: ${interests}`);
+        doc.moveDown();
+        
+        // Overview
+        setFont(true).fontSize(16).text('Overview', { underline: true });
+        setFont().fontSize(12).text(reportData.overview.text);
+        doc.moveDown();
+        
+        // Timeline
+        setFont(true).fontSize(16).text('Application Timeline', { underline: true });
+        doc.fontSize(12);
+        
+        reportData.timeline.forEach((period, i) => {
+          setFont(true).text(`${period.period}:`, { bold: true });
+          period.events.forEach((event, j) => {
+            setFont(true).text(`   • ${event.title} (${event.category})`, { bold: true });
+            setFont().text(`     ${event.description}`);
+            if (j < period.events.length - 1) doc.moveDown(0.5);
+          });
+          if (i < reportData.timeline.length - 1) doc.moveDown();
         });
-        if (i < reportData.timeline.length - 1) doc.moveDown();
-      });
-      doc.moveDown();
-      
-      // Next Steps
-      doc.fontSize(16).text('Immediate Next Steps', { underline: true });
-      doc.fontSize(12);
-      
-      // Sort next steps by priority
-      const sortedNextSteps = [...reportData.nextSteps].sort((a, b) => a.priority - b.priority);
-      
-      sortedNextSteps.forEach((step, i) => {
-        doc.text(`${i + 1}. ${step.title}`, { bold: true });
-        doc.text(`   ${step.description}`);
-        if (i < sortedNextSteps.length - 1) doc.moveDown(0.5);
-      });
-      
-      // Footer
-      doc.moveDown();
-      doc.fontSize(10).text('Generated by CollegeGPT', { align: 'center' });
-      doc.text(`Report ID: ${report.id}`, { align: 'center' });
-      doc.text(`Generated on: ${new Date(report.createdAt).toLocaleDateString()}`, { align: 'center' });
-      
-      // Finalize PDF
-      doc.end();
+        doc.moveDown();
+        
+        // Next Steps
+        setFont(true).fontSize(16).text('Immediate Next Steps', { underline: true });
+        doc.fontSize(12);
+        
+        // Sort next steps by priority
+        const sortedNextSteps = [...reportData.nextSteps].sort((a, b) => a.priority - b.priority);
+        
+        sortedNextSteps.forEach((step, i) => {
+          setFont(true).text(`${i + 1}. ${step.title}`, { bold: true });
+          setFont().text(`   ${step.description}`);
+          if (i < sortedNextSteps.length - 1) doc.moveDown(0.5);
+        });
+        
+        // Footer
+        doc.moveDown();
+        setFont().fontSize(10).text('CAT: College Application Timeline', { align: 'center' });
+        doc.text(`Report ID: ${report.id}`, { align: 'center' });
+        doc.text(`Purchased on: ${new Date(report.createdAt).toLocaleDateString()}`, { align: 'center' });
+        
+        // Finalize PDF
+        doc.end();
+      } catch (contentError) {
+        console.error('Error adding content to PDF:', contentError);
+        
+        // If we hit an error while creating content, 
+        // create a simple error PDF instead of failing
+        try {
+          // Clear everything and start fresh
+          while (chunks.length > 0) {
+            chunks.pop();
+          }
+          
+          // Create new doc
+          const errorDoc = new PDFDocument({ margin: 50 });
+          errorDoc.on('data', chunk => chunks.push(chunk));
+          errorDoc.on('end', () => resolve(Buffer.concat(chunks)));
+          
+          // Add error info
+          errorDoc.fontSize(20).text('Error Generating PDF Report', { align: 'center' });
+          errorDoc.moveDown();
+          errorDoc.fontSize(12).text('There was an error generating your report PDF.', { align: 'center' });
+          errorDoc.text('Please try again later or contact support.', { align: 'center' });
+          errorDoc.moveDown();
+          errorDoc.text(`Report ID: ${report.id}`, { align: 'center' });
+          errorDoc.text(`Error: ${contentError.message}`, { align: 'center' });
+          
+          // End document
+          errorDoc.end();
+        } catch (fallbackError) {
+          console.error('Error creating fallback PDF:', fallbackError);
+          reject(contentError); // Still reject with the original error
+        }
+      }
     } catch (error) {
+      console.error('Top-level PDF generation error:', error);
       reject(error);
     }
   });
