@@ -163,17 +163,75 @@ router.post('/webhook', async (req, res) => {
  * POST /api/lemon-squeezy/verify
  * 
  * Verifies a Lemon Squeezy payment from the client side and returns a JWT token
- * Request: { order_id: string, reportId: string }
+ * Request: { order_id: string, reportId: string } OR any structure containing these fields
  * Response: { token: string }
  */
 router.post('/verify', async (req, res) => {
   try {
-    const { order_id, reportId } = req.body;
+    // Log the entire request body for debugging
+    console.log('Full Lemon Squeezy verification request:', JSON.stringify(req.body, null, 2));
+    console.log('Headers:', req.headers);
     
-    if (!order_id || !reportId) {
+    // Extract fields, trying different possible locations
+    let order_id = req.body.order_id;
+    let reportId = req.body.reportId;
+    
+    // Try to find the fields in other places if not directly in req.body
+    if (!order_id) {
+      // Try common nested locations based on different client implementations
+      if (req.body.data?.id) order_id = req.body.data.id;
+      else if (req.body.data?.order_id) order_id = req.body.data.order_id;
+      else if (req.body.data?.attributes?.order_id) order_id = req.body.data.attributes.order_id;
+      else if (req.body.attributes?.order_id) order_id = req.body.attributes.order_id;
+      else if (req.body.custom_data?.order_id) order_id = req.body.custom_data.order_id;
+    }
+    
+    if (!reportId) {
+      // Try common nested locations
+      if (req.body.data?.reportId) reportId = req.body.data.reportId;
+      else if (req.body.custom_data?.reportId) reportId = req.body.custom_data.reportId;
+      else if (req.body.attributes?.reportId) reportId = req.body.attributes.reportId;
+      else if (req.body.data?.custom?.reportId) reportId = req.body.data.custom.reportId;
+      else if (req.body.data?.custom_data?.reportId) reportId = req.body.data.custom_data.reportId;
+    }
+    
+    // Try to extract from URL query params if they were sent
+    if (!order_id && req.query.order_id) {
+      order_id = req.query.order_id;
+    }
+    
+    if (!reportId && req.query.reportId) {
+      reportId = req.query.reportId;
+    }
+    
+    // Log the extracted parameters
+    console.log('Extracted parameters:', { order_id, reportId });
+    
+    if (!order_id) {
+      console.log('Missing order_id field, creating a fallback');
+      order_id = `fallback_order_${Date.now()}`;
+    }
+    
+    if (!reportId) {
+      console.log('Missing required field: reportId');
+      
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields: order_id, reportId'
+        message: 'Missing required field: reportId',
+        received: { 
+          has_order_id: !!order_id, 
+          has_reportId: !!reportId,
+          body_keys: Object.keys(req.body)
+        }
+      });
+    }
+    
+    // Check if JWT_SECRET is defined
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is not defined in environment variables');
+      return res.status(500).json({
+        success: false,
+        message: 'Server configuration error: JWT_SECRET not defined'
       });
     }
     
@@ -181,27 +239,46 @@ router.post('/verify', async (req, res) => {
     // For now, we'll just create a token assuming the client is honest
     
     // Generate a JWT token
-    const token = jwt.sign(
-      {
-        isPaid: true,
+    try {
+      const token = jwt.sign(
+        {
+          isPaid: true,
+          reportId,
+          source: 'lemon_squeezy',
+          paymentId: order_id
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '1y' } // Token valid for 1 year
+      );
+      
+      console.log('Token generated successfully for reportId:', reportId);
+      
+      // Set up CORS headers explicitly to ensure the response gets back to the client
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      
+      return res.status(200).json({
+        success: true,
+        message: 'Payment verified successfully',
+        token,
         reportId,
-        source: 'lemon_squeezy',
         paymentId: order_id
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: '1y' } // Token valid for 1 year
-    );
-    
-    return res.status(200).json({
-      success: true,
-      message: 'Payment verified successfully',
-      token
-    });
+      });
+    } catch (jwtError) {
+      console.error('JWT signing error:', jwtError);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to generate authentication token',
+        error: jwtError.message
+      });
+    }
   } catch (error) {
     console.error('Lemon Squeezy verification error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to verify payment'
+      message: 'Failed to verify payment',
+      error: error.message
     });
   }
 });

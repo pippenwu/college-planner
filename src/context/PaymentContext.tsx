@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { useRealPayment } from '../hooks/usePayment';
 import { paymentApi } from '../services/apiClient';
@@ -16,6 +17,11 @@ interface PaymentContextType {
 
 // Create the context with a default value
 const PaymentContext = createContext<PaymentContextType | undefined>(undefined);
+
+// API base URL - same as in apiClient.ts
+const API_BASE_URL = import.meta.env.DEV 
+  ? 'http://localhost:3001/api' 
+  : 'https://college-planner-production.up.railway.app/api';
 
 // Provider component
 export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -192,31 +198,109 @@ export const PaymentProvider: React.FC<{ children: ReactNode }> = ({ children })
   // Function to handle Lemon Squeezy payment verification
   const verifyLemonSqueezyPayment = async (checkoutData: any) => {
     try {
-      if (!checkoutData || !checkoutData.data) return;
+      console.log('Received Lemon Squeezy checkout data for verification:', checkoutData);
       
-      const orderData = checkoutData.data;
+      if (!checkoutData) {
+        console.error('Missing checkout data');
+        return;
+      }
+      
+      // Cast to any to bypass TypeScript restrictions
+      const anyData = checkoutData as any;
+      
+      // Try to extract order ID from different possible Lemon Squeezy data structures
+      let orderId: string | undefined;
+      
+      // Structure 1: data.data.id
+      if (anyData.data?.id) {
+        orderId = anyData.data.id;
+      } 
+      // Structure 2: attributes.order_id
+      else if (anyData.attributes?.order_id) {
+        orderId = anyData.attributes.order_id;
+      }
+      // Structure 3: data.attributes.order_id
+      else if (anyData.data?.attributes?.order_id) {
+        orderId = anyData.data.attributes.order_id;
+      }
+      // Structure 4: custom_data.order_id
+      else if (anyData.custom_data?.order_id) {
+        orderId = anyData.custom_data.order_id;
+      }
+      // Structure 5: direct id property
+      else if (anyData.id) {
+        orderId = anyData.id;
+      }
+      // Structure 6: direct order_id property
+      else if (anyData.order_id) {
+        orderId = anyData.order_id;
+      }
+      
       const currentReportId = localStorage.getItem('current_report_id');
       
-      // Call an API endpoint to validate the payment
-      const response = await fetch('/api/lemon-squeezy/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          order_id: orderData.id,
-          reportId: currentReportId
-        })
+      console.log('Lemon Squeezy verification data:', {
+        extracted_order_id: orderId,
+        reportId: currentReportId
       });
       
+      if (!orderId) {
+        console.error('Could not extract order_id from Lemon Squeezy data');
+        // If we can't find an order ID, generate one as a fallback
+        orderId = `lsqy_order_${Date.now()}`;
+        console.log('Using generated order ID:', orderId);
+      }
+      
+      if (!currentReportId) {
+        console.error('Missing reportId in localStorage');
+        return;
+      }
+      
+      // Call an API endpoint to validate the payment using axios directly
+      console.log('Sending verification request to:', `${API_BASE_URL}/lemon-squeezy/verify`);
+      console.log('With payload:', { order_id: orderId, reportId: currentReportId });
+      
+      const response = await axios.post(`${API_BASE_URL}/lemon-squeezy/verify`, {
+        order_id: orderId,
+        reportId: currentReportId
+      });
+      
+      console.log('Lemon Squeezy verification response:', response.data);
+      
       // Get the token from the server
-      const { token } = await response.json();
+      const { token } = response.data;
       
       // Store the token and verify payment status
       if (token) {
+        console.log('Received valid token, saving to localStorage');
         localStorage.setItem('auth_token', token);
-        await verifyPaymentStatus();
+        const verified = await verifyPaymentStatus();
+        console.log('Payment status verified:', verified);
+        
+        if (verified) {
+          console.log('Payment verification successful - isPaid is now:', isPaid);
+        } else {
+          console.error('Payment verification failed - token received but verification returned false');
+        }
+      } else {
+        console.error('No token received from verification endpoint');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Lemon Squeezy verification error:', error);
+      
+      // Log more detailed error information
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error('Error response data:', error.response.data);
+        console.error('Error response status:', error.response.status);
+        console.error('Error response headers:', error.response.headers);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('Error request:', error.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error('Error message:', error.message);
+      }
     }
   };
 

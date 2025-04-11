@@ -130,8 +130,13 @@ export const paymentApi = {
       // Get the current report ID
       const currentReportId = localStorage.getItem('current_report_id');
       
+      console.log('Verifying payment status for report ID:', currentReportId);
+      
       // Add current report ID as query parameter
       const response = await apiClient.get(`/payment/verify-status?reportId=${currentReportId || ''}`);
+      
+      console.log('Payment status verification response:', response.data);
+      
       return response.data;
     } catch (error) {
       console.error('Payment verification status error:', error);
