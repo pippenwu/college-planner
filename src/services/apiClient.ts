@@ -153,8 +153,16 @@ export const reportApi = {
     try {
       const response = await apiClient.post('/report/generate', { studentData });
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Report generation error:', error);
+      
+      // If the error has a response, pass it through
+      if (error.response) {
+        // Pass through the error with status code intact
+        throw error;
+      }
+      
+      // Otherwise, throw a generic error
       throw error;
     }
   },

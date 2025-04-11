@@ -46,7 +46,10 @@ const formSchema = z.object({
     .refine(val => val.trim().length > 0, {
       message: "Please enter at least one intended major"
     }),
-  collegeList: z.string().optional(),
+  collegeList: z.string()
+    .refine(val => val.trim().length > 0, {
+      message: "Please enter at least one college or write 'Undecided'"
+    }),
   
   // Academic background
   testScores: z.array(z.object({
@@ -101,6 +104,20 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
   const [completedSections, setCompletedSections] = useState<number[]>([]);
   // Add flag to track if using demo data
   const [isUsingDemoData, setIsUsingDemoData] = useState(false);
+  // Add state for tracking loading message
+  const [currentLoadingPhraseIndex, setCurrentLoadingPhraseIndex] = useState(0);
+  
+  // Loading phrases array
+  const loadingPhrases = [
+    "Generating your college plan...",
+    "Browsing the college archives...",
+    "Consulting with virtual advisors...",
+    "Dusting off the admissions records...",
+    "Analyzing thousands of applications...",
+    "Looking up those SAT score averages...",
+    "Checking which schools have the best dining halls...",
+    "Calculating how many all-nighters you'll need..."
+  ];
   
   // Get payment state from context
   const { isPaid, isProcessingPayment, resetPaymentState } = usePayment();
@@ -218,28 +235,50 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
 
   // Function to move to the next section
   const goToNextSection = () => {
-    // Validate current section fields before marking complete
+    // Validate current section fields before allowing navigation
     const currentSectionId = FORM_SECTIONS[currentSection].id;
     const formValues = form.getValues();
     let isSectionValid = true;
+    let missingFields = "";
     
     // Check required fields based on section
     switch (currentSectionId) {
       case "student-info":
         // Required: highSchool, currentGrade
         isSectionValid = !!formValues.highSchool && !!formValues.currentGrade;
+        if (!formValues.highSchool) missingFields += "High School, ";
+        if (!formValues.currentGrade) missingFields += "Current Grade, ";
         break;
       case "majors-colleges":
-        // Required: intendedMajors
-        isSectionValid = !!formValues.intendedMajors;
+        // Required: intendedMajors, collegeList
+        isSectionValid = !!formValues.intendedMajors && !!formValues.collegeList;
+        if (!formValues.intendedMajors) missingFields += "Intended Major(s), ";
+        if (!formValues.collegeList) missingFields += "College List, ";
         break;
       // academics and activities sections don't have required fields
       default:
         isSectionValid = true;
     }
     
+    // If section is not valid, show a toast and prevent navigation
+    if (!isSectionValid) {
+      missingFields = missingFields.slice(0, -2); // Remove trailing comma and space
+      toast.error(`Please fill in all required fields: ${missingFields}`, {
+        icon: '✏️' as const,
+        duration: 4000,
+        style: {
+          borderRadius: '10px',
+          background: '#f0f5ff',
+          color: '#1e3a8a', // academic-navy color
+          border: '1px solid #bfdbfe',
+          fontWeight: 'medium'
+        },
+      });
+      return;
+    }
+    
     // Only mark as complete if all required fields are filled
-    if (isSectionValid && !completedSections.includes(currentSection)) {
+    if (!completedSections.includes(currentSection)) {
       setCompletedSections(prev => [...prev, currentSection]);
     }
     
@@ -336,18 +375,42 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
           },
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating report:", error);
-      toast.error("Failed to generate report. Please try again later.", {
-        icon: '❌',
-        duration: 4000,
-        style: {
-          borderRadius: '10px',
-          background: '#fef2f2',
-          color: '#991b1b',
-          border: '1px solid #fecaca'
-        },
-      });
+      
+      // Special handling for 503 Service Unavailable (counselors busy)
+      if (error.response && error.response.status === 503) {
+        // Show a more specific error for service unavailability
+        const errorMessage = error.response.data?.message || 'All our counselors are busy right now. Please try again later.';
+        
+        toast.error(errorMessage, {
+          icon: '🧠',
+          duration: 5000,
+          style: {
+            borderRadius: '10px',
+            background: '#fef2f2',
+            color: '#991b1b',
+            border: '1px solid #fecaca',
+            padding: '16px',
+            fontWeight: 'medium'
+          }
+        });
+        
+        // Don't proceed to the report page
+        return;
+      } else {
+        // Generic error for other issues
+        toast.error("Failed to generate report. Please try again later.", {
+          icon: '❌',
+          duration: 4000,
+          style: {
+            borderRadius: '10px',
+            background: '#fef2f2',
+            color: '#991b1b',
+            border: '1px solid #fecaca'
+          },
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -383,13 +446,12 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
         {FORM_SECTIONS.map((section, index) => (
           <div key={section.id} className="flex flex-col items-center z-10">
             <div 
-              className={`flex items-center justify-center w-10 h-10 rounded-full border-2 cursor-pointer
+              className={`flex items-center justify-center w-10 h-10 rounded-full border-2
                 ${currentSection === index 
                   ? 'bg-academic-navy text-white border-academic-navy' 
                   : completedSections.includes(index)
                     ? 'bg-academic-gold text-white border-academic-gold'
                     : 'bg-white text-academic-slate border-academic-light'}`}
-              onClick={() => jumpToSection(index)}
             >
               {completedSections.includes(index) 
                 ? <Check className="w-5 h-5" /> 
@@ -548,9 +610,9 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
               name="collegeList"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel htmlFor={`college-list-${field.name}`}>College List</FormLabel>
+                  <FieldLabel required htmlFor={`college-list-${field.name}`}>College List</FieldLabel>
                   <FormDescription className="text-gray-500 text-sm">
-                    Colleges you intend to apply to. If you do not have an idea yet, you may leave this list blank.
+                    Colleges you intend to apply to. If you do not have an idea yet, you may put "Undecided."
                   </FormDescription>
                   <FormControl>
                     <Textarea 
@@ -1732,6 +1794,23 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
     scrollToForm();
   };
 
+  // Add effect to cycle through loading phrases
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (isLoading) {
+      interval = setInterval(() => {
+        setCurrentLoadingPhraseIndex(prevIndex => 
+          (prevIndex + 1) % loadingPhrases.length
+        );
+      }, 3000); // Change message every 3 seconds
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isLoading, loadingPhrases.length]);
+
   // If a report has been generated, show the report display component instead of the form
   if (result) {
     return (
@@ -1800,22 +1879,24 @@ export function StudentProfileForm({ onReportVisibilityChange }: StudentProfileF
         <div id="application-form" className="bg-white shadow-md border border-academic-light rounded-lg p-6 mb-6 overflow-hidden">
           {isLoading ? (
             <div className="py-12 px-4 text-center">
-              <div className="p-6 bg-academic-navy/10 rounded-lg text-center animate-pulse">
-                <p className="text-lg font-semibold mb-4 text-academic-navy">
-                  <Loader2 className="inline-block mr-2 h-5 w-5 animate-spin" />
-                  Creating your personalized college application plan...
+              <div className="p-8 bg-academic-cream border border-academic-gold/50 rounded-lg text-center shadow-md">
+                <p className="text-xl font-semibold mb-6 text-academic-navy font-heading transition-opacity duration-500">
+                  <Loader2 className="inline-block mr-3 h-6 w-6 animate-spin text-academic-gold" />
+                  {loadingPhrases[currentLoadingPhraseIndex]}
                 </p>
-                <p className="text-sm text-academic-slate">This may take a minute or two, do not leave the page.</p>
+                <p className="text-sm text-academic-slate font-heading">
+                  ⏳ This may take a minute or two, please don't leave the page. ⏳
+                </p>
               </div>
             </div>
           ) : isProcessingPayment ? (
             <div className="py-12 px-4 text-center">
-              <div className="p-6 bg-academic-navy/10 rounded-lg text-center animate-pulse">
-                <p className="text-lg font-semibold mb-4 text-academic-navy">
-                  <Loader2 className="inline-block mr-2 h-5 w-5 animate-spin" />
+              <div className="p-8 bg-academic-cream border border-academic-gold/50 rounded-lg text-center shadow-md">
+                <p className="text-lg font-semibold mb-4 text-academic-navy font-heading">
+                  <Loader2 className="inline-block mr-2 h-5 w-5 animate-spin text-academic-gold" />
                   Processing your payment...
                 </p>
-                <p className="text-sm text-academic-slate">Please complete the payment to generate your plan</p>
+                <p className="text-sm text-academic-slate font-heading">Please complete the payment to generate your plan</p>
               </div>
             </div>
           ) : (

@@ -19,9 +19,7 @@ const reportStore = [];
  * Generate report
  * POST /api/report/generate
  * 
- * Generates a report based on student profile data
- * Request: { studentData: Object }
- * Response: { reportId: string, reportData: Object }
+ * Generates a report based on the student data. Returns the reportId and reportData.
  */
 router.post('/generate', async (req, res) => {
   try {
@@ -33,31 +31,41 @@ router.post('/generate', async (req, res) => {
         message: 'Missing student data'
       });
     }
-
+    
     // Generate a unique report ID
-    const reportId = `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const reportId = `report_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     
-    // Call Gemini to generate the report
-    const reportData = await generateReportWithAI(studentData);
-    
-    // Store the report (in memory for now)
-    const report = {
-      id: reportId,
-      studentData,
-      reportData,
-      createdAt: new Date().toISOString()
-    };
-    
-    reportStore.push(report);
-    
-    return res.status(200).json({
-      success: true,
-      message: 'Report generated successfully',
-      data: {
-        reportId,
-        reportData
-      }
-    });
+    // Generate report with AI
+    try {
+      const reportData = await generateReportWithAI(studentData);
+      
+      // Create report record
+      const report = {
+        id: reportId,
+        studentData,
+        reportData,
+        createdAt: new Date().toISOString()
+      };
+      
+      reportStore.push(report);
+      
+      return res.status(200).json({
+        success: true,
+        message: 'Report generated successfully',
+        data: {
+          reportId,
+          reportData
+        }
+      });
+    } catch (aiError) {
+      // AI service unavailable - return 503 Service Unavailable
+      console.error('AI report generation failed:', aiError);
+      return res.status(503).json({
+        success: false,
+        message: aiError.message || 'All our counselors are busy right now. Please try again later.',
+        error: 'SERVICE_UNAVAILABLE'
+      });
+    }
   } catch (error) {
     console.error('Report generation error:', error);
     return res.status(500).json({
@@ -200,7 +208,7 @@ async function generateReportWithAI(studentData) {
         process.env.GEMINI_API_KEY === 'your-gemini-api-key-goes-here' ||
         process.env.GEMINI_API_KEY.includes('your')) {
       console.log('No valid Gemini API key found. Using fallback report generator.');
-      return generateFallbackReport(studentData);
+      throw new Error('All our counselors are busy right now. Please try again later.');
     }
 
     // Create a formatted string for student details
@@ -643,14 +651,13 @@ async function generateReportWithAI(studentData) {
       }
     } catch (modelError) {
       console.error('Error using Gemini model gemini-2.0-flash-thinking-exp-01-21:', modelError);
-      console.log('Using fallback report generator due to model error.');
-      return generateFallbackReport(studentData);
+      console.log('AI service unavailable.');
+      throw new Error('All our counselors are busy right now. Please try again later.');
     }
   } catch (error) {
     console.error('Gemini API error:', error);
-    // Use fallback report generator if Gemini API fails
-    console.log('Using fallback report generator due to API error.');
-    return generateFallbackReport(studentData);
+    // Return a proper error instead of a fallback
+    throw new Error('All our counselors are busy right now. Please try again later.');
   }
 }
 
